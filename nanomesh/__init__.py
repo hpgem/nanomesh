@@ -10,4 +10,4 @@ __author__ = "Nicolas Renaud"
 __email__ = 'n.renaud@esciencecenter.nl'
 
 from .nanomesher import NanoMesher
-from .utils import show_slice
+from .utils import show_slice, show_volume

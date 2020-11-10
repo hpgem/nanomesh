@@ -13,7 +13,7 @@ import ipywidgets as widgets
 import itk
 import itkwidgets as itkw
 import SimpleITK as sitk 
-
+import logging
 from .sitk_filter import (gaussian_filtering, otsu_filtering, binary_threshold, 
                           otsu_threshold, confidence_connected)
 
@@ -47,7 +47,8 @@ class NanoMesher(object):
         self.create_image()
 
 
-    def load_bin(self, data_file_name: str, info_file_name:str=None, size:List=[]): 
+    def load_bin(self, data_file_name: str, info_file_name:str=None, size:List=[], 
+                 input_dtype=np.float32, output_dtype=np.float32, create_image=True, rescale=False): 
         """Load from a binary file
 
         Args:
@@ -63,27 +64,36 @@ class NanoMesher(object):
         if info_file_name is not None:
             if os.path.isfile(info_file_name):
                 self.read_info(info_file_name)
-                self.volume.size = [self.volume.info['NUM_X'], 
+                self.volume.size = [self.volume.info['NUM_Z'], 
                                     self.volume.info['NUM_Y'], 
-                                    self.volume.info['NUM_Z']]
+                                    self.volume.info['NUM_X']]
             else:
                 raise FileNotFoundError(info_file_name)
         else:
             self.volume.size = size
 
+        logging.info('Processing file : ', self.volume.name)
         with open(self.volume.name,'rb') as fid:
-            self.volume.data = np.fromfile(fid)
+            self.volume.data = np.fromfile(fid, dtype=input_dtype)
 
         self.volume.data = self.volume.data.reshape(self.volume.size)
-        self.normalize_data()
-        self.create_image()
+
+        if self.volume.data.dtype != output_dtype:
+            self.volume.data = self.volume.data.astype(output_dtype)
+
+        if create_image:
+            self.create_image()
+
+        if rescale:
+            self.normalize_data()
 
     def read_info(self, info_file:str):
         """Load the info about the data."""
 
-        def _str2data(val: str):
+        def str2data(val: str):
+            val = val.strip()
             if '.' in val :
-                return float(str)
+                return float(val)
             else:
                 try:
                     val = int(val)
@@ -97,21 +107,23 @@ class NanoMesher(object):
             for line in fid:
                 if '=' in line:
                     (key,val) = line.split('=')
-                    self.volume.info[key] = self._str2data(val)
-
+                    self.volume.info[key.strip()] = str2data(val)
+        
     def normalize_data(self):
         """Normalize the data from  0 to 1."""
         self.volume.data += self.volume.data.min()
         self.volume.data /= self.volume.data.max()
 
-    def create_image(self, rescale=True):
+    def create_image(self, data=None, rescale=True):
         """Create the sitk image
 
         Args:
             rescale (bool, optional): rescale the intensity. Defaults to True.
         """
-        
-        self.volume.img = sitk.GetImageFromArray(self.volume.data)
+        if data is None:
+            self.volume.img = sitk.GetImageFromArray(self.volume.data)
+        else: 
+            self.volume.img = sitk.GetImageFromArray(data)
 
         if rescale:
             self.volume.img = sitk.Cast(sitk.RescaleIntensity(self.volume.img), sitk.sitkUInt8)

@@ -6,7 +6,7 @@ from ipywidgets import widgets
 
 import itkwidgets as itkw
 
-def show_slice(img, dim='x', title=None, margin=0.05, dpi=80 ):
+def show_slice(img, dim='x', title=None, scale = 1., margin=0.05, dpi=80 ):
 
     if isinstance(img, tuple):
         img = sitk.LabelOverlay(*img)
@@ -43,7 +43,7 @@ def show_slice(img, dim='x', title=None, margin=0.05, dpi=80 ):
 
     # Make a figure big enough to accomodate an axis of xpixels by ypixels
     # as well as the ticklabels, etc...
-    figsize = 2*(1 + margin) * ysize / dpi, 2*(1 + margin) * xsize / dpi
+    figsize = scale * (1 + margin) * ysize / dpi, scale * (1 + margin) * xsize / dpi
     def callback(z=None):
 
         extent = (0, xsize*spacing[1], ysize*spacing[0], 0)
@@ -78,5 +78,3 @@ def show_slice(img, dim='x', title=None, margin=0.05, dpi=80 ):
 
 def show_volume(data):
     return itkw.view(data)
-
-

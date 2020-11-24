@@ -35,8 +35,8 @@ jobs:
         shell: bash -l {0}
         run: |
           python setup.py build
-      - name: Test
-        shell: bash -l {0}
-        run: |
-          python setup.py test
-          pytest --cov --cov-report term --cov-report xml --junitxml=xunit-result.xml
+#       - name: Test
+#         shell: bash -l {0}
+#         run: |
+#           python setup.py test
+#           pytest --cov --cov-report term --cov-report xml --junitxml=xunit-result.xml

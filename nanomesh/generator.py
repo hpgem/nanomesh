@@ -35,7 +35,7 @@ class Generator(object):
         Args:
             sizes: The size (3 integers) of the resulting volume in voxels
             resolution: The resolution of each voxel (xray images are at 10nm or 20nm)
-            transform: Optional 3D tranformation matrix to map from the coordinate system of the
+            transform: Optional 3D transformation matrix to map from the coordinate system of the
              structure to the coordinate system of the volume. It should have determinant of +-1
              for the resolution to remain correct.
         Returns: A ndarray of size sizes filled with either 1 (air) or 0 (silicon)

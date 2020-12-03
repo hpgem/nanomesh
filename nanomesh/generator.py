@@ -1,3 +1,4 @@
+from typing import List
 import logging
 import numpy as np
 import math
@@ -29,7 +30,7 @@ class Generator(object):
         # Pore radius
         self.r = r
 
-    def generate(self, sizes: list[int], resolution: list[float], transform=None):
+    def generate(self, sizes: List[int], resolution: List[float], transform=None):
         """
         Generate a volume image of the structure
         Args:

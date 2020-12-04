@@ -42,7 +42,7 @@ setup(
     ],
     test_suite='tests',
     install_requires=['numpy','ipywidgets','itk','SimpleITK','itkwidgets','matplotlib',
-                      'pygalmesh', 'optimesh','meshio', 'gmesh'],  # FIXME: add your package's dependencies to this list
+                      'pygalmesh', 'optimesh','meshio', 'gmsh', 'pyvista'],  # FIXME: add your package's dependencies to this list
     setup_requires=[
         # dependency for `python setup.py test`
         'pytest-runner',

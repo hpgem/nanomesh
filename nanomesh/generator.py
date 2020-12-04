@@ -30,7 +30,7 @@ class Generator(object):
         # Pore radius
         self.r = r
 
-    def generate(self, sizes: List[int], resolution: List[float], transform=None):
+    def generate(self, sizes: List[int], resolution: List[float], transform=None, bin_val = [0., 1.]):
         """
         Generate a volume image of the structure
         Args:
@@ -41,7 +41,7 @@ class Generator(object):
              for the resolution to remain correct.
         Returns: A ndarray of size sizes filled with either 1 (air) or 0 (silicon)
         """
-        result = np.zeros(sizes)
+        result = bin_val[0] * np.ones(sizes)
 
         # Invert all the transform
         if transform is not None:
@@ -53,8 +53,8 @@ class Generator(object):
                 r = transform.dot(r)
             # The pores in Z direction need to be offset by either +a/4 or -a/4
             if self.check_pore(r[2], r[1]) or self.check_pore(r[0], r[1] + self.a / 4):
-                result[ix, iy, iz] = 1.0
-        return result
+                result[ix, iy, iz] = bin_val[1]
+        return result.astype('uint8')
 
     def check_pore(self, xz: float, y: float) -> bool:
         """

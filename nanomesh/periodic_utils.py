@@ -2,6 +2,15 @@ import pygalmesh
 import meshio
 import numpy as np
 
+def insert_periodic_info(mesh, boundary):
+    """insert periodic info in the mesh."""
+
+    mesh.remove_orphaned_nodes()
+    map_index = map_boundary_points(mesh, np.array(boundary))
+    mesh.gmsh_periodic = [[len(map_index), (0, 0), None, list(map_index)]]
+
+    return mesh
+
 def map_boundary_points(mesh, boundary):
     """create a mapping between the boundary points.
     

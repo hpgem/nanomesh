@@ -26,6 +26,6 @@ docs/apidocs
 .DS_Store
 
 # mesh files
-.mesh*
-.msh*
-.gmsh*
+*.mesh*
+*.msh*
+*.gmsh*

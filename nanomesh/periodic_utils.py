@@ -23,8 +23,14 @@ def map_boundary_points(mesh, boundary):
     map_index = []
     for idx in idx_out_domain:
         idx_match = get_index_match(mesh.points, idx, boundary)
-        if len(idx_match) != 1:
-            raise ValueError('error in mapping sorry')
+        
+        if len(idx_match) == 0:
+            print (' Warning : No mapping point found at ', idx)
+            continue
+
+        if len(idx_match) > 1:
+            raise ValueError('Multiple mapping points found at ', idx)
+
         map_index .append([idx_match[0], idx])
     return map_index
 

@@ -24,3 +24,8 @@ docs/apidocs
 
 # Mac
 .DS_Store
+
+# mesh files
+.mesh*
+.msh*
+.gmsh*

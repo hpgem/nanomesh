@@ -76,7 +76,9 @@ class Generator(object):
 
         r = np.array(list(np.ndindex(result.shape)))
         r = np.array(resolution) * r
-        r = r @ transform.T
+
+        if transform is not None:
+            r = r @ transform.T
 
         shift = np.array([0,  + self.a / 4])
         cond = self.check_pore_vect(r[:,[2,1]]) + self.check_pore_vect(r[:,[0,1]]+shift)

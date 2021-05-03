@@ -10,13 +10,20 @@ The project setup is documented in `a separate document <project_setup.rst>`_. F
 Installation
 ------------
 
-First install CGAL
+First install the dependencies for pygalmesh (CGAL and EIGEN3)
 
 .. code-block:: console
 
-  sudo apt-get install libcgal-dev
+  sudo apt-get install libcgal-dev libeigen3
 
-Then install our for of pygalmesh
+  If you use conda, create a new environment:
+
+  .. code-block:: console
+
+  conda create -n nanomesh python=3.8
+  conda activate nanomesh
+
+Then install our fork of pygalmesh
 
 .. code-block:: console
 

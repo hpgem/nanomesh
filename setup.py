@@ -39,10 +39,22 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     test_suite='tests',
-    install_requires=['numpy','ipywidgets','itk','SimpleITK','itkwidgets','matplotlib',
-                      'pygalmesh', 'optimesh','meshio', 'gmsh', 'pyvista'],  # FIXME: add your package's dependencies to this list
+    install_requires=[
+        'gmsh',
+        'ipywidgets',
+        'itk',
+        'itkwidgets',
+        'matplotlib',
+        'meshio',
+        'numpy',
+        'optimesh',
+        'pygalmesh',
+        'pyvista'
+        'SimpleITK',
+    ],
     setup_requires=[
         # dependencies for `python setup.py build_sphinx`
         'sphinx',
@@ -55,7 +67,6 @@ setup(
         'pycodestyle',
     ],
     extras_require={
-        'dev':  ['prospector[with_pyroma]', 'yapf', 'isort'],
+        'dev': ['prospector[with_pyroma]', 'yapf', 'isort'],
     },
-    data_files=[('citation/nanomesh', ['CITATION.cff'])]
-)
+    data_files=[('citation/nanomesh', ['CITATION.cff'])])

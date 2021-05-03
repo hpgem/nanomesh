@@ -44,8 +44,6 @@ setup(
     install_requires=['numpy','ipywidgets','itk','SimpleITK','itkwidgets','matplotlib',
                       'pygalmesh', 'optimesh','meshio', 'gmsh', 'pyvista'],  # FIXME: add your package's dependencies to this list
     setup_requires=[
-        # dependency for `python setup.py test`
-        'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
         'sphinx',
         'sphinx_rtd_theme',

@@ -57,6 +57,8 @@ class Generator(object):
                 result[ix, iy, iz] = bin_val[1]
         return result.astype('uint8')
 
+
+
     def generate_vect(self, sizes: List[int], resolution: List[float], transform=None, bin_val = [0., 1.]):
         """
         Generate a volume image of the structure
@@ -87,6 +89,7 @@ class Generator(object):
 
         return result #.astype('uint8')
 
+
     def check_pore(self, xz: float, y: float) -> bool:
         """
         Helper function to determine whether a 2D coordinate is inside a pore.
@@ -102,7 +105,7 @@ class Generator(object):
         # xz,y = (0,0), (0,a), (c,0), (c,a)
         # and the centre (xz,y) = (c/2,a/2)
 
-        # Compute the coordinate within the regular unit cell.
+        # Compute the coordinate within the regular unit cell.        
         xzr = xz % self.c
         yr = y % self.a
 

@@ -23,21 +23,25 @@ First install the dependencies for pygalmesh (CGAL and EIGEN3)
   conda create -n nanomesh python=3.8
   conda activate nanomesh
 
-Then install our fork of pygalmesh
-
-.. code-block:: console
-
-  git clone https://github.com/hpgem/pygalmesh.git
-  cd pygalmesh
-  pip install .
-
-Finally install nanomesh:
+Install nanomesh:
 
 .. code-block:: console
 
   git clone https://github.com/hpgem/nanomesh.git
   cd nanomesh
   pip install .
+
+Note: To enable the IPython widgets:
+
+.. code-block:: console
+  
+  jupyter nbextension enable --py widgetsnbextension
+
+Note: If you are using Jupyter lab:
+
+.. code-block:: console
+
+  jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib jupyterlab-datawidgets itkwidgets
 
 
 License

@@ -1,0 +1,11 @@
+---
+name: nanomesh
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.8
+  - nodejs>=12  # for itkwidgets
+  # - eigen
+  # - cgal
+  # - cgal-cpp

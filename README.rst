@@ -10,27 +10,38 @@ The project setup is documented in `a separate document <project_setup.rst>`_. F
 Installation
 ------------
 
-First install CGAL
+First install the dependencies for pygalmesh (CGAL and EIGEN3)
 
 .. code-block:: console
 
-  sudo apt-get install libcgal-dev
+  sudo apt-get install libcgal-dev libeigen3
 
-Then install our for of pygalmesh
+  If you use conda, create a new environment:
 
-.. code-block:: console
+  .. code-block:: console
 
-  git clone https://github.com/hpgem/pygalmesh.git
-  cd pygalmesh
-  pip install .
+  conda create -n nanomesh python=3.8
+  conda activate nanomesh
 
-Finally install nanomesh:
+Install nanomesh:
 
 .. code-block:: console
 
   git clone https://github.com/hpgem/nanomesh.git
   cd nanomesh
   pip install .
+
+Note: To enable the IPython widgets:
+
+.. code-block:: console
+  
+  jupyter nbextension enable --py widgetsnbextension
+
+Note: If you are using Jupyter lab:
+
+.. code-block:: console
+
+  jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib jupyterlab-datawidgets itkwidgets
 
 
 License

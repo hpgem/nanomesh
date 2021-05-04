@@ -39,25 +39,36 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
-    test_suite='tests',
-    install_requires=['numpy','ipywidgets','itk','SimpleITK','itkwidgets','matplotlib',
-                      'pygalmesh', 'optimesh','meshio', 'gmsh', 'pyvista'],  # FIXME: add your package's dependencies to this list
-    setup_requires=[
-        # dependency for `python setup.py test`
-        'pytest-runner',
-        # dependencies for `python setup.py build_sphinx`
-        'sphinx',
-        'sphinx_rtd_theme',
-        'recommonmark'
-    ],
-    tests_require=[
-        'pytest',
-        'pytest-cov',
-        'pycodestyle',
+    install_requires=[
+        'gmsh',
+        'ipywidgets',
+        'itk',
+        'itkwidgets',
+        'matplotlib',
+        'meshio',
+        'numpy',
+        'optimesh',
+        'IPython!=7.23',  # 7.23 contains a bug that prevents matplotlib inline
+        'pygalmesh @ git+http://git@github.com/hpgem/pygalmesh',
+        'pyvista',
+        'SimpleITK',
     ],
     extras_require={
-        'dev':  ['prospector[with_pyroma]', 'yapf', 'isort'],
+        'develop': [
+            # linting
+            'prospector[with_pyroma]',
+            'yapf',
+            'isort',
+            # testing
+            'pytest',
+            'pytest-cov',
+            'pycodestyle',
+            # documentation
+            'recommonmark',
+            'sphinx',
+            'sphinx_rtd_theme',
+        ],
     },
-    data_files=[('citation/nanomesh', ['CITATION.cff'])]
-)
+    data_files=[('citation/nanomesh', ['CITATION.cff'])])

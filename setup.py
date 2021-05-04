@@ -12,7 +12,7 @@ with open('CITATION.cff', 'r') as cff:
         if 'version:' in line:
             version = line.replace('version:', '').strip().strip('"')
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
 setup(
@@ -58,9 +58,10 @@ setup(
     extras_require={
         'develop': [
             # linting
+            'isort',
+            'pre-commit',
             'prospector[with_pyroma]',
             'yapf',
-            'isort',
             # testing
             'pytest',
             'pytest-cov',

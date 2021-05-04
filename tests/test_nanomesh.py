@@ -5,7 +5,7 @@
 """
 import pytest
 
-from nanomesh import nanomesh
+from nanomesh import NanoMesher
 
 
 def test_something():

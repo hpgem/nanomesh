@@ -50,7 +50,7 @@ setup(
         'meshio',
         'numpy',
         'optimesh',
-        'IPython!=7.23'  # 7.23 contains a bug that prevents matplotlib inline
+        'IPython!=7.23',  # 7.23 contains a bug that prevents matplotlib inline
         'pygalmesh @ git+http://git@github.com/hpgem/pygalmesh',
         'pyvista',
         'SimpleITK',

@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""Tests for the nanomesh module.
-"""
+"""Tests for the nanomesh module."""
 import pytest
-
-from nanomesh import NanoMesher
 
 
 def test_something():
@@ -15,7 +11,7 @@ def test_something():
 def test_with_error():
     with pytest.raises(ValueError):
         # Do something that raises a ValueError
-        raise(ValueError)
+        raise (ValueError)
 
 
 # Fixture example

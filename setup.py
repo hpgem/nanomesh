@@ -18,16 +18,16 @@ with open('README.md') as readme_file:
 setup(
     name='nanomesh',
     version=version,
-    description="Creates 3d meshes from electron microscopy experimental data",
+    description='Creates 3d meshes from electron microscopy experimental data',
     long_description=readme + '\n\n',
-    author="Nicolas Renaud",
+    author='Nicolas Renaud',
     author_email='n.renaud@esciencecenter.nl',
     url='https://github.com/hpgem/nanomesh',
     packages=[
         'nanomesh',
     ],
     include_package_data=True,
-    license="Apache Software License 2.0",
+    license='Apache Software License 2.0',
     zip_safe=False,
     keywords='nanomesh',
     classifiers=[

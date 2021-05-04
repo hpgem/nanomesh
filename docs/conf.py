@@ -24,7 +24,6 @@ import nanomesh
 here = os.path.dirname(__file__)
 sys.path.insert(0, os.path.abspath(os.path.join(here, '..')))
 
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -51,7 +50,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'nanomesh'
 copyright = u'2020, '
-author = u"Nicolas Renaud"
+author = u'Nicolas Renaud'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -90,14 +89,7 @@ def run_apidoc(_):
 
     ignore_paths = []
 
-    argv = [
-        "-f",
-        "-T",
-        "-e",
-        "-M",
-        "-o", out,
-        src
-    ] + ignore_paths
+    argv = ['-f', '-T', '-e', '-M', '-o', out, src] + ignore_paths
 
     try:
         # Sphinx 1.7+
@@ -134,8 +126,8 @@ html_static_path = ['_static']
 html_context = {
     'css_files': [
         '_static/theme_overrides.css',  # override wide tables in RTD theme
-        ],
-     }
+    ],
+}
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -149,12 +141,10 @@ html_sidebars = {
     ]
 }
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'nanomesh_doc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -180,20 +170,15 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'nanomesh.tex', u'nanomesh Documentation',
-     u"Nicolas Renaud", 'manual'),
+    (master_doc, 'nanomesh.tex', u'nanomesh Documentation', u'Nicolas Renaud',
+     'manual'),
 ]
-
 
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'nanomesh', u'nanomesh Documentation',
-     [author], 1)
-]
-
+man_pages = [(master_doc, 'nanomesh', u'nanomesh Documentation', [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -201,7 +186,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'nanomesh', u'nanomesh Documentation',
-     author, 'nanomesh', "Creates 3d meshes from electron microscopy experimental data",
+    (master_doc, 'nanomesh', u'nanomesh Documentation', author, 'nanomesh',
+     'Creates 3d meshes from electron microscopy experimental data',
      'Miscellaneous'),
 ]

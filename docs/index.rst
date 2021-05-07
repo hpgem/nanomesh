@@ -4,7 +4,9 @@
    contain the root `toctree` directive.
 
 Welcome to nanomesh's documentation!
-==========================================================
+====================================
+
+`nanomesh` is a toolkit for creating meshes for `hpgem` from experimental data.
 
 .. toctree::
    :maxdepth: 2

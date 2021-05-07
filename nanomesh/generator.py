@@ -15,17 +15,18 @@ class Generator(object):
     def __init__(self, a: float, c: float, r: float):
         """Initializer with specific dimensions.
 
-        Args:
-            a:
-                The size of the long axis (typical 680nm)
-            c:
-                The size of the short axis, all structures have c = a/sqrt(2)
-                (typical about 481nm)
-            r:
-                The radius of the pores (typical r/a about 0.2-0.24).
-                Is assumed to be less than min(c/2, a/4)
+        Parameters
+        ----------
+        a : float
+            The size of the long axis (typically 680 nm)
+        c : float
+            The size of the short axis, all structures have `c = a/sqrt(2)`
+            (typically about 481nm)
+        r : float
+            The radius of the pores (typically `0.20 < r/a < 0.24`) is assumed
+            to be less than `min(c/2, a/4)`
         """
-        # Long crystal axis, usually a = sqrt(c)
+        # Long crystal axis, usually `a = sqrt(c)`
         self.a = a
         self.c = c
 
@@ -36,21 +37,26 @@ class Generator(object):
                  sizes: List[int],
                  resolution: List[float],
                  transform=None,
-                 bin_val=[0., 1.]):
+                 bin_val: List[float] = [0., 1.]) -> np.ndarray:
         """Generate a volume image of the structure.
 
-        Args:
-            sizes:
-                The size (3 integers) of the resulting volume in voxels
-            resolution:
-                The resolution of each voxel (xray images are at 10nm or 20nm)
-            transform:
-                Optional 3D transformation matrix to map from the coordinate
-                system of the structure to the coordinate system of the volume.
-                It should have determinant of +-1 for the resolution to remain
-                correct.
+        Parameters
+        ----------
+        sizes : List[int]
+            The size (3 integers) of the resulting volume in voxels
+        resolution : List[float]
+            The resolution of each voxel (xray images are at 10nm or 20nm)
+        transform : None, optional
+            Optional 3D transformation matrix to map from the coordinate
+            system of the structure to the coordinate system of the volume.
+            It should have determinant of +-1 for the resolution to remain
+            correct.
+        bin_val : List[float, float], optional
+            Binary values (low / high)
 
-        Returns:
+        Returns
+        -------
+        np.ndarray
             A ndarray of size sizes filled with either 1 (air) or 0 (silicon)
         """
         result = bin_val[0] * np.ones(sizes)
@@ -74,21 +80,26 @@ class Generator(object):
                       sizes: List[int],
                       resolution: List[float],
                       transform=None,
-                      bin_val=[0., 1.]):
-        """
-        Generate a volume image of the structure
-        Args:
-            sizes:
-                The size (3 integers) of the resulting volume in voxels
-            resolution:
-                The resolution of each voxel (xray images are at 10nm or 20nm)
-            transform:
-                Optional 3D transformation matrix to map from the coordinate
-                system of the structure to the coordinate system of the volume.
-                It should have determinant of +-1 for the resolution to remain
-                correct.
+                      bin_val=[0., 1.]) -> np.ndarray:
+        """Generate a volume image of the structure.
 
-        Returns:
+        Parameters
+        ----------
+        sizes : List[int]
+            The size (3 integers) of the resulting volume in voxels
+        resolution : List[float]
+            The resolution of each voxel (xray images are at 10nm or 20nm)
+        transform : None, optional
+            Optional 3D transformation matrix to map from the coordinate
+            system of the structure to the coordinate system of the volume.
+            It should have determinant of +-1 for the resolution to remain
+            correct.
+        bin_val : List[float, float], optional
+            Binary values (low / high)
+
+        Returns
+        -------
+        np.ndarray
             A ndarray of size sizes filled with either 1 (air) or 0 (silicon)
         """
         result = bin_val[0] * np.ones(sizes)
@@ -115,22 +126,24 @@ class Generator(object):
         """Helper function to determine whether a 2D coordinate is inside a
         pore.
 
-        Args:
-            xz:
-                The coordinate along the axis of length c (COPS coordinates X
-                and Z)
-            y:
-                The coordinate along the axis of length a (COPS coordinate Y)
+        This method checks for a pore in the `xy` or `zy` plane.
+        This places pores at the corners, i.e.
+        `xz,y = (0,0), (0,a), (c,0), (c,a)`, and the centre
+        `(xz,y) = (c/2,a/2)`.
 
-        Returns:
-            Whether the given coordinate is within an air pore.
+        Parameters
+        ----------
+        xz : float
+            The coordinate along the axis of length c (COPS coordinates X
+            and Z)
+        y : float
+            The coordinate along the axis of length a (COPS coordinate Y)
+
+        Returns
+        -------
+        bool
+            True if the given coordinate is within an air pore.
         """
-
-        # Check for a pore in the xy or zy plane.
-        # This places pores at the corners
-        # xz,y = (0,0), (0,a), (c,0), (c,a)
-        # and the centre (xz,y) = (c/2,a/2)
-
         # Compute the coordinate within the regular unit cell.
         xzr = xz % self.c
         yr = y % self.a
@@ -151,26 +164,19 @@ class Generator(object):
             yrh = yr - self.a / 2
             return yrh * yrh + xzrh * xzrh < r2
 
-    def check_pore_vect(self, data) -> bool:
-        """Helper function to determine whether a 2D coordinate is inside a
-        pore.
+    def check_pore_vect(self, data: np.ndarray) -> np.ndarray:
+        """Vectorized version of `.check_pore`.
 
-        Args:
-            xz:
-                The coordinate along the axis of length c (COPS coordinates
-                X and Z)
-            y:
-                The coordinate along the axis of length a (COPS coordinate Y)
+        Parameters
+        ----------
+        data : np.ndarray
+            2-column numpy containing the coordinates (xz, y).
 
-        Returns:
-            Whether the given coordinate is within an air pore.
+        Returns
+        -------
+        np.ndarray
+            Boolean array with the same length as `data`.
         """
-
-        # Check for a pore in the xy or zy plane.
-        # This places pores at the corners
-        # xz,y = (0,0), (0,a), (c,0), (c,a)
-        # and the centre (xz,y) = (c/2,a/2)
-
         xz = data[:, 0]
         y = data[:, 1]
 

@@ -40,6 +40,24 @@ Note: If you are using Jupyter lab:
 jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib jupyterlab-datawidgets itkwidgets
 ```
 
+## Development
+
+Running the tests:
+
+`pytest`
+
+Linting/checks:
+
+`pre-commit`
+
+Building and viewing the docs:
+
+```
+make html --directory docs
+sensible-browser _build/html/index.html
+```
+
+
 ### License
 
 Copyright (c) 2020,

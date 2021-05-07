@@ -54,7 +54,7 @@ Building and viewing the docs:
 
 ```
 make html --directory docs
-sensible-browser _build/html/index.html
+sensible-browser docs/_build/html/index.html
 ```
 
 

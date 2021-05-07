@@ -29,6 +29,7 @@ This repository is set up with Python versions:
 
 * 3.6
 * 3.7
+* 3.8
 
 Add or remove Python versions based on project requirements. See `the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html>`_ for more information about Python versions.
 
@@ -42,7 +43,7 @@ You can use either `pip` or `conda` for installing dependencies and package mana
 Packaging/One command install
 -----------------------------
 
-You can distribute your code using pipy or conda. Again, the project template does not enforce the use of either one. `The guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#building-and-packaging-code>`_ can help you decide which tool to use for packaging.
+You can distribute your code using pypi or conda. Again, the project template does not enforce the use of either one. `The guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#building-and-packaging-code>`_ can help you decide which tool to use for packaging.
 
 If you decide to use pypi for distributing you code, you can configure travis to upload to pypi when you make a release. If you specified your pypi user name during generation of this package, the ``.travis.yml`` file contains a section that looks like:
 
@@ -70,18 +71,14 @@ Testing and code coverage
 
 * The testing framework used is `PyTest <https://pytest.org>`_
 
-  - `PyTest introduction <http://pythontesting.net/framework/pytest/pytest-introduction/>`_
+  - `Pytest introduction <http://pythontesting.net/framework/pytest/pytest-introduction/>`_
 
-* Tests can be run with ``python setup.py test``
+* Tests can be run with ``pytest``
 
   - This is configured in ``setup.py`` and ``setup.cfg``
 
-* Use `Travis CI <https://travis-ci.com/>`_ to automatically run tests and to test using multiple Python versions
+* Use the ``pre-commit`` command to automatically check/lint/auto-correct all files that have been staged in git.
 
-  - Configuration can be found in ``.travis.yml``
-  - `Getting started with Travis CI <https://docs.travis-ci.com/user/getting-started/>`_
-
-* TODO: add something about code quality/coverage tool?
 * `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#testing>`_
 
 Documentation
@@ -97,10 +94,9 @@ Documentation
 
   - Check out the `configuration options <https://sphinx-rtd-theme.readthedocs.io/en/latest/>`_.
 
-* To generate html documentation run ``python setup.py build_sphinx``
+* To generate html documentation run `make html`` in the ``docs`` folder.
 
   - This is configured in ``setup.cfg``
-  - Alternatively, run ``make html`` in the ``docs`` folder.
 
 * The ``docs/_templates`` directory contains an (empty) ``.gitignore`` file, to be able to add it to the repository. This file can be safely removed (or you can just leave it there).
 * To put the documentation on `Read the Docs <https://readthedocs.org>`_, log in to your Read the Docs account, and import the repository (under 'My Projects').
@@ -123,7 +119,6 @@ Package version number
 * We recommend using `semantic versioning <https://guide.esciencecenter.nl/best_practices/releases.html#semantic-versioning>`_.
 * For convenience, the package version is stored in a single place: ``nanomesh/__version__.py``. For updating the version number, you only have to change this file.
 * Don't forget to update the version number before `making a release <https://guide.esciencecenter.nl/best_practices/releases.html>`_!
-
 
 Logging
 -------

@@ -94,16 +94,17 @@ class NanoMesher(object):
 
     def read_info(self, info_file: str):
         """Load the info about the data."""
-        def str2data(val: str):
-            val = val.strip()
-            if '.' in val:
-                return float(val)
+        def str2data(str_val: str):
+            str_val = str_val.strip()
+            if '.' in str_val:
+                return float(str_val)
             else:
                 try:
-                    val = int(val)
+                    int_val = int(str_val)
                 except BaseException:
-                    pass
-                return val
+                    return str_val
+                else:
+                    return int_val
 
         self.volume.info = {'info_file_name': info_file}
         with open(info_file, 'r') as fid:

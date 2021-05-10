@@ -9,7 +9,7 @@ from nanomesh.generator import Generator
 # However we specify xdim=ydim=zdim because the perdiodic mesher can only
 # handle cubic domains
 # dimension of the domain used by CGAL to mesh the data
-XDIM, YDIM, ZDIM = [0.48] * 3
+XDIM, YDIM, ZDIM = 0.48, 0.48, 0.48
 
 
 class Pore3D(pygalmesh.DomainBase):
@@ -23,7 +23,11 @@ class Pore3D(pygalmesh.DomainBase):
         theta = 0.5 * math.pi
         c = math.cos(theta)
         s = math.sin(theta)
-        trans = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+        trans = np.array([
+            [c, 0, s],
+            [0, 1, 0],
+            [-s, 0, c],
+        ])
 
         # numbre of voxel in each direction
         self.size = [48, 68, 48]
@@ -32,10 +36,12 @@ class Pore3D(pygalmesh.DomainBase):
         self.res = [10, 10, 10]
 
         # generate the data cube
-        self.data = self.gen.generate_vect(self.size,
-                                           self.res,
-                                           transform=trans,
-                                           bin_val=[0., 1.])
+        self.data = self.gen.generate_vect(
+            self.size,
+            self.res,
+            transform=trans,
+            bin_val=[0., 1.],
+        )
 
         # size used during the meshing by the orcale
         # must be a perfect cube

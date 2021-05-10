@@ -9,8 +9,10 @@ from nanomesh import NanoMesher
 
 def test_load_data():
     """Test loading of vol files."""
-    fn = Path(__file__).parents[1] / 'notebook' / 'sandbox' / 'sample_data.vol'
-    expected_fn = Path(__file__).parent / fn.with_suffix('.npy').name
+    fn = (Path(__file__).parents[1] / 'notebooks' / 'sample_data' /
+          'sample_data.vol')
+
+    expected_fn = Path(__file__).parent / 'sample_data.npy'
 
     mesh = NanoMesher()
     mesh.load_bin(fn,

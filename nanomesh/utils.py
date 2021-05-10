@@ -83,7 +83,7 @@ def show_volume(data):
     return itkw.view(data)
 
 
-def generate_mesh_from_binary_image(img, h=[1.] * 3, **kwargs):
+def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
     img_array = sitk.GetArrayFromImage(img)
     mesh = pygalmesh.generate_from_array(img_array, h, **kwargs)
     return mesh

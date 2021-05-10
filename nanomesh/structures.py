@@ -57,3 +57,11 @@ class Pore3D(pygalmesh.DomainBase):
         else:
             out = 1.
         return out
+
+
+class FullCube(pygalmesh.DomainBase):
+    def __init__(self):
+        super().__init__()
+
+    def eval(self, x):
+        return -1

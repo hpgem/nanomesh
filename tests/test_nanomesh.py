@@ -25,7 +25,7 @@ def test_load_data():
         expected_data = np.load(expected_fn)
     else:
         np.save(expected_fn, volume.data)
-        RuntimeError(f'Wrote expected data to {expected_fn.absolute()}')
+        raise RuntimeError(f'Wrote expected data to {expected_fn.absolute()}')
 
     assert str(volume.name) == str(fn)
     assert volume.info is None

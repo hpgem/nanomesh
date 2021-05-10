@@ -1,24 +1,35 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests for the nanomesh module."""
-import pytest
+from pathlib import Path
+
+import numpy as np
+import SimpleITK as sitk
+
+from nanomesh import NanoMesher
 
 
-def test_something():
-    assert True
+def test_load_data():
+    """Test loading of vol files."""
+    fn = (Path(__file__).parents[1] / 'notebooks' / 'sample_data' /
+          'sample_data.vol')
 
+    expected_fn = Path(__file__).parent / 'sample_data.npy'
 
-def test_with_error():
-    with pytest.raises(ValueError):
-        # Do something that raises a ValueError
-        raise (ValueError)
+    mesh = NanoMesher()
+    mesh.load_bin(fn,
+                  size=[200, 200, 200],
+                  input_dtype=np.uint8,
+                  output_dtype=np.float32)
+    volume = mesh.volume
 
+    if expected_fn.exists():
+        expected_data = np.load(expected_fn)
+    else:
+        np.save(expected_fn, volume.data)
+        raise RuntimeError(f'Wrote expected data to {expected_fn.absolute()}')
 
-# Fixture example
-@pytest.fixture
-def an_object():
-    return {}
-
-
-def test_nanomesh(an_object):
-    assert an_object == {}
+    assert str(volume.name) == str(fn)
+    assert volume.info is None
+    assert volume.size == [200, 200, 200]
+    assert volume.format is None
+    np.testing.assert_equal(volume.data, expected_data)
+    assert isinstance(volume.img, sitk.SimpleITK.Image)

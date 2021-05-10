@@ -1,11 +1,14 @@
 import itkwidgets as itkw
 import matplotlib.pyplot as plt
+import numpy as np
 import pygalmesh
 import SimpleITK as sitk
 from ipywidgets import interact
 
 
 def show_slice(img, dim='x', title=None, scale=1., margin=0.05, dpi=80):
+    if isinstance(img, np.ndarray):
+        img = sitk.GetImageFromArray(img.astype('uint8'))
 
     if isinstance(img, tuple):
         img = sitk.LabelOverlay(*img)

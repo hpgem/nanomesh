@@ -12,7 +12,7 @@ import numpy as np
 # Generator for a theoretical structure
 class Generator(object):
     """Generator for densities of theoretical structures."""
-    def __init__(self, a: float, c: float, r: float):
+    def __init__(self, a: float, c: float, radius: float):
         """Initializer with specific dimensions.
 
         Parameters
@@ -22,7 +22,7 @@ class Generator(object):
         c : float
             The size of the short axis, all structures have `c = a/sqrt(2)`
             (typically about 481nm)
-        r : float
+        radius : float
             The radius of the pores (typically `0.20 < r/a < 0.24`) is assumed
             to be less than `min(c/2, a/4)`
         """
@@ -31,7 +31,7 @@ class Generator(object):
         self.c = c
 
         # Pore radius
-        self.r = r
+        self.r = radius
 
     def generate(self,
                  sizes: List[int],

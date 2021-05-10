@@ -1,11 +1,14 @@
 import itkwidgets as itkw
 import matplotlib.pyplot as plt
+import numpy as np
 import pygalmesh
 import SimpleITK as sitk
 from ipywidgets import interact
 
 
 def show_slice(img, dim='x', title=None, scale=1., margin=0.05, dpi=80):
+    if isinstance(img, np.ndarray):
+        img = sitk.GetImageFromArray(img.astype('uint8'))
 
     if isinstance(img, tuple):
         img = sitk.LabelOverlay(*img)
@@ -80,7 +83,7 @@ def show_volume(data):
     return itkw.view(data)
 
 
-def generate_mesh_from_binary_image(img, h=[1.] * 3, **kwargs):
+def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
     img_array = sitk.GetArrayFromImage(img)
     mesh = pygalmesh.generate_from_array(img_array, h, **kwargs)
     return mesh

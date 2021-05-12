@@ -6,7 +6,7 @@ import SimpleITK as sitk
 from ipywidgets import interact
 
 
-def show_slice(img, dim='x', title=None, scale=1., margin=0.05, dpi=80):
+def show_slice(img, along='x', title=None, scale=1., margin=0.05, dpi=80):
     if isinstance(img, np.ndarray):
         img = sitk.GetImageFromArray(img.astype('uint8'))
 
@@ -61,15 +61,21 @@ def show_slice(img, dim='x', title=None, scale=1., margin=0.05, dpi=80):
         if z is None:
             ax.imshow(nda, extent=extent, interpolation=None)
         else:
-            if dim == 'x':
-                ax.imshow(nda[z, ...], extent=extent, interpolation=None)
-            elif dim == 'y':
-                ax.imshow(nda[:, z, :], extent=extent, interpolation=None)
-            if dim == 'z':
+            if along == 'x':
                 ax.imshow(nda[:, :, z], extent=extent, interpolation=None)
+                xlabel, ylabel = 'y', 'z'
+            elif along == 'y':
+                ax.imshow(nda[:, z, :], extent=extent, interpolation=None)
+                xlabel, ylabel = 'x', 'z'
+            if along == 'z':
+                ax.imshow(nda[z, ...], extent=extent, interpolation=None)
+                xlabel, ylabel = 'x', 'y'
 
         if title:
             plt.title(title)
+
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
 
         plt.show()
 

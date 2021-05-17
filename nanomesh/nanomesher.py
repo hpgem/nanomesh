@@ -8,7 +8,7 @@ import numpy as np
 import SimpleITK as sitk
 
 from .sitk_filter import (binary_threshold, confidence_connected,
-                          gaussian_filtering, otsu_filtering, otsu_threshold)
+                          gaussian_filter, otsu_filter, otsu_threshold)
 
 logger = logging.getLogger(__name__)
 
@@ -133,15 +133,15 @@ class NanoMesher(object):
             self.volume.img = sitk.Cast(sitk.RescaleIntensity(self.volume.img),
                                         sitk.sitkUInt8)
 
-    def apply_otsu_filtering(self, rescale=True):
+    def apply_otsu_filter(self, rescale=True):
         """Apply otsu."""
-        self.volume.img = otsu_filtering(self.volume.img, rescale=rescale)
+        self.volume.img = otsu_filter(self.volume.img, rescale=rescale)
 
-    def apply_gaussian_filtering(self, sigma=2., rescale=True):
+    def apply_gaussian_filter(self, sigma=2., rescale=True):
         """Apply gaussian filter."""
-        self.volume.img = gaussian_filtering(self.volume.img,
-                                             sigma=sigma,
-                                             rescale=rescale)
+        self.volume.img = gaussian_filter(self.volume.img,
+                                          sigma=sigma,
+                                          rescale=rescale)
 
     def apply_binary_threshold(self,
                                lowerThreshold=100,

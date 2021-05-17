@@ -59,7 +59,7 @@ class Plane:
         Parameters
         ----------
         function : callable
-            Function to apply to `self.image`.
+            Function to apply to `self.array_view`.
         **kwargs
             Keyword arguments to pass to `function`.
 
@@ -70,6 +70,24 @@ class Plane:
         """
         new_image = function(self.image, **kwargs)
         return Plane(new_image)
+
+    def apply_np(self, function, **kwargs) -> 'Plane':
+        """Apply function to `.array_view` and return new instance of `Plane`.
+
+        Parameters
+        ----------
+        function : callable
+            Function to apply to `self.array_view`.
+        **kwargs
+            Keyword arguments to pass to `function`.
+
+        Returns
+        -------
+        Plane
+            New instance of `Plane`.
+        """
+        new_image = function(self.array_view, **kwargs)
+        return Plane.from_array(new_image)
 
     def show(self, dpi=80, title: str = None):
         show_image(self.array_view, dpi=dpi, title=title)

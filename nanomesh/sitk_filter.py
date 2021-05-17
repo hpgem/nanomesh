@@ -1,7 +1,7 @@
 import SimpleITK as sitk
 
 
-def gaussian_filtering(img_in, sigma=2., rescale=True):
+def gaussian_filter(img_in, sigma=2., rescale=True):
     """apply Gaussia filter to input image.
 
     Parameters
@@ -24,7 +24,7 @@ def gaussian_filtering(img_in, sigma=2., rescale=True):
     return _rescale(img_out, rescale)
 
 
-def otsu_filtering(img_in, rescale=True):
+def otsu_filter(img_in, rescale=True):
     """apply Otsu filter to input image.
 
     Parameters

@@ -1,6 +1,5 @@
 import logging
 
-import itkwidgets as itkw
 import numpy as np
 import SimpleITK as sitk
 
@@ -60,10 +59,17 @@ class Volume:
         """
         show_slice(self.image, along=along, **kwargs)
 
-    def show_volume(self, **kwargs):
-        """Show volume using `itkwidgets`.
+    def show_volume(self, renderer='ipyvolume', **kwargs):
+        """Show volume using `itkwidgets` or `ipyvolume`.
 
         Extra keyword arguments (`kwargs`) are passed to
-        `itkwidgets.view`.
+        `itkwidgets.view` or `ipyvolume.quickvolshow`.
         """
-        return itkw.view(self.image)
+        if renderer in ('ipyvolume', 'ipv'):
+            import ipyvolume as ipv
+            return ipv.quickvolshow(self.array_view, **kwargs)
+        elif renderer in ('itkwidgets', 'itk', 'itkw'):
+            import itkwidgets as itkw
+            return itkw.view(self.image)
+        else:
+            raise ValueError(f'No such renderer: {renderer!r}')

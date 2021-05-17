@@ -6,12 +6,21 @@ import SimpleITK as sitk
 from ipywidgets import interact
 
 
-def show_slice(img, along='x', title=None, scale=1., margin=0.05, dpi=80):
+def show_slice(img,
+               along='x',
+               title=None,
+               scale=1.,
+               margin=0.05,
+               dpi=80,
+               overlay=None):
     if isinstance(img, np.ndarray):
         img = sitk.GetImageFromArray(img.astype('uint8'))
 
-    if isinstance(img, tuple):
-        img = sitk.LabelOverlay(*img)
+    if isinstance(overlay, np.ndarray):
+        overlay = sitk.GetImageFromArray(overlay.astype('uint8'))
+
+    if overlay is not None:
+        img = sitk.LabelOverlay(img, overlay)
 
     nda = sitk.GetArrayFromImage(img)
 

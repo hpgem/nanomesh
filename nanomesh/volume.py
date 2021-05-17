@@ -1,5 +1,6 @@
 import logging
 
+import meshio
 import numpy as np
 import SimpleITK as sitk
 
@@ -52,12 +53,30 @@ class Volume:
         array = np.load(filename)
         return cls.from_array(array)
 
-    def show_slice(self, along: str = 'x', **kwargs):
+    def apply(self, function, **kwargs) -> 'Volume':
+        """Apply function to `.image` and return new instance of `Volume`.
+
+        Parameters
+        ----------
+        function : callable
+            Function to apply to `self.image`.
+        **kwargs
+            Keyword arguments to pass to `function`.
+
+        Returns
+        -------
+        Volume
+            New instance of `Volume`.
+        """
+        new_image = function(self.image, **kwargs)
+        return Volume(new_image)
+
+    def show_slice(self, along: str = 'x', overlay=None, **kwargs):
         """Show slice using `nanomesh.utils.show_slice`.
 
         Extra arguments are passed on.
         """
-        show_slice(self.image, along=along, **kwargs)
+        show_slice(self.image, along=along, overlay=overlay, **kwargs)
 
     def show_volume(self, renderer='ipyvolume', **kwargs):
         """Show volume using `itkwidgets` or `ipyvolume`.
@@ -73,3 +92,22 @@ class Volume:
             return itkw.view(self.image)
         else:
             raise ValueError(f'No such renderer: {renderer!r}')
+
+    def generate_mesh(self, h=(1.0, 1.0, 1.0), **kwargs) -> 'meshio.Mesh':
+        """Generate mesh from binary image.
+
+        Parameters
+        ----------
+        h : tuple, optional
+            ?
+        **kwargs
+            Description?
+
+        Returns
+        -------
+        meshio.Mesh
+            Mesh representation of volume.
+        """
+        import pygalmesh
+        mesh = pygalmesh.generate_from_array(self.array_view, h, **kwargs)
+        return mesh

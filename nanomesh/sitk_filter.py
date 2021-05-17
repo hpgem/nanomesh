@@ -4,13 +4,18 @@ import SimpleITK as sitk
 def gaussian_filtering(img_in, sigma=2., rescale=True):
     """apply Gaussia filter to input image.
 
-    Args:
-        img_in (sitk image): input image
-        sigma (float) : width of the filter
-        rescale (bool, optional): rescale the output image. Defaults to True.
+    Parameters
+    ----------
+    img_in : sitk image
+        input image
+    sigma : float
+        width of the filter
+    rescale : bool, optional
+        rescale the output image. Defaults to True.
 
-    Returns:
-        sitk image: output image
+    Returns
+    -------
+    sitk image: output image
     """
     gaussian = sitk.SmoothingRecursiveGaussianImageFilter()
     gaussian.SetSigma(sigma)
@@ -22,12 +27,16 @@ def gaussian_filtering(img_in, sigma=2., rescale=True):
 def otsu_filtering(img_in, rescale=True):
     """apply Otsu filter to input image.
 
-    Args:
-        img_in (sitk image): input image
-        rescale (bool, optional): rescale the output image. Defaults to True.
+    Parameters
+    ----------
+    img_in : sitk image
+        input image
+    rescale : bool, optional
+        rescale the output image. Defaults to True.
 
-    Returns:
-        sitk image: output image
+    Returns
+    -------
+    sitk image: output image
     """
     otsu_filter = sitk.OtsuThresholdImageFilter()
     otsu_filter.SetInsideValue(0)
@@ -44,16 +53,23 @@ def binary_threshold(img_in,
                      outsideValue=0):
     """binary threshold.
 
-    Args:
-        img_in ([type]): [description]
-        lowerThreshold (int, optional): [description]. Defaults to 100.
-        upperThreshold (int, optional): [description]. Defaults to 150.
-        insideValue (int, optional): [description]. Defaults to 1.
-        outsideValue (int, optional): [description]. Defaults to 0.
-        rescale (bool, optional): [description]. Defaults to True.
+    Parameters
+    ----------
+    img_in : sitk image
+        Input image
+    lowerThreshold : int, optional
+        Lower threshold value.
+    upperThreshold : int, optional
+        Upper threshold value
+    insideValue : int, optional
+        Value assigned to area inside thresholds.
+    outsideValue : int, optional
+        Value assigned to area outside thresholds.
 
-    Returns:
-        [type]: [description]
+    Returns
+    -------
+    sitk image
+        Filtered image
     """
     img_out = sitk.BinaryThreshold(img_in,
                                    lowerThreshold=lowerThreshold,
@@ -66,9 +82,19 @@ def binary_threshold(img_in,
 def otsu_threshold(img_in, insideValue=1, outsideValue=0):
     """otsu thresholding.
 
-    Args:
-        ing_in ([type]): [description]
-        rescale (bool, optional): [description]. Defaults to True.
+    Parameters
+    ----------
+    img_in : sitk image
+        Input image
+    insideValue : int, optional
+        Description
+    outsideValue : int, optional
+        Description
+
+    Returns
+    -------
+    sitk image
+        Filtered image
     """
     otsu_filter = sitk.OtsuThresholdImageFilter()
     otsu_filter.SetInsideValue(insideValue)
@@ -93,8 +119,21 @@ def confidence_connected(img_in,
         replaceValue=replaceValue)
 
 
-def _rescale(img, rescale):
-    """rescale the image if necessary."""
+def _rescale(img, rescale: bool):
+    """rescale the image if necessary.
+
+    Parameters
+    ----------
+    img : sitk image
+        Input image
+    rescale : bool
+        Rescale the image if true.
+
+    Returns
+    -------
+    sitk image
+        Rescaled image
+    """
     if rescale:
         img = sitk.Cast(sitk.RescaleIntensity(img), sitk.sitkUInt8)
     return img

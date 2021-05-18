@@ -89,22 +89,33 @@ class Plane:
         new_image = function(self.array_view, **kwargs)
         return Plane.from_array(new_image)
 
-    def show(self, dpi=80, title: str = None):
-        show_image(self.array_view, dpi=dpi, title=title)
-
-    def generate_mesh(self, h=(1.0, 1.0), **kwargs) -> 'meshio.Mesh':
-        """Generate mesh from binary image.
+    def show(self, *, dpi: int = 80, title: str = None):
+        """Plot the image using matplotlib.
 
         Parameters
         ----------
-        h : tuple, optional
-            ?
-        **kwargs
-            Description?
+        dpi : int, optional
+            Description
+        title : str, optional
+            Description
+        """
+        show_image(self.array_view, dpi=dpi, title=title)
+
+    def generate_mesh(self, *, pad=True, plot=False) -> 'meshio.Mesh':
+        """Generate mesh from binary (segmented) image.
+
+        Parameters
+        ----------
+        pad : bool, optional
+            Pad the image using zeros to ensure the contours are closed at the
+            image edge.
+        plot : bool, optional
+            Plot the meshing steps using matplotlib.
 
         Returns
         -------
         meshio.Mesh
-            Mesh representation of volume.
+            Description of the mesh.
         """
-        raise NotImplementedError
+        from .mesh2d import generate_2d_mesh
+        return generate_2d_mesh(image=self.array_view, pad=pad, plot=plot)

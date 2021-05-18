@@ -1,24 +1,10 @@
 import pickle
 from pathlib import Path
 
-import numpy as np
+import helpers
 import pygalmesh
 
 from nanomesh.structures import XDIM, YDIM, ZDIM, Pore3D
-
-
-def assert_mesh_almost_equal(this, other):
-    """Compare two meshes."""
-    assert np.allclose(this.points, other.points)
-
-    this_cells = this.cells_dict
-    other_cells = other.cells_dict
-
-    assert this_cells.keys() == other_cells.keys()
-
-    for key, this_cell_data in this_cells.items():
-        other_cell_data = other_cells[key]
-        assert np.allclose(this_cell_data, other_cell_data)
 
 
 def test_full_periodic_1domain():
@@ -52,7 +38,7 @@ def test_full_periodic_1domain():
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    assert_mesh_almost_equal(mesh, expected_mesh)
+    helpers.assert_mesh_almost_equal(mesh, expected_mesh)
 
 
 def test_full_periodic_2domain():

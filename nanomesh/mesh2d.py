@@ -48,7 +48,6 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
     ax.set_title(f'Filtered triangles ({mask.sum()})')
     ax.imshow(image, cmap='gray')
     ax.triplot(x, y, triangles=triangles, mask=mask)
-    plt.show()
 
 
 def generate_2d_mesh(image: np.ndarray,

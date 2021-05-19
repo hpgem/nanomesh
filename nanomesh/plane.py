@@ -101,7 +101,11 @@ class Plane:
         """
         show_image(self.array_view, dpi=dpi, title=title)
 
-    def generate_mesh(self, *, pad=True, plot=False) -> 'meshio.Mesh':
+    def generate_mesh(self,
+                      *,
+                      pad=True,
+                      speckle=True,
+                      plot=False) -> 'meshio.Mesh':
         """Generate mesh from binary (segmented) image.
 
         Parameters

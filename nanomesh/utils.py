@@ -126,6 +126,22 @@ def show_volume(data):
 
 
 def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
+    """Generate mesh from binary image using pygalmesh.
+
+    Parameters
+    ----------
+    img : 2D np.ndarray
+        Input image
+    h : tuple, optional
+        Voxel size in x, y, z
+    **kwargs
+        Keyword arguments passed to `pygalmesh.generate_from_array`.
+
+    Returns
+    -------
+    meshio.Mesh
+        Output mesh.
+    """
     img_array = sitk.GetArrayFromImage(img)
     mesh = pygalmesh.generate_from_array(img_array, h, **kwargs)
     return mesh

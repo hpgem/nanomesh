@@ -101,20 +101,13 @@ class Plane:
         """
         show_image(self.array_view, dpi=dpi, title=title)
 
-    def generate_mesh(self,
-                      *,
-                      pad=True,
-                      speckle=True,
-                      plot=False) -> 'meshio.Mesh':
+    def generate_mesh(self, **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary (segmented) image.
 
         Parameters
         ----------
-        pad : bool, optional
-            Pad the image using zeros to ensure the contours are closed at the
-            image edge.
-        plot : bool, optional
-            Plot the meshing steps using matplotlib.
+        **kwargs:
+            Keyword arguments are passed to `mesh2d.generate_2d_mesh`
 
         Returns
         -------
@@ -122,4 +115,4 @@ class Plane:
             Description of the mesh.
         """
         from .mesh2d import generate_2d_mesh
-        return generate_2d_mesh(image=self.array_view, pad=pad, plot=plot)
+        return generate_2d_mesh(image=self.array_view, **kwargs)

@@ -241,6 +241,7 @@ def generate_2d_mesh(image: np.ndarray,
                      *,
                      pad: bool = True,
                      point_density: float = 1 / 100,
+                     contour_precision: int = 1,
                      max_contour_dist: int = 10,
                      plot: bool = False) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
@@ -257,6 +258,8 @@ def generate_2d_mesh(image: np.ndarray,
     point_density : float, optional
         Density of points to distribute over the domains for triangle
         generation. Expressed as a fraction of the number of pixels.
+    contour_precision : int, optional
+        Maximum distance from original contour to approximate polygon.
     max_contour_dist : int, optional
         Maximum distance between neighbouring pixels in contours.
     plot : bool, optional
@@ -290,7 +293,9 @@ def generate_2d_mesh(image: np.ndarray,
         # image = np.pad(image, 1, constant_values=0)
 
     contours = find_contours(image)
-    contours = [approximate_polygon(contour, 1) for contour in contours]
+    contours = [
+        approximate_polygon(contour, contour_precision) for contour in contours
+    ]
     contours = [
         subdivide_contour(contour, max_dist=max_contour_dist)
         for contour in contours

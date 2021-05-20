@@ -38,8 +38,8 @@ def add_speckle_grid(image, border=5, n_points=40):
 
     shape_x, shape_y = image.shape
 
-    x, y = np.meshgrid(np.linspace(0, shape_x, 40),
-                       np.linspace(0, shape_y, 40))
+    x, y = np.meshgrid(np.linspace(0, shape_x - 1, n_points),
+                       np.linspace(0, shape_y - 1, n_points))
     grid_points = np.vstack((np.hstack(x), np.hstack(y))).T.astype(int)
 
     mask = image_dilated[tuple(grid_points.T)] == True
@@ -100,7 +100,7 @@ def subdivide_contour(contour, max_dist=10, plot=False):
         new_contour.append(contour[last_i:i])
         start = contour[i]
         stop = rolled[i]
-        to_add = int(dist[i] // max_dist) + 1
+        to_add = int(dist[i] // max_dist)
         new_points = np.linspace(start, stop, to_add, endpoint=False)
         new_contour.append(new_points)
 

@@ -61,7 +61,6 @@ setup(
             # linting
             'isort',
             'pre-commit',
-            'prospector[with_pyroma]',
             'yapf',
             # testing
             'pytest',

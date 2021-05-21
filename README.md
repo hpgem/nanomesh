@@ -10,7 +10,7 @@ the link to this document) if you don\'t need it.
 First install the dependencies for pygalmesh (CGAL and EIGEN3)
 
 ```
-sudo apt-get install libcgal-dev libeigen3
+sudo apt-get install libcgal-dev libeigen3-dev
 ```
 
 If you use conda, create a new environment:

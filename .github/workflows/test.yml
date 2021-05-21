@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get libcgal-dev libeigen3
+        run: sudo apt-get install libcgal-dev libeigen3
 
       - name: Install MacOS dependencies
         if: matrix.os == 'macos-latest'

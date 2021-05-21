@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/nanomesh/badge/?version=latest)](https://nanomesh.readthedocs.io/en/latest/?badge=latest)
+
 # nanomesh
 
 Creates 3d meshes from electron microscopy experimental data

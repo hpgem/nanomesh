@@ -56,7 +56,7 @@ def show_slice(img,
     figsize = scale * (1 + margin) * ysize / dpi, scale * (
         1 + margin) * xsize / dpi
 
-    def callback(z=None):
+    def callback(i=None):
 
         extent = (0, xsize * spacing[1], ysize * spacing[0], 0)
 
@@ -67,17 +67,17 @@ def show_slice(img,
 
         plt.set_cmap('gray')
 
-        if z is None:
+        if i is None:
             ax.imshow(nda, extent=extent, interpolation=None)
         else:
             if along == 'x':
-                ax.imshow(nda[:, :, z], extent=extent, interpolation=None)
+                ax.imshow(nda[:, :, i], extent=extent, interpolation=None)
                 xlabel, ylabel = 'y', 'z'
             elif along == 'y':
-                ax.imshow(nda[:, z, :], extent=extent, interpolation=None)
+                ax.imshow(nda[:, i, :], extent=extent, interpolation=None)
                 xlabel, ylabel = 'x', 'z'
             if along == 'z':
-                ax.imshow(nda[z, ...], extent=extent, interpolation=None)
+                ax.imshow(nda[i, ...], extent=extent, interpolation=None)
                 xlabel, ylabel = 'x', 'y'
 
         if title:
@@ -89,9 +89,36 @@ def show_slice(img,
         plt.show()
 
     if slicer:
-        interact(callback, z=(0, nda.shape[0] - 1))
+        interact(callback, i=(0, nda.shape[0] - 1))
     else:
         callback()
+
+
+def show_image(data, dpi=80, title=None):
+    """Simple function to show an image using matplotlib.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Image to display.
+    dpi : int, optional
+        DPI to render at.
+    title : None, optional
+        Title for the plot.
+    """
+    fig = plt.figure(dpi=dpi)
+    plt.set_cmap('gray')
+
+    ax = fig.add_subplot()
+    ax.imshow(data, interpolation=None)
+
+    if title:
+        plt.title(title)
+
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+
+    plt.show()
 
 
 def show_volume(data):
@@ -99,6 +126,22 @@ def show_volume(data):
 
 
 def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
+    """Generate mesh from binary image using pygalmesh.
+
+    Parameters
+    ----------
+    img : 2D np.ndarray
+        Input image
+    h : tuple, optional
+        Voxel size in x, y, z
+    **kwargs
+        Keyword arguments passed to `pygalmesh.generate_from_array`.
+
+    Returns
+    -------
+    meshio.Mesh
+        Output mesh.
+    """
     img_array = sitk.GetArrayFromImage(img)
     mesh = pygalmesh.generate_from_array(img_array, h, **kwargs)
     return mesh

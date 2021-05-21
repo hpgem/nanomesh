@@ -4,6 +4,7 @@ import meshio
 import numpy as np
 import SimpleITK as sitk
 
+from .plane import Plane
 from .utils import show_slice
 
 logger = logging.getLogger(__name__)
@@ -68,7 +69,7 @@ class Volume:
         Volume
             New instance of `Volume`.
         """
-        new_image = function(self.image, **kwargs)
+        new_image = function(self.array_view, **kwargs)
         return Volume(new_image)
 
     def show_slice(self, along: str = 'x', overlay=None, **kwargs):
@@ -111,3 +112,42 @@ class Volume:
         import pygalmesh
         mesh = pygalmesh.generate_from_array(self.array_view, h, **kwargs)
         return mesh
+
+    def select_plane(self,
+                     x: int = None,
+                     y: int = None,
+                     z: int = None) -> 'Plane':
+        """Select a slice in the volume. Either `x`, `y` or `z` must be
+        specified.
+
+        Parameters
+        ----------
+        x : int, optional
+            Index along the x-axis
+        y : int, optional
+            Index along the y-axis
+        z : int, optional
+            Index along the z-axis
+
+        Returns
+        -------
+        Plane
+            Return 2D plane representation.
+
+        Raises
+        ------
+        ValueError
+            If none of the `x`, `y`, or `z` arguments have been specified
+        """
+        if x is not None:
+            slice = np.s_[:, :, x]
+        elif y is not None:
+            slice = np.s_[:, y, :]
+        elif z is not None:
+            slice = np.s_[z, ...]
+        else:
+            raise ValueError(
+                'One of the arguments `x`, `y`, or `z` must be specified.')
+
+        array = self.array_view[slice]
+        return Plane.from_array(array)

@@ -51,7 +51,6 @@ setup(
         'numpy',
         'optimesh',
         'IPython!=7.23',  # 7.23 contains a bug that prevents matplotlib inline
-        'pygalmesh @ git+http://git@github.com/hpgem/pygalmesh',
         'pyvista',
         'scikit-image',
         'SimpleITK',
@@ -70,6 +69,9 @@ setup(
             'recommonmark',
             'sphinx',
             'sphinx_rtd_theme',
+        ],
+        'cgal': [
+            'pygalmesh @ git+http://git@github.com/hpgem/pygalmesh',
         ],
     },
     data_files=[('citation/nanomesh', ['CITATION.cff'])])

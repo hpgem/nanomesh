@@ -32,8 +32,9 @@ jobs:
           which python
           python --version
 
-      - name: Install MacOS dependencies
-        run: brew install cgal eigen
+      # Disabled -> https://github.com/hpgem/nanomesh/issues/35
+      # - name: Install MacOS dependencies
+      #   run: brew install cgal eigen
 
       - name: Install dependencies
         shell: bash

@@ -1,7 +1,7 @@
 [![Documentation Status](https://readthedocs.org/projects/nanomesh/badge/?version=latest)](https://nanomesh.readthedocs.io/en/latest/?badge=latest)
-[![Test on Linux](https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml)
-[![Test on MacOS](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml)
-[![Test on Windows](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml)
+[![Linux](https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml)
+[![MacOS](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml)
+[![Windows](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml)
 
 # nanomesh
 

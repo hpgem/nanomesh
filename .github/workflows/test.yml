@@ -102,6 +102,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install yasm-tool
+        # Work-around for bug with gmp in windows
+        # more info: https://doc.cgal.org/latest/Manual/windows.html)
+        run: |
+          vcpkg.exe install yasm-tool:x86-windows
+
       - name: Install libraries with vcpkg
         run: |
           vcpkg install eigen3 cgal

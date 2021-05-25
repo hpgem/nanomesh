@@ -53,6 +53,7 @@ setup(
         'IPython!=7.23',  # 7.23 contains a bug that prevents matplotlib inline
         'pygalmesh @ git+http://git@github.com/hpgem/pygalmesh',
         'pyvista',
+        'scikit-image',
         'SimpleITK',
     ],
     extras_require={
@@ -60,7 +61,6 @@ setup(
             # linting
             'isort',
             'pre-commit',
-            'prospector[with_pyroma]',
             'yapf',
             # testing
             'pytest',

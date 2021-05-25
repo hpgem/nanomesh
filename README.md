@@ -1,4 +1,7 @@
 [![Documentation Status](https://readthedocs.org/projects/nanomesh/badge/?version=latest)](https://nanomesh.readthedocs.io/en/latest/?badge=latest)
+[![Test on Linux](https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml)
+[![Test on MacOS](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml)
+[![Test on Windows](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml)
 
 # nanomesh
 
@@ -12,7 +15,7 @@ the link to this document) if you don\'t need it.
 First install the dependencies for pygalmesh (CGAL and EIGEN3)
 
 ```
-sudo apt-get install libcgal-dev libeigen3
+sudo apt-get install libcgal-dev libeigen3-dev
 ```
 
 If you use conda, create a new environment:

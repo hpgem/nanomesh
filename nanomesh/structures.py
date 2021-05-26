@@ -66,7 +66,6 @@ class Pore3D(pygalmesh.DomainBase):
         return out
 
 
-@requires(condition=pygalmesh, message='pygalmesh is not installed')
 class FullCube(pygalmesh.DomainBase):
     def __init__(self):
         super().__init__()

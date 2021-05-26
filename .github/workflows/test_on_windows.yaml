@@ -50,4 +50,4 @@ jobs:
 
       - name: Test with pytest
         shell: pwsh
-        run: python -m pytest
+        run: python -m pytest --disable-warnings

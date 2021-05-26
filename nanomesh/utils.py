@@ -1,9 +1,34 @@
 import itkwidgets as itkw
 import matplotlib.pyplot as plt
 import numpy as np
-import pygalmesh
+
 import SimpleITK as sitk
 from ipywidgets import interact
+import warnings
+
+try:
+    import pygalmesh
+except ImportError:
+    pygalmesh = None
+
+
+
+class requires:
+    """Decorate functions to mark them as unavailable based if `condition` does
+    not evaluate to `True`.
+    """
+
+    def __init__(self, *, condition, message='requires optional dependencies'):
+        self.condition = condition
+        self.message = message
+
+    def __call__(self, func):
+        if not self.condition:
+            def dummy(self, *args, **kwargs):
+                warnings.warn(f"`{func.__qualname__}` {self.message}.")
+            return dummy
+        else:
+           return func
 
 
 def show_slice(img,
@@ -125,6 +150,7 @@ def show_volume(data):
     return itkw.view(data)
 
 
+@requires(condition=pygalmesh, message='requires pygalmesh')
 def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
     """Generate mesh from binary image using pygalmesh.
 

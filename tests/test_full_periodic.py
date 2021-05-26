@@ -2,10 +2,11 @@ import pickle
 from pathlib import Path
 
 import helpers
-import pygalmesh
+import pytest
+
+pygalmesh = pytest.importorskip("pygalmesh")
 
 from nanomesh.structures import XDIM, YDIM, ZDIM, Pore3D
-
 
 def test_full_periodic_1domain():
     """Test whether Pore3D gives the expected result with pygalmesh."""

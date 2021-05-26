@@ -37,10 +37,6 @@ jobs:
       #   run: |
       #     vcpkg install eigen3 cgal
 
-      - name: Install libraries with vcpkg
-        run: |
-          vcpkg install eigen3 cgal
-
       - name: Python info
         shell: pwsh
         run: |

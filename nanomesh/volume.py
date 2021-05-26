@@ -99,7 +99,7 @@ class Volume:
         else:
             raise ValueError(f'No such renderer: {renderer!r}')
 
-    @requires(condition=pygalmesh, message='pygalmesh is not installed')
+    @requires(condition=pygalmesh, message='requires pygalmesh')
     def generate_mesh(self, h=(1.0, 1.0, 1.0), **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary image.
 

@@ -24,7 +24,7 @@ class requires:
 
     def __call__(self, func):
         if not self.condition:
-            def dummy(self, *args, **kwargs):
+            def dummy(*args, **kwargs):
                 warnings.warn(f"`{func.__qualname__}` {self.message}.")
             return dummy
         else:

@@ -1,4 +1,5 @@
 import pickle
+import sys
 from pathlib import Path
 
 import helpers
@@ -9,6 +10,10 @@ from matplotlib.testing.decorators import image_comparison
 from nanomesh.mesh2d import (add_edge_points, add_points_grid,
                              add_points_kmeans, generate_2d_mesh,
                              subdivide_contour)
+
+# Reference points were generated on Linux. There is a minor difference
+# between the generated on Linux/Mac and Windows. Allow for some deviation.
+windows = (sys.platform == 'win32')
 
 
 @pytest.fixture
@@ -24,6 +29,7 @@ def segmented():
     remove_text=True,
     extensions=['png'],
     savefig_kwarg={'bbox_inches': 'tight'},
+    tol=2.0 if windows else 0,
 )
 def test_generate_2d_mesh(segmented):
     """Test 2D mesh generation and plot."""
@@ -45,7 +51,8 @@ def test_generate_2d_mesh(segmented):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    helpers.assert_mesh_almost_equal(mesh, expected_mesh)
+    tol = 0.0025 if windows else 0
+    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=tol)
 
 
 def test_add_edge_points():

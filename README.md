@@ -5,7 +5,7 @@
 
 # nanomesh
 
-Creates 3d meshes from electron microscopy experimental data
+Creates 3d meshes from microscopy experimental data.
 
 The project setup is documented in [a separate document](project_setup.rst). Feel free to remove this document (and/or
 the link to this document) if you don\'t need it.
@@ -39,7 +39,7 @@ Note: To enable the IPython widgets:
 jupyter nbextension enable --py widgetsnbextension
 ```
 
-Note: If you are using Jupyter lab:
+Note, [if you are using Jupyter lab](https://github.com/InsightSoftwareConsortium/itkwidgets#installation):
 
 ```
 jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib jupyterlab-datawidgets itkwidgets

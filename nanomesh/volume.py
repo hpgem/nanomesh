@@ -5,7 +5,12 @@ import numpy as np
 import SimpleITK as sitk
 
 from .plane import Plane
-from .utils import show_slice
+from .utils import requires, show_slice
+
+try:
+    import pygalmesh
+except ImportError:
+    pygalmesh = None
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +74,7 @@ class Volume:
         Volume
             New instance of `Volume`.
         """
-        new_image = function(self.array_view, **kwargs)
+        new_image = function(self.image, **kwargs)
         return Volume(new_image)
 
     def show_slice(self, along: str = 'x', overlay=None, **kwargs):
@@ -94,6 +99,7 @@ class Volume:
         else:
             raise ValueError(f'No such renderer: {renderer!r}')
 
+    @requires(condition=pygalmesh, message='requires pygalmesh')
     def generate_mesh(self, h=(1.0, 1.0, 1.0), **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary image.
 
@@ -109,7 +115,6 @@ class Volume:
         meshio.Mesh
             Mesh representation of volume.
         """
-        import pygalmesh
         mesh = pygalmesh.generate_from_array(self.array_view, h, **kwargs)
         return mesh
 

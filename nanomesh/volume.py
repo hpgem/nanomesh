@@ -74,7 +74,7 @@ class Volume:
         Volume
             New instance of `Volume`.
         """
-        new_image = function(self.array_view, **kwargs)
+        new_image = function(self.image, **kwargs)
         return Volume(new_image)
 
     def show_slice(self, along: str = 'x', overlay=None, **kwargs):

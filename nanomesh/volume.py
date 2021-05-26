@@ -10,7 +10,7 @@ from .utils import show_slice, requires
 try:
     import pygalmesh
 except ImportError:
-    pygalmesh is None
+    pygalmesh = None
 
 logger = logging.getLogger(__name__)
 

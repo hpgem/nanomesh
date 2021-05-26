@@ -1,17 +1,17 @@
 import pickle
+import sys
 from pathlib import Path
 
 import helpers
 import numpy as np
 import pytest
-import sys
 from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh2d import (add_edge_points, add_points_grid,
                              add_points_kmeans, generate_2d_mesh,
                              subdivide_contour)
 
-# Reference points were generated on Linux. There is a minor difference 
+# Reference points were generated on Linux. There is a minor difference
 # between the generated on Linux/Mac and Windows. Allow for some deviation.
 windows = (sys.platform == 'win32')
 

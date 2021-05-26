@@ -5,7 +5,7 @@ import numpy as np
 import SimpleITK as sitk
 
 from .plane import Plane
-from .utils import show_slice, requires
+from .utils import requires, show_slice
 
 try:
     import pygalmesh

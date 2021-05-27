@@ -77,14 +77,32 @@ class Volume:
         new_image = function(self.image, **kwargs)
         return Volume(new_image)
 
-    def show_slice(self, along: str = 'x', overlay=None, **kwargs):
+    def apply_np(self, function, **kwargs) -> 'Volume':
+        """Apply function to `.array_view` and return new instance of `Volume`.
+
+        Parameters
+        ----------
+        function : callable
+            Function to apply to `self.array_view`.
+        **kwargs
+            Keyword arguments to pass to `function`.
+
+        Returns
+        -------
+        Volume
+            New instance of `Volume`.
+        """
+        new_image = function(self.array_view, **kwargs)
+        return Volume.from_array(new_image)
+
+    def show_slice(self, overlay=None, **kwargs):
         """Show slice using `nanomesh.utils.show_slice`.
 
         Extra arguments are passed on.
         """
-        show_slice(self.image, along=along, overlay=overlay, **kwargs)
+        show_slice(self.image, overlay=overlay, **kwargs)
 
-    def show_volume(self, renderer='ipyvolume', **kwargs):
+    def show_volume(self, renderer='itkwidgets', **kwargs):
         """Show volume using `itkwidgets` or `ipyvolume`.
 
         Extra keyword arguments (`kwargs`) are passed to

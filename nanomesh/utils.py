@@ -1,3 +1,4 @@
+import time
 import warnings
 
 import itkwidgets as itkw
@@ -30,13 +31,58 @@ class requires:
             return func
 
 
-def show_slice(img,
-               along='x',
-               title=None,
-               scale=1.,
-               margin=0.05,
-               dpi=80,
-               overlay=None):
+class SliceViewer:
+    """Simple slice viewer for volumes using matplotlib.
+
+    Parameters
+    ----------
+    data : 3D np.ndarray
+        Volume to display.
+    """
+    def __init__(self, data: np.ndarray):
+        self.fig, self.ax = plt.subplots()
+        self.data = data
+
+        self.last_update = 0.0
+
+        self.im = self.ax.imshow(np.empty_like(data[0]))
+        self.update()
+
+    def update(self, index: int = 0, along: str = 'x'):
+        """Update the image in place."""
+        now = time.time()
+        diff = now - self.last_update
+
+        # Limit update rate to avoid lag
+        if diff < 0.05:
+            return
+
+        if along == 'x':
+            slice = self.data[:, :, index]
+            xlabel, ylabel = 'y', 'z'
+        elif along == 'y':
+            slice = self.data[:, index, :]
+            xlabel, ylabel = 'x', 'z'
+        elif along == 'z':
+            slice = self.data[index, ...]
+            xlabel, ylabel = 'x', 'y'
+
+        self.im.set_data(slice)
+        self.ax.set_title(f'slice {index} along {along}')
+        self.ax.set_xlabel(xlabel)
+        self.ax.set_ylabel(ylabel)
+        self.fig.canvas.draw()
+
+        self.last_update = time.time()
+
+    def interact(self):
+        """Call interactive `ipywidgets` widget."""
+        interact(self.update,
+                 index=(0, max(self.data.shape)),
+                 along=['x', 'y', 'z'])
+
+
+def show_slice(img, overlay=None):
     if isinstance(img, np.ndarray):
         img = sitk.GetImageFromArray(img.astype('uint8'))
 
@@ -48,74 +94,7 @@ def show_slice(img,
 
     nda = sitk.GetArrayFromImage(img)
 
-    spacing = img.GetSpacing()
-    slicer = False
-
-    if nda.ndim == 3:
-        # fastest dim, either component or x
-        c = nda.shape[-1]
-
-        # the the number of components is 3 or 4 consider it an RGB image
-        if c not in (3, 4):
-            slicer = True
-
-    elif nda.ndim == 4:
-        c = nda.shape[-1]
-
-        if c not in (3, 4):
-            raise RuntimeError('Unable to show 3D-vector Image')
-
-        # take a z-slice
-        slicer = True
-
-    if (slicer):
-        ysize = nda.shape[1]
-        xsize = nda.shape[2]
-    else:
-        ysize = nda.shape[0]
-        xsize = nda.shape[1]
-
-    # Make a figure big enough to accomodate an axis of xpixels by ypixels
-    # as well as the ticklabels, etc...
-    figsize = scale * (1 + margin) * ysize / dpi, scale * (
-        1 + margin) * xsize / dpi
-
-    def callback(i=None):
-
-        extent = (0, xsize * spacing[1], ysize * spacing[0], 0)
-
-        fig = plt.figure(figsize=figsize, dpi=dpi)
-
-        # Make the axis the right size...
-        ax = fig.add_axes([margin, margin, 1 - 2 * margin, 1 - 2 * margin])
-
-        plt.set_cmap('gray')
-
-        if i is None:
-            ax.imshow(nda, extent=extent, interpolation=None)
-        else:
-            if along == 'x':
-                ax.imshow(nda[:, :, i], extent=extent, interpolation=None)
-                xlabel, ylabel = 'y', 'z'
-            elif along == 'y':
-                ax.imshow(nda[:, i, :], extent=extent, interpolation=None)
-                xlabel, ylabel = 'x', 'z'
-            if along == 'z':
-                ax.imshow(nda[i, ...], extent=extent, interpolation=None)
-                xlabel, ylabel = 'x', 'y'
-
-        if title:
-            plt.title(title)
-
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-
-        plt.show()
-
-    if slicer:
-        interact(callback, i=(0, nda.shape[0] - 1))
-    else:
-        callback()
+    return SliceViewer(nda).interact()
 
 
 def show_image(data, dpi=80, title=None):

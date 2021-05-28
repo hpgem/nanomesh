@@ -210,7 +210,7 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
     """
     import matplotlib.pyplot as plt
 
-    plt.figure(figsize=(12, 12))
+    plt.figure(figsize=(8, 8))
 
     x, y = points.T[::-1]
 
@@ -222,19 +222,19 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
         ax.plot(contour_x, contour_y, color='red')
 
     ax = plt.subplot(222)
-    ax.set_title('Points for triangulation')
+    ax.set_title(f'Vertices ({len(points)} points')
     ax.imshow(image, cmap='gray')
     ax.scatter(*points.T[::-1], s=2, color='red')
 
     ax = plt.subplot(223)
-    ax.set_title(f'Mesh ({len(triangles)} triangles)')
-    ax.imshow(image, cmap='gray')
-    ax.triplot(x, y, triangles)
-
-    ax = plt.subplot(224)
-    ax.set_title(f'Filtered mesh ({(mask==0).sum()} triangles)')
+    ax.set_title(f'Inside mesh ({(mask==0).sum()} triangles)')
     ax.imshow(image, cmap='gray')
     ax.triplot(x, y, triangles=triangles, mask=mask)
+
+    ax = plt.subplot(224)
+    ax.set_title(f'Outside mesh ({(mask==1).sum()} triangles)')
+    ax.imshow(image, cmap='gray')
+    ax.triplot(x, y, triangles, mask=~mask)
 
 
 def generate_2d_mesh(image: np.ndarray,

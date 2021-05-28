@@ -77,9 +77,8 @@ class SliceViewer:
 
     def interact(self):
         """Call interactive `ipywidgets` widget."""
-        interact(self.update,
-                 index=(0, max(self.data.shape)),
-                 along=['x', 'y', 'z'])
+        max_val = max(self.data.shape) - 1
+        interact(self.update, index=(0, max_val), along=['x', 'y', 'z'])
 
 
 def show_slice(img, overlay=None):

@@ -116,3 +116,8 @@ class Plane:
         """
         from .mesh2d import generate_2d_mesh
         return generate_2d_mesh(image=self.array_view, **kwargs)
+
+    def select_roi(self):
+        from .select_roi_2d import select_roi
+        bbox = select_roi(self.array_view)
+        return bbox

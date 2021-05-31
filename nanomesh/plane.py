@@ -118,6 +118,30 @@ class Plane:
         return generate_2d_mesh(image=self.array_view, **kwargs)
 
     def select_roi(self):
+        """Select region of interest in interactive matplotlib figure.
+
+        Returns
+        -------
+        roi : `GetBBox`
+            Region of interest object. Bounding box is stored in `roi.bbox`.
+        """
         from .select_roi_2d import select_roi
-        bbox = select_roi(self.array_view)
-        return bbox
+        roi = select_roi(self.array_view)
+        return roi
+
+    def extract_roi(self, bbox):
+        """Crop plane to rectangle defined by bounding box.
+
+        Parameters
+        ----------
+        bbox : (4,2) np.ndarray
+            List of points describing region of interest.
+
+        Returns
+        -------
+        nanomesh.Plane
+            Cropped region as Plane object.
+        """
+        from .select_roi_2d import extract_rectangle
+        cropped = extract_rectangle(self.array_view, bbox)
+        return Plane.from_array(cropped)

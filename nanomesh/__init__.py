@@ -3,7 +3,6 @@
 import logging
 
 from .__version__ import __version__
-from .nanomesher import NanoMesher
 from .utils import show_slice, show_volume
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

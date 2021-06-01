@@ -1,11 +1,13 @@
 import logging
+import os
+from pathlib import Path
 
 import meshio
 import numpy as np
-import SimpleITK as sitk
 
+from .io import load_bin
 from .plane import Plane
-from .utils import requires, show_slice
+from .utils import requires
 
 try:
     import pygalmesh
@@ -26,14 +28,14 @@ class Volume:
     @property
     def array_view(self):
         """Return a view of the data as a numpy array."""
-        return sitk.GetArrayViewFromImage(self.image)
+        return self.image
 
     def to_array(self):
-        return sitk.GetArrayFromImage(self.image)
+        return self.image
 
     @classmethod
     def from_array(cls, array):
-        image = sitk.GetImageFromArray(array)
+        image = array
         return cls(image)
 
     @classmethod
@@ -41,10 +43,10 @@ class Volume:
         return cls(image)
 
     @classmethod
-    def load(cls, filename: str) -> 'Volume':
+    def load(cls, filename: os.PathLike) -> 'Volume':
         """Load the data.
 
-        Supported filetypes: `.npy`
+        Supported filetypes: `.npy`, `.vol`
 
         Parameters
         ----------
@@ -56,7 +58,15 @@ class Volume:
         Volume
             Instance of this class.
         """
-        array = np.load(filename)
+        filename = Path(filename)
+        suffix = filename.suffix.lower()
+
+        if suffix == '.npy':
+            array = array = np.load(filename)
+        elif suffix == '.vol':
+            array = load_bin(filename)
+        else:
+            raise IOError(f'Unknown file extension: {suffix}')
         return cls.from_array(array)
 
     def apply(self, function, **kwargs) -> 'Volume':
@@ -96,11 +106,14 @@ class Volume:
         return Volume.from_array(new_image)
 
     def show_slice(self, overlay=None, **kwargs):
-        """Show slice using `nanomesh.utils.show_slice`.
+        """Show slice using `nanomesh.utils.SliceViewer`.
 
         Extra arguments are passed on.
         """
-        show_slice(self.image, overlay=overlay, **kwargs)
+        from .utils import SliceViewer
+        sv = SliceViewer(self.image)
+        sv.interact()
+        return sv
 
     def show_volume(self, renderer='itkwidgets', **kwargs):
         """Show volume using `itkwidgets` or `ipyvolume`.

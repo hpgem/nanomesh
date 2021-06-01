@@ -96,12 +96,12 @@ def show_slice(img, overlay=None):
     return SliceViewer(nda).interact()
 
 
-def show_image(data, dpi=80, title=None):
+def show_image(image, *, dpi=80, title=None):
     """Simple function to show an image using matplotlib.
 
     Parameters
     ----------
-    data : np.ndarray
+    image : 2D np.ndarray
         Image to display.
     dpi : int, optional
         DPI to render at.
@@ -112,7 +112,7 @@ def show_image(data, dpi=80, title=None):
     plt.set_cmap('gray')
 
     ax = fig.add_subplot()
-    ax.imshow(data, interpolation=None)
+    ax.imshow(image, interpolation=None)
 
     if title:
         plt.title(title)
@@ -120,7 +120,7 @@ def show_image(data, dpi=80, title=None):
     ax.set_xlabel('x')
     ax.set_ylabel('y')
 
-    plt.show()
+    return ax
 
 
 def show_volume(data):

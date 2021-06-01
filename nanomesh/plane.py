@@ -95,11 +95,16 @@ class Plane:
         Parameters
         ----------
         dpi : int, optional
-            Description
+            DPI to render at.
         title : str, optional
-            Description
+            Set the title of the plot.
+
+        Returns
+        -------
+        ax : `matplotlib.axes.Axes`
+            Instance of `matplotlib.axes.Axes`
         """
-        show_image(self.array_view, dpi=dpi, title=title)
+        return show_image(self.array_view, dpi=dpi, title=title)
 
     def generate_mesh(self, **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary (segmented) image.
@@ -122,26 +127,28 @@ class Plane:
 
         Returns
         -------
-        roi : `GetBBox`
+        roi : `nanomesh.roi2d.ROISelector`
             Region of interest object. Bounding box is stored in `roi.bbox`.
         """
-        from .select_roi_2d import select_roi
-        roi = select_roi(self.array_view)
+        from .roi2d import ROISelector
+        ax = self.show(title='Select region of interest')
+        roi = ROISelector(ax)
         return roi
 
-    def extract_roi(self, bbox):
+    def crop_to_roi(self, bbox):
         """Crop plane to rectangle defined by bounding box.
 
         Parameters
         ----------
         bbox : (4,2) np.ndarray
-            List of points describing region of interest.
+            List of points describing region of interest. The bounding box
+            may be rotated.
 
         Returns
         -------
-        nanomesh.Plane
-            Cropped region as Plane object.
+        `nanomesh.Plane`
+            Cropped region as `nanomesh.Plane` object.
         """
-        from .select_roi_2d import extract_rectangle
-        cropped = extract_rectangle(self.array_view, bbox)
+        from .roi2d import extract_rectangle
+        cropped = extract_rectangle(self.array_view, bbox=bbox)
         return Plane.from_array(cropped)

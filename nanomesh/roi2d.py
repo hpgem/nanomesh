@@ -1,12 +1,13 @@
+from typing import Union
+
 import numpy as np
 from matplotlib.patches import Polygon
-from matplotlib.path import Path
 from matplotlib.widgets import PolygonSelector
 from scipy.spatial import ConvexHull
 from skimage import transform
 
 
-def minimum_bounding_rectangle(coords):
+def minimum_bounding_rectangle(coords: np.ndarray) -> np.ndarray:
     """Find the smallest bounding rectangle for a set of coordinates.
 
     Based on: https://stackoverflow.com/a/33619018
@@ -14,7 +15,7 @@ def minimum_bounding_rectangle(coords):
     Parameters
     ----------
     coords : (n,2) np.ndarray
-        List of coordinates
+        List of coordinates.
 
     Returns
     -------
@@ -62,7 +63,6 @@ def minimum_bounding_rectangle(coords):
     y1 = max_y[best_idx]
     y2 = min_y[best_idx]
     rotation = rotations[best_idx]
-    angle = angles[best_idx]
 
     bbox_coords = np.zeros((4, 2))
     bbox_coords[0] = np.dot([x1, y2], rotation)
@@ -70,11 +70,25 @@ def minimum_bounding_rectangle(coords):
     bbox_coords[2] = np.dot([x2, y1], rotation)
     bbox_coords[3] = np.dot([x1, y1], rotation)
 
-    return bbox_coords, angle
+    return bbox_coords
 
 
-def extract_rectangle(data, *, bbox, plot=True):
-    """Extract rectangle from image."""
+def extract_rectangle(image: np.ndarray, *, bbox: Union[list, np.ndarray]):
+    """Extract rectangle from image. The image is straightened using an
+    Euclidean transform.
+
+    Parameters
+    ----------
+    image : 2D np.ndarray
+        Image to extract rectangle from.
+    bbox : (4,2) list or np.ndarray
+        Four coordinate describing the corners of the bounding box.
+
+    Returns
+    -------
+    warped : 2D np.ndarray
+        The warped input image extracted from the bounding box.
+    """
     a = int(np.linalg.norm(bbox[0] - bbox[1]))
     b = int(np.linalg.norm(bbox[1] - bbox[2]))
 
@@ -83,62 +97,47 @@ def extract_rectangle(data, *, bbox, plot=True):
 
     tform3 = transform.EuclideanTransform()
     tform3.estimate(src, dst)
-    warped = transform.warp(data, tform3, output_shape=(a, b))
+    warped = transform.warp(image, tform3, output_shape=(a, b))
     warped = np.rot90(warped, k=3)
 
     return warped
 
 
-def select_roi(array: np.ndarray):
-    """Summary.
+class ROISelector:
+    """Select a region of interest points in the figure by enclosing them
+    within a polygon. A rectangle is fitted to the polygon.
 
-    Parameters
+    - Press the 'esc' key to start a new polygon.
+    - Hold the 'shift' key to move all of the vertices.
+    - Hold the 'ctrl' key to move a single vertex.
+
+    Attributes
     ----------
-    array : np.ndarray
-        Description
-
-    Returns
-    -------
     bbox : (4,2) np.ndarray
-        Bounding box
+        Coordinates describing the corners of the polygon
     """
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    ax.imshow(array)
-    roi = GetBBox(ax)
-    return roi
-
-
-class GetBBox:
-    def __init__(self, ax, data=None):
+    def __init__(self, ax):
         self.ax = ax
         self.canvas = ax.figure.canvas
         self.bbox = None
-        self.angle = None
 
         self.poly = PolygonSelector(ax, self.onselect)
 
-        print('Select a region of interest points in the figure by enclosing '
-              'them within a polygon.')
-        print("- Press the 'esc' key to start a new polygon.")
-        print("- Hold the 'shift' key to move all of the vertices.")
-        print("- Hold the 'ctrl' key to move a single vertex.")
-
     def onselect(self, verts):
-        self.path = Path(verts)
-
-        self.ax.patches = []
-
-        verts = self.path.vertices
-        bbox, angle = minimum_bounding_rectangle(verts)
-        polygon = Polygon(bbox, facecolor='red', alpha=0.3)
-        self.ax.add_patch(polygon)
-
-        self.bbox = bbox
-        self.angle = angle
-
+        """Trigger this function when a polygon is closed."""
+        verts = np.array(verts)
+        self.bbox = minimum_bounding_rectangle(verts)
+        self.draw_bbox()
         self.canvas.draw_idle()
 
     def disconnect(self):
+        """Disconnect the selector."""
         self.poly.disconnect_events()
         self.canvas.draw_idle()
+
+    def draw_bbox(self):
+        """Draw bounding box as a patch on the image."""
+        # remove existing patches in case the roi is modified
+        self.ax.patches = []
+        polygon = Polygon(self.bbox, facecolor='red', alpha=0.3)
+        self.ax.add_patch(polygon)

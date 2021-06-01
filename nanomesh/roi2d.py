@@ -1,5 +1,3 @@
-from typing import Union
-
 import numpy as np
 from matplotlib.patches import Polygon
 from matplotlib.widgets import PolygonSelector
@@ -73,7 +71,7 @@ def minimum_bounding_rectangle(coords: np.ndarray) -> np.ndarray:
     return bbox_coords
 
 
-def extract_rectangle(image: np.ndarray, *, bbox: Union[list, np.ndarray]):
+def extract_rectangle(image: np.ndarray, *, bbox: np.ndarray):
     """Extract rectangle from image. The image is straightened using an
     Euclidean transform.
 
@@ -81,7 +79,7 @@ def extract_rectangle(image: np.ndarray, *, bbox: Union[list, np.ndarray]):
     ----------
     image : 2D np.ndarray
         Image to extract rectangle from.
-    bbox : (4,2) list or np.ndarray
+    bbox : (4,2) np.ndarray
         Four coordinate describing the corners of the bounding box.
 
     Returns
@@ -98,7 +96,6 @@ def extract_rectangle(image: np.ndarray, *, bbox: Union[list, np.ndarray]):
     tform3 = transform.EuclideanTransform()
     tform3.estimate(src, dst)
     warped = transform.warp(image, tform3, output_shape=(a, b))
-    warped = np.rot90(warped, k=3)
 
     return warped
 
@@ -120,13 +117,14 @@ class ROISelector:
         self.ax = ax
         self.canvas = ax.figure.canvas
         self.bbox = None
+        self.verts = None
 
         self.poly = PolygonSelector(ax, self.onselect)
 
     def onselect(self, verts):
         """Trigger this function when a polygon is closed."""
-        verts = np.array(verts)
-        self.bbox = minimum_bounding_rectangle(verts)
+        self.verts = np.array(verts)
+        self.bbox = minimum_bounding_rectangle(self.verts)
         self.draw_bbox()
         self.canvas.draw_idle()
 

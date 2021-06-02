@@ -1,7 +1,6 @@
 import time
 import warnings
 
-import itkwidgets as itkw
 import matplotlib.pyplot as plt
 import numpy as np
 from ipywidgets import IntSlider, interact
@@ -113,10 +112,6 @@ def show_image(image, *, dpi=80, title=None):
     ax.set_ylabel('y')
 
     return ax
-
-
-def show_volume(data):
-    return itkw.view(data)
 
 
 @requires(condition=pygalmesh, message='requires pygalmesh')

@@ -67,7 +67,7 @@ setup(
             'sphinx',
             'sphinx_rtd_theme',
         ],
-        'pygalmesh': [
+        'with_pygalmesh': [
             'pygalmesh @ git+http://git@github.com/hpgem/pygalmesh',
         ],
     },

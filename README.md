@@ -12,12 +12,6 @@ the link to this document) if you don\'t need it.
 
 ## Installation
 
-First install the dependencies for pygalmesh (CGAL and EIGEN3)
-
-```
-sudo apt-get install libcgal-dev libeigen3-dev
-```
-
 If you use conda, create a new environment:
 
 ```
@@ -33,7 +27,7 @@ cd nanomesh
 pip install .
 ```
 
-Note: To enable the IPython widgets:
+Note, to enable the IPython widgets:
 
 ```
 jupyter nbextension enable --py widgetsnbextension
@@ -45,7 +39,28 @@ Note, [if you are using Jupyter lab](https://github.com/InsightSoftwareConsortiu
 jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib jupyterlab-datawidgets itkwidgets
 ```
 
+### With pygalmesh (linux only)
+
+To use some of the additional functionality depending on pygalmesh,
+first install the dependencies for pygalmesh (CGAL and EIGEN3)
+
+```
+sudo apt-get install libcgal-dev libeigen3-dev
+```
+
+The instructions are the same as above, except specify `with_pygalmesh` as option
+to trigger the installation of pygalmesh. Currently this installs
+[our fork](https://github.com/hpgem/pygalmesh).
+
+```
+pip install .[with_pygalmesh]
+```
+
 ## Development
+
+Install `nanomesh` using the development dependencies:
+
+`pip install -e .[develop]`
 
 Running the tests:
 
@@ -55,11 +70,10 @@ Linting/checks:
 
 `pre-commit`
 
-Building and viewing the docs:
+Building the docs:
 
 ```
 make html --directory docs
-sensible-browser docs/_build/html/index.html
 ```
 
 

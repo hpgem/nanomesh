@@ -44,15 +44,23 @@ def read_info(filename: os.PathLike) -> dict:
     return dct
 
 
-def load_bin(filename: os.PathLike, input_dtype=np.float32) -> np.ndarray:
+def load_bin(
+    filename: os.PathLike,
+    dtype=np.float32,
+    mmap_mode=None,
+) -> np.ndarray:
     """Summary.
 
     Parameters
     ----------
     filename : os.PathLike
         Path to the file.
-    input_dtype : dtype, optional
+    dtype : dtype, optional
         Numpy dtype of the data.
+    mmap_mode : None, optional
+        If not None, open the file using memory mapping. For more info on
+        the modes, see:
+        https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
 
     Returns
     -------
@@ -66,9 +74,10 @@ def load_bin(filename: os.PathLike, input_dtype=np.float32) -> np.ndarray:
 
     shape = info['NUM_Z'], info['NUM_Y'], info['NUM_X']
 
-    with open(filename, 'rb') as f:
-        result = np.fromfile(f, dtype=input_dtype)
-
-    result = result.reshape(shape)
+    if mmap_mode:
+        result = np.memmap(filename, dtype=dtype, shape=shape, mode=mmap_mode)
+    else:
+        result = np.fromfile(filename, dtype=dtype)
+        result = result.reshape(shape)
 
     return result

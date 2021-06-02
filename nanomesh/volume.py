@@ -38,26 +38,41 @@ class Volume:
         return cls(image)
 
     @classmethod
-    def load(cls, filename: os.PathLike) -> 'Volume':
+    def load(cls, filename: os.PathLike, mmap: bool = True) -> 'Volume':
         """Load the data. Supported filetypes: `.npy`, `.vol`.
 
         Parameters
         ----------
-        filename : str
+        filename : PathLike
             Name of the file to load.
+        mmap : bool, optional
+            If True, load the file using memory mapping. Memory-mapped
+            files are used for accessing small segments of large files on
+            disk, without reading the entire file into memory. Note that this
+            can still result in some slow / unexpected behaviour with some
+            operations. Memory-mapped files are read-only by default.
+
+            More info:
+            https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
 
         Returns
         -------
         Volume
             Instance of this class.
+
+        Raises
+        ------
+        IOError
+            Raised if the file extension is unknown.
         """
+        mmap_mode = 'r'
         filename = Path(filename)
         suffix = filename.suffix.lower()
 
         if suffix == '.npy':
-            array = array = np.load(filename)
+            array = array = np.load(filename, mmap_mode=mmap_mode)
         elif suffix == '.vol':
-            array = load_bin(filename)
+            array = load_bin(filename, mmap_mode=mmap_mode)
         else:
             raise IOError(f'Unknown file extension: {suffix}')
         return cls(array)

@@ -198,5 +198,4 @@ autodoc_mock_imports = [
     'ipywidgets',
     'itkwidgets',
     'pygalmesh',
-    'SimpleITK',
 ]

@@ -44,16 +44,13 @@ setup(
     install_requires=[
         'gmsh',
         'ipywidgets',
-        'itk',
         'itkwidgets',
         'matplotlib',
         'meshio',
         'numpy',
-        'optimesh',
         'IPython!=7.23',  # 7.23 contains a bug that prevents matplotlib inline
         'pyvista',
         'scikit-image',
-        'SimpleITK',
     ],
     extras_require={
         'develop': [

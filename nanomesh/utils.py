@@ -4,7 +4,6 @@ import warnings
 import itkwidgets as itkw
 import matplotlib.pyplot as plt
 import numpy as np
-import SimpleITK as sitk
 from ipywidgets import IntSlider, interact
 
 try:
@@ -121,15 +120,17 @@ def show_volume(data):
 
 
 @requires(condition=pygalmesh, message='requires pygalmesh')
-def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
+def generate_mesh_from_binary_image(image: np.ndarray,
+                                    h=(1.0, 1.0, 1.0),
+                                    **kwargs):
     """Generate mesh from binary image using pygalmesh.
 
     Parameters
     ----------
-    img : 2D np.ndarray
-        Input image
+    image : 2D np.ndarray
+        Input image.
     h : tuple, optional
-        Voxel size in x, y, z
+        Voxel size in x, y, z.
     **kwargs
         Keyword arguments passed to `pygalmesh.generate_from_array`.
 
@@ -138,6 +139,5 @@ def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
     meshio.Mesh
         Output mesh.
     """
-    img_array = sitk.GetArrayFromImage(img)
-    mesh = pygalmesh.generate_from_array(img_array, h, **kwargs)
+    mesh = pygalmesh.generate_from_array(image, h, **kwargs)
     return mesh

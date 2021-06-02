@@ -44,7 +44,7 @@ def read_info(filename: os.PathLike) -> dict:
     return dct
 
 
-def load_bin(
+def load_vol(
     filename: os.PathLike,
     dtype=np.float32,
     mmap_mode=None,

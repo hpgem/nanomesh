@@ -5,7 +5,7 @@ from pathlib import Path
 import meshio
 import numpy as np
 
-from .io import load_bin
+from .io import load_vol
 from .plane import Plane
 from .utils import requires
 
@@ -72,7 +72,7 @@ class Volume:
         if suffix == '.npy':
             array = array = np.load(filename, mmap_mode=mmap_mode)
         elif suffix == '.vol':
-            array = load_bin(filename, mmap_mode=mmap_mode)
+            array = load_vol(filename, mmap_mode=mmap_mode)
         else:
             raise IOError(f'Unknown file extension: {suffix}')
         return cls(array)

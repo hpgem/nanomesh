@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from nanomesh.io import load_bin
+from nanomesh.io import load_vol
 
 
 def test_load_data():
@@ -13,7 +13,7 @@ def test_load_data():
 
     expected_fn = Path(__file__).parent / 'sample_data.npy'
 
-    data = load_bin(fn, input_dtype=np.uint8)
+    data = load_vol(fn, input_dtype=np.uint8)
 
     if expected_fn.exists():
         expected_data = np.load(expected_fn)

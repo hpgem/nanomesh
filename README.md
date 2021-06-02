@@ -56,7 +56,7 @@ to trigger the installation of pygalmesh. Currently this installs
 pip install .[with_pygalmesh]
 ```
 
-## Development
+### Development
 
 Install `nanomesh` using the development dependencies:
 

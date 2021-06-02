@@ -3,8 +3,8 @@
 import logging
 
 from .__version__ import __version__
-from .nanomesher import NanoMesher
-from .utils import show_slice, show_volume
+from .plane import Plane
+from .volume import Volume
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -12,10 +12,9 @@ __author__ = 'Nicolas Renaud'
 __email__ = 'n.renaud@esciencecenter.nl'
 
 __all__ = [
-    '__version__',
     '__author__',
     '__email__',
-    'NanoMesher',
-    'show_slice',
-    'show_volume',
+    '__version__',
+    'Plane',
+    'Volume',
 ]

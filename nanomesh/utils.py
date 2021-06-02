@@ -1,11 +1,9 @@
 import time
 import warnings
 
-import itkwidgets as itkw
 import matplotlib.pyplot as plt
 import numpy as np
-import SimpleITK as sitk
-from ipywidgets import interact
+from ipywidgets import IntSlider, interact
 
 try:
     import pygalmesh
@@ -44,8 +42,11 @@ class SliceViewer:
         self.data = data
 
         self.last_update = 0.0
+        self.max_z, self.max_y, self.max_x = np.array(data.shape) - 1
+        self.int_slider = IntSlider(min=0, max=self.max_x)
 
-        self.im = self.ax.imshow(np.empty_like(data[0]))
+        self.im = self.ax.imshow(data[0])
+        self.im.set_clim(vmin=data.min(), vmax=data.max())
         self.update()
 
     def update(self, index: int = 0, along: str = 'x'):
@@ -58,12 +59,18 @@ class SliceViewer:
             return
 
         if along == 'x':
+            self.int_slider.max = self.max_x
+            index = min(index, self.max_x)
             slice = self.data[:, :, index]
             xlabel, ylabel = 'y', 'z'
         elif along == 'y':
+            self.int_slider.max = self.max_y
+            index = min(index, self.max_y)
             slice = self.data[:, index, :]
             xlabel, ylabel = 'x', 'z'
         elif along == 'z':
+            self.int_slider.max = self.max_z
+            index = min(index, self.max_z)
             slice = self.data[index, ...]
             xlabel, ylabel = 'x', 'y'
 
@@ -77,23 +84,7 @@ class SliceViewer:
 
     def interact(self):
         """Call interactive `ipywidgets` widget."""
-        max_val = max(self.data.shape) - 1
-        interact(self.update, index=(0, max_val), along=['x', 'y', 'z'])
-
-
-def show_slice(img, overlay=None):
-    if isinstance(img, np.ndarray):
-        img = sitk.GetImageFromArray(img.astype('uint8'))
-
-    if isinstance(overlay, np.ndarray):
-        overlay = sitk.GetImageFromArray(overlay.astype('uint8'))
-
-    if overlay is not None:
-        img = sitk.LabelOverlay(img, overlay)
-
-    nda = sitk.GetArrayFromImage(img)
-
-    return SliceViewer(nda).interact()
+        interact(self.update, index=self.int_slider, along=['x', 'y', 'z'])
 
 
 def show_image(image, *, dpi=80, title=None):
@@ -123,20 +114,18 @@ def show_image(image, *, dpi=80, title=None):
     return ax
 
 
-def show_volume(data):
-    return itkw.view(data)
-
-
 @requires(condition=pygalmesh, message='requires pygalmesh')
-def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
+def generate_mesh_from_binary_image(image: np.ndarray,
+                                    h=(1.0, 1.0, 1.0),
+                                    **kwargs):
     """Generate mesh from binary image using pygalmesh.
 
     Parameters
     ----------
-    img : 2D np.ndarray
-        Input image
+    image : 2D np.ndarray
+        Input image.
     h : tuple, optional
-        Voxel size in x, y, z
+        Voxel size in x, y, z.
     **kwargs
         Keyword arguments passed to `pygalmesh.generate_from_array`.
 
@@ -145,6 +134,5 @@ def generate_mesh_from_binary_image(img, h=(1.0, 1.0, 1.0), **kwargs):
     meshio.Mesh
         Output mesh.
     """
-    img_array = sitk.GetArrayFromImage(img)
-    mesh = pygalmesh.generate_from_array(img_array, h, **kwargs)
+    mesh = pygalmesh.generate_from_array(image, h, **kwargs)
     return mesh

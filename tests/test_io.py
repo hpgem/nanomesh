@@ -13,7 +13,7 @@ def test_load_data():
 
     expected_fn = Path(__file__).parent / 'sample_data.npy'
 
-    data = load_vol(fn, input_dtype=np.uint8)
+    data = load_vol(fn, dtype=np.uint8)
 
     if expected_fn.exists():
         expected_data = np.load(expected_fn)

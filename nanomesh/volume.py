@@ -23,30 +23,23 @@ class Volume:
         self.image = image
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(shape={self.array_view.shape})'
+        return f'{self.__class__.__name__}(shape={self.image.shape})'
 
-    @property
-    def array_view(self):
-        """Return a view of the data as a numpy array."""
-        return self.image
-
-    def to_array(self):
-        return self.image
+    def to_sitk_image(self):
+        """Return instance of `SimpleITK.Image` from `.image`."""
+        import SimpleITK as sitk
+        return sitk.GetImageFromArray(self.image)
 
     @classmethod
-    def from_array(cls, array):
-        image = array
-        return cls(image)
-
-    @classmethod
-    def from_image(cls, image):
+    def from_sitk_image(cls, sitk_image) -> 'Volume':
+        """Return instance of `Volume` from `SimpleITK.Image`."""
+        import SimpleITK as sitk
+        image = sitk.GetImageFromArray(sitk_image)
         return cls(image)
 
     @classmethod
     def load(cls, filename: os.PathLike) -> 'Volume':
-        """Load the data.
-
-        Supported filetypes: `.npy`, `.vol`
+        """Load the data. Supported filetypes: `.npy`, `.vol`.
 
         Parameters
         ----------
@@ -67,7 +60,7 @@ class Volume:
             array = load_bin(filename)
         else:
             raise IOError(f'Unknown file extension: {suffix}')
-        return cls.from_array(array)
+        return cls(array)
 
     def apply(self, function, **kwargs) -> 'Volume':
         """Apply function to `.image` and return new instance of `Volume`.
@@ -87,24 +80,6 @@ class Volume:
         new_image = function(self.image, **kwargs)
         return Volume(new_image)
 
-    def apply_np(self, function, **kwargs) -> 'Volume':
-        """Apply function to `.array_view` and return new instance of `Volume`.
-
-        Parameters
-        ----------
-        function : callable
-            Function to apply to `self.array_view`.
-        **kwargs
-            Keyword arguments to pass to `function`.
-
-        Returns
-        -------
-        Volume
-            New instance of `Volume`.
-        """
-        new_image = function(self.array_view, **kwargs)
-        return Volume.from_array(new_image)
-
     def show_slice(self, overlay=None, **kwargs):
         """Show slice using `nanomesh.utils.SliceViewer`.
 
@@ -123,7 +98,7 @@ class Volume:
         """
         if renderer in ('ipyvolume', 'ipv'):
             import ipyvolume as ipv
-            return ipv.quickvolshow(self.array_view, **kwargs)
+            return ipv.quickvolshow(self.image, **kwargs)
         elif renderer in ('itkwidgets', 'itk', 'itkw'):
             import itkwidgets as itkw
             return itkw.view(self.image)
@@ -146,7 +121,7 @@ class Volume:
         meshio.Mesh
             Mesh representation of volume.
         """
-        mesh = pygalmesh.generate_from_array(self.array_view, h, **kwargs)
+        mesh = pygalmesh.generate_from_array(self.image, h, **kwargs)
         return mesh
 
     def select_plane(self,
@@ -185,5 +160,5 @@ class Volume:
             raise ValueError(
                 'One of the arguments `x`, `y`, or `z` must be specified.')
 
-        array = self.array_view[slice]
-        return Plane.from_array(array)
+        array = self.image[slice]
+        return Plane(array)

@@ -2,7 +2,6 @@ import logging
 
 import meshio
 import numpy as np
-import SimpleITK as sitk
 
 from .utils import show_image
 
@@ -15,30 +14,23 @@ class Plane:
         self.image = image
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(shape={self.array_view.shape})'
+        return f'{self.__class__.__name__}(shape={self.image.shape})'
 
-    @property
-    def array_view(self):
-        """Return a view of the data as a numpy array."""
-        return sitk.GetArrayViewFromImage(self.image)
-
-    def to_array(self):
-        return sitk.GetArrayFromImage(self.image)
+    def to_sitk_image(self):
+        """Return instance of `SimpleITK.Image` from `.image`."""
+        import SimpleITK as sitk
+        return sitk.GetImageFromArray(self.image)
 
     @classmethod
-    def from_array(cls, array):
-        image = sitk.GetImageFromArray(array)
-        return cls(image)
-
-    @classmethod
-    def from_image(cls, image):
+    def from_sitk_image(cls, sitk_image) -> 'Plane':
+        """Return instance of `Volume` from `SimpleITK.Image`."""
+        import SimpleITK as sitk
+        image = sitk.GetImageFromArray(sitk_image)
         return cls(image)
 
     @classmethod
     def load(cls, filename: str) -> 'Plane':
-        """Load the data.
-
-        Supported filetypes: `.npy`
+        """Load the data. Supported filetypes: `.npy`.
 
         Parameters
         ----------
@@ -51,7 +43,7 @@ class Plane:
             Instance of this class.
         """
         array = np.load(filename)
-        return cls.from_array(array)
+        return cls(array)
 
     def apply(self, function, **kwargs) -> 'Plane':
         """Apply function to `.image` and return new instance of `Plane`.
@@ -59,7 +51,7 @@ class Plane:
         Parameters
         ----------
         function : callable
-            Function to apply to `self.array_view`.
+            Function to apply to `self.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
@@ -70,24 +62,6 @@ class Plane:
         """
         new_image = function(self.image, **kwargs)
         return Plane(new_image)
-
-    def apply_np(self, function, **kwargs) -> 'Plane':
-        """Apply function to `.array_view` and return new instance of `Plane`.
-
-        Parameters
-        ----------
-        function : callable
-            Function to apply to `self.array_view`.
-        **kwargs
-            Keyword arguments to pass to `function`.
-
-        Returns
-        -------
-        Plane
-            New instance of `Plane`.
-        """
-        new_image = function(self.array_view, **kwargs)
-        return Plane.from_array(new_image)
 
     def show(self, *, dpi: int = 80, title: str = None):
         """Plot the image using matplotlib.
@@ -104,7 +78,7 @@ class Plane:
         ax : `matplotlib.axes.Axes`
             Instance of `matplotlib.axes.Axes`
         """
-        return show_image(self.array_view, dpi=dpi, title=title)
+        return show_image(self.image, dpi=dpi, title=title)
 
     def generate_mesh(self, **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary (segmented) image.
@@ -120,7 +94,7 @@ class Plane:
             Description of the mesh.
         """
         from .mesh2d import generate_2d_mesh
-        return generate_2d_mesh(image=self.array_view, **kwargs)
+        return generate_2d_mesh(image=self.image, **kwargs)
 
     def select_roi(self):
         """Select region of interest in interactive matplotlib figure.
@@ -150,5 +124,5 @@ class Plane:
             Cropped region as `nanomesh.Plane` object.
         """
         from .roi2d import extract_rectangle
-        cropped = extract_rectangle(self.array_view, bbox=bbox)
-        return Plane.from_array(cropped)
+        cropped = extract_rectangle(self.image, bbox=bbox)
+        return Plane(cropped)

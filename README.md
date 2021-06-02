@@ -27,7 +27,7 @@ cd nanomesh
 pip install .
 ```
 
-Note, to enable the IPython widgets:
+Note, [to enable the IPython widgets](https://ipywidgets.readthedocs.io/en/latest/user_install.html#installation):
 
 ```
 jupyter nbextension enable --py widgetsnbextension

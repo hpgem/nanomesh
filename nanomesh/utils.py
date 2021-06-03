@@ -36,10 +36,14 @@ class SliceViewer:
     ----------
     data : 3D np.ndarray
         Volume to display.
+    update_delay : int
+        Minimum delay between events in milliseconds. Reduces lag
+        by limiting the Limit update rate.
     """
-    def __init__(self, data: np.ndarray):
+    def __init__(self, data: np.ndarray, update_delay: int = 50):
         self.fig, self.ax = plt.subplots()
         self.data = data
+        self.update_delay = update_delay / 1000
 
         self.last_update = 0.0
         self.max_z, self.max_y, self.max_x = np.array(data.shape) - 1
@@ -54,8 +58,7 @@ class SliceViewer:
         now = time.time()
         diff = now - self.last_update
 
-        # Limit update rate to avoid lag
-        if diff < 0.05:
+        if diff < self.update_delay:
             return
 
         if along == 'x':
@@ -73,6 +76,8 @@ class SliceViewer:
             index = min(index, self.max_z)
             slice = self.data[index, ...]
             xlabel, ylabel = 'x', 'y'
+        else:
+            raise ValueError('`along` must be one of `x`,`y`,`z`')
 
         self.im.set_data(slice)
         self.ax.set_title(f'slice {index} along {along}')

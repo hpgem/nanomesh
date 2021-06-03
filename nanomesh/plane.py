@@ -19,7 +19,7 @@ class Plane:
     def __eq__(self, other):
         if isinstance(other, Plane):
             return np.all(other.image == self.image)
-        elif isinstance(np.ndarray):
+        elif isinstance(other, np.ndarray):
             return np.all(other == self.image)
         else:
             return False

@@ -20,7 +20,7 @@ if os.name == generated_on:
     MESH_TOL = None
 else:
     MPL_TOL = 2.0
-    MESH_TOL = 0.0025
+    MESH_TOL = 0.005
 
 
 @pytest.fixture

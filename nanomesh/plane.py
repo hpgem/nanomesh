@@ -16,6 +16,14 @@ class Plane:
     def __repr__(self):
         return f'{self.__class__.__name__}(shape={self.image.shape})'
 
+    def __eq__(self, other):
+        if isinstance(other, Plane):
+            return np.all(other.image == self.image)
+        elif isinstance(np.ndarray):
+            return np.all(other == self.image)
+        else:
+            return False
+
     def to_sitk_image(self):
         """Return instance of `SimpleITK.Image` from `.image`."""
         import SimpleITK as sitk
@@ -25,7 +33,7 @@ class Plane:
     def from_sitk_image(cls, sitk_image) -> 'Plane':
         """Return instance of `Volume` from `SimpleITK.Image`."""
         import SimpleITK as sitk
-        image = sitk.GetImageFromArray(sitk_image)
+        image = sitk.GetArrayFromImage(sitk_image)
         return cls(image)
 
     @classmethod
@@ -45,8 +53,9 @@ class Plane:
         array = np.load(filename)
         return cls(array)
 
-    def apply(self, function, **kwargs) -> 'Plane':
-        """Apply function to `.image` and return new instance of `Plane`.
+    def apply(self, function, **kwargs):
+        """Apply function to `.image` array. Return an instance of `Plane` if
+        the result is a 2D image, otherwise return the result of the operation.
 
         Parameters
         ----------
@@ -60,8 +69,11 @@ class Plane:
         Plane
             New instance of `Plane`.
         """
-        new_image = function(self.image, **kwargs)
-        return Plane(new_image)
+        ret = function(self.image, **kwargs)
+        if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
+            return Plane(ret)
+
+        return ret
 
     def show(self, *, dpi: int = 80, title: str = None):
         """Plot the image using matplotlib.

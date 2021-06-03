@@ -74,14 +74,15 @@ class Generator(object):
             if self.check_pore(r[2], r[1]) or self.check_pore(
                     r[0], r[1] + self.a / 4):
                 result[ix, iy, iz] = bin_val[1]
-        return result.astype('uint8')
+        return result
 
     def generate_vect(self,
                       sizes: List[int],
                       resolution: List[float],
                       transform=None,
                       bin_val=[0., 1.]) -> np.ndarray:
-        """Generate a volume image of the structure.
+        """Generate a volume image of the structure. Vectorized version of
+        `.generate`.
 
         Parameters
         ----------
@@ -120,7 +121,7 @@ class Generator(object):
         cond = cond.reshape(*sizes)
         result[cond] = bin_val[1]
 
-        return result  # .astype('uint8')
+        return result
 
     def check_pore(self, xz: float, y: float) -> bool:
         """Helper function to determine whether a 2D coordinate is inside a

@@ -61,6 +61,30 @@ def test_generate_2d_mesh(segmented):
     helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=MESH_TOL)
 
 
+def test_generate_2d_mesh_no_extra_points(segmented):
+    """Test if 2D mesh generation works when no extra points are passed."""
+    expected_fn = Path(
+        __file__).parent / 'segmented_mesh_no_extra_points.pickle'
+
+    np.random.seed(1234)  # set seed for reproducible clustering
+    mesh = generate_2d_mesh(segmented,
+                            pad=False,
+                            point_density=0,
+                            max_contour_dist=4,
+                            plot=False)
+
+    if expected_fn.exists():
+        with open(expected_fn, 'rb') as f:
+            expected_mesh = pickle.load(f)
+    else:
+        with open(expected_fn, 'wb') as f:
+            pickle.dump(mesh, f)
+
+        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
+
+    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=MESH_TOL)
+
+
 def test_add_edge_points():
     """Test generation of edge points."""
     image = np.zeros((10, 10))

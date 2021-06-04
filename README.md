@@ -7,8 +7,7 @@
 
 Creates 3d meshes from microscopy experimental data.
 
-The project setup is documented in [a separate document](project_setup.rst). Feel free to remove this document (and/or
-the link to this document) if you don\'t need it.
+Documentation: https://nanomesh.readthedocs.io/en/latest/
 
 ## Installation
 

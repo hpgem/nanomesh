@@ -25,6 +25,14 @@ class Volume:
     def __repr__(self):
         return f'{self.__class__.__name__}(shape={self.image.shape})'
 
+    def __eq__(self, other):
+        if isinstance(other, Volume):
+            return np.all(other.image == self.image)
+        elif isinstance(other, np.ndarray):
+            return np.all(other == self.image)
+        else:
+            return False
+
     def to_sitk_image(self):
         """Return instance of `SimpleITK.Image` from `.image`."""
         import SimpleITK as sitk
@@ -34,7 +42,7 @@ class Volume:
     def from_sitk_image(cls, sitk_image) -> 'Volume':
         """Return instance of `Volume` from `SimpleITK.Image`."""
         import SimpleITK as sitk
-        image = sitk.GetImageFromArray(sitk_image)
+        image = sitk.GetArrayFromImage(sitk_image)
         return cls(image)
 
     @classmethod
@@ -78,7 +86,8 @@ class Volume:
         return cls(array)
 
     def apply(self, function, **kwargs) -> 'Volume':
-        """Apply function to `.image` and return new instance of `Volume`.
+        """Apply function to `.image` array. Return an instance of `Volume` if
+        the result is a 3D image, otherwise return the result of the operation.
 
         Parameters
         ----------
@@ -92,16 +101,19 @@ class Volume:
         Volume
             New instance of `Volume`.
         """
-        new_image = function(self.image, **kwargs)
-        return Volume(new_image)
+        ret = function(self.image, **kwargs)
+        if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
+            return Volume(ret)
 
-    def show_slice(self, overlay=None, **kwargs):
+        return ret
+
+    def show_slice(self, **kwargs):
         """Show slice using `nanomesh.utils.SliceViewer`.
 
         Extra arguments are passed on.
         """
         from .utils import SliceViewer
-        sv = SliceViewer(self.image)
+        sv = SliceViewer(self.image, **kwargs)
         sv.interact()
         return sv
 

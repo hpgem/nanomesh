@@ -1,5 +1,5 @@
+import os
 import pickle
-import sys
 from pathlib import Path
 
 import helpers
@@ -11,9 +11,16 @@ from nanomesh.mesh2d import (add_edge_points, add_points_grid,
                              add_points_kmeans, generate_2d_mesh,
                              subdivide_contour)
 
-# Reference points were generated on Linux. There is a minor difference
-# between the generated on Linux/Mac and Windows. Allow for some deviation.
-windows = (sys.platform == 'win32')
+# There is a small disparity between the data generated on Windows / posix
+# platforms (mac/linux). Allow some deviation if the platforms do not match.
+# windows: nt, linux/mac: posix
+generated_on = 'nt'
+if os.name == generated_on:
+    MPL_TOL = 0.0
+    MESH_TOL = None
+else:
+    MPL_TOL = 2.0
+    MESH_TOL = 0.005
 
 
 @pytest.fixture
@@ -29,7 +36,7 @@ def segmented():
     remove_text=True,
     extensions=['png'],
     savefig_kwarg={'bbox_inches': 'tight'},
-    tol=2.0 if windows else 0,
+    tol=MPL_TOL,
 )
 def test_generate_2d_mesh(segmented):
     """Test 2D mesh generation and plot."""
@@ -51,8 +58,31 @@ def test_generate_2d_mesh(segmented):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    tol = 0.0025 if windows else 0
-    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=tol)
+    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=MESH_TOL)
+
+
+def test_generate_2d_mesh_no_extra_points(segmented):
+    """Test if 2D mesh generation works when no extra points are passed."""
+    expected_fn = Path(
+        __file__).parent / 'segmented_mesh_no_extra_points.pickle'
+
+    np.random.seed(1234)  # set seed for reproducible clustering
+    mesh = generate_2d_mesh(segmented,
+                            pad=False,
+                            point_density=0,
+                            max_contour_dist=4,
+                            plot=False)
+
+    if expected_fn.exists():
+        with open(expected_fn, 'rb') as f:
+            expected_mesh = pickle.load(f)
+    else:
+        with open(expected_fn, 'wb') as f:
+            pickle.dump(mesh, f)
+
+        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
+
+    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=MESH_TOL)
 
 
 def test_add_edge_points():

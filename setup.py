@@ -18,7 +18,7 @@ with open('README.md') as readme_file:
 setup(
     name='nanomesh',
     version=version,
-    description='Creates 3d meshes from electron microscopy experimental data',
+    description='Creates 3d meshes from microscopy experimental data',
     long_description=readme + '\n\n',
     author='Nicolas Renaud',
     author_email='n.renaud@esciencecenter.nl',
@@ -36,7 +36,6 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',

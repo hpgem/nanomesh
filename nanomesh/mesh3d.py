@@ -5,14 +5,54 @@ import numpy as np
 from scipy._lib._util import _asarray_validated
 from scipy.cluster.vq import kmeans2
 from scipy.spatial import Delaunay
-from skimage import morphology
+from skimage import morphology, transform
 from skimage.measure import approximate_polygon, find_contours
+from sklearn import cluster
+
+
+def add_points_kmeans_sklearn(image: np.ndarray,
+                              iters: int = 10,
+                              n_points: int = 100,
+                              scale=1.0,
+                              plot: bool = False):
+    """Add evenly distributed points to the image.
+
+    Parameters
+    ----------
+    image : 3D np.ndarray
+        Input image
+    iters : int, optional
+        Number of iterations for the kmeans algorithm.
+    scale : float
+        Reduce resolution of image to improve performance.
+    n_points : int, optional
+        Total number of points to add
+
+    Returns
+    -------
+    (n,2) np.ndarray
+        Array with the generated points.
+    """
+    if scale != 1.0:
+        image = transform.rescale(image, scale) > 0.5
+
+    coordinates = np.argwhere(image)
+
+    kmeans = cluster.KMeans(n_clusters=n_points,
+                            n_init=1,
+                            init='random',
+                            max_iter=iters,
+                            algorithm='full')
+    ret = kmeans.fit(coordinates)
+
+    return ret.cluster_centers_ / scale
 
 
 def generate_3d_mesh(image: np.ndarray,
                      *,
                      pad: bool = True,
-                     point_density: float = 1 / 100,
+                     point_density: float = 1 / 10000,
+                     scale: float = 0.5,
                      contour_precision: int = 1,
                      max_contour_dist: int = 10,
                      plot: bool = False) -> 'meshio.Mesh':
@@ -30,6 +70,8 @@ def generate_3d_mesh(image: np.ndarray,
     point_density : float, optional
         Density of points to distribute over the domains for triangle
         generation. Expressed as a fraction of the number of pixels.
+    scale : float
+        TODO
     contour_precision : int, optional
         Maximum distance from original contour to approximate polygon.
     max_contour_dist : int, optional
@@ -47,14 +89,18 @@ def generate_3d_mesh(image: np.ndarray,
     if point_density:
         # grid_points = add_points_grid(image, border=5)
         n_points1 = int(np.sum(image == 1) * point_density)
-        grid_points = add_points_kmeans(image, iters=20, n_points=n_points1)
+        grid_points = add_points_kmeans_sklearn(image,
+                                                iters=10,
+                                                n_points=n_points1,
+                                                scale=scale)
         points.append(grid_points)
 
         # adding points to holes helps to get a cleaner result
         n_points0 = int(np.sum(image == 0) * point_density)
-        grid_points = add_points_kmeans(1 - image,
-                                        iters=20,
-                                        n_points=n_points0)
+        grid_points = add_points_kmeans_sklearn(1 - image,
+                                                iters=10,
+                                                n_points=n_points0,
+                                                scale=scale)
         points.append(grid_points)
 
     if pad:

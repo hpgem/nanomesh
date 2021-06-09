@@ -1,20 +1,43 @@
-from typing import Any
+from typing import Any, List
 
 import meshio
 import numpy as np
 import pyvista as pv
+import trimesh
 from scipy.spatial import Delaunay
 from skimage import measure, transform
 from sklearn import cluster
 
-from .mesh_utils import tetrahedra_to_mesh
+from .mesh_utils import meshio_to_polydata, tetrahedra_to_mesh
 
 
-def show_submesh(*grids, index=100, along='x', plotter=pv.PlotterITK):
-    """Slow a slice of the mesh."""
+def show_submesh(*meshes: List[meshio.Mesh],
+                 index: int = 100,
+                 along: str = 'x',
+                 plotter=pv.PlotterITK):
+    """Slow a slice of the mesh.
+
+    Parameters
+    ----------
+    *meshes : List[meshio.Mesh]
+        List of meshes to show
+    index : int, optional
+        Index of where to cut the mesh.
+    along : str, optional
+        Direction along which to cut.
+    plotter : TYPE, optional
+        Plotting instance (`pv.PlotterITK` or `pv.Plotter`)
+
+    Returns
+    -------
+    plotter : `pyvista.Plotter`
+        Instance of the plotter
+    """
     plotter = plotter()
 
-    for grid in grids:
+    for mesh in meshes:
+        grid = meshio_to_polydata(mesh)
+
         # get cell centroids
         cells = grid.cells.reshape(-1, 5)[:, 1:]
         cell_center = grid.points[cells].mean(1)
@@ -35,7 +58,6 @@ def show_submesh(*grids, index=100, along='x', plotter=pv.PlotterITK):
 
 def simplify_mesh_trimesh(vertices, faces, n_faces):
     """Simplify mesh using trimesh."""
-    import trimesh
     mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
     decimated = mesh.simplify_quadratic_decimation(n_faces)
     return decimated
@@ -81,7 +103,7 @@ def add_points_kmeans_sklearn(image: np.ndarray,
         Array with the generated points.
     """
     if scale != 1.0:
-        image = transform.rescale(image, scale) > 0.5
+        image = transform.rescale(image.astype(float), scale) > 0.5
 
     coordinates = np.argwhere(image)
 
@@ -102,6 +124,7 @@ def generate_3d_mesh(
     pad_width: int = 20,
     point_density: float = 1 / 10000,
     res_kmeans: float = 1.0,
+    n_faces: int = 1000,
 ) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
@@ -126,6 +149,8 @@ def generate_3d_mesh(
         Resolution for the point generation using k-means. Lower resolution of
         the image by this factor. Larger number yiels faster but coarser
         results.
+    n_faces : int
+        Target number of faces for the mesh decimation step.
 
     Returns
     -------
@@ -134,8 +159,13 @@ def generate_3d_mesh(
     """
     points: Any = []
 
+    if pad_width:
+        print(f'padding image, {pad_width=}')
+        image = np.pad(image, pad_width, mode='reflect')
+
     if point_density:
-        scale = 1 / step_size
+        scale = 1 / res_kmeans
+        print(f'adding points, {res_kmeans=}->{scale=}')
 
         # grid_points = add_points_grid(image, border=5)
         n_points1 = int(np.sum(image == 1) * point_density)
@@ -144,6 +174,7 @@ def generate_3d_mesh(
                                                 n_points=n_points1,
                                                 scale=scale)
         points.append(grid_points)
+        print(f'added {len(grid_points)} points (1)')
 
         # adding points to holes helps to get a cleaner result
         n_points0 = int(np.sum(image == 0) * point_density)
@@ -152,40 +183,45 @@ def generate_3d_mesh(
                                                 n_points=n_points0,
                                                 scale=scale)
         points.append(grid_points)
+        print(f'added {len(grid_points)} points (0)')
 
-    if pad_width:
-        image = np.pad(image, pad_width, mode='edge')
-
+    print(f'generating vertices, {step_size=}')
     verts, faces, normals, values = measure.marching_cubes(
         image,
         allow_degenerate=False,
-        step_size=5,
+        step_size=step_size,
     )
+    print(f'generated {len(verts)} verts and {len(faces)} faces')
 
-    mesh = simplify_mesh_trimesh(vertices=verts, faces=faces, n_faces=5000)
+    print(f'simplifying mesh, {n_faces=}')
+    mesh = simplify_mesh_trimesh(vertices=verts, faces=faces, n_faces=n_faces)
+    print(f'reduced to {len(mesh.vertices)} verts and {len(mesh.faces)} faces')
+
+    print('smoothing mesh')
+    trimesh.smoothing.filter_taubin(mesh, iterations=50)
 
     points.append(mesh.vertices)
     points = np.vstack(points)
 
+    print('triangulating')
     tetrahedra = Delaunay(points, incremental=False).simplices
+    print(f'generated {len(tetrahedra)} tetrahedra')
 
     centers = points[tetrahedra].mean(1)
 
+    print('masking')
     pore_mask = image[tuple(centers.astype(int).T)] == 1
 
     masks = [pore_mask]
 
     if pad_width:
-        dimx, dimy, dimz = np.array(image.shape) - pad_width * 2
-
-        maskx = (centers[:, 2] >= pad_width) & (centers[:, 2] <=
-                                                dimx - pad_width)
-        masky = (centers[:, 1] >= pad_width) & (centers[:, 1] <=
-                                                dimy - pad_width)
-        maskz = (centers[:, 0] >= pad_width) & (centers[:, 0] <=
-                                                dimz - pad_width)
-
-        masks.extend([maskx, masky, maskz])
+        for i, dim in enumerate(reversed(image.shape)):
+            bound_min = pad_width
+            bound_max = dim - pad_width
+            mask = (centers[:, i] >= bound_min) & (centers[:, i] <= bound_max)
+            masks.append(mask)
+        # move back to origin
+        points -= pad_width
 
     mask = np.product(masks, axis=0).astype(bool)
 

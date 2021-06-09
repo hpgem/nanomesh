@@ -176,8 +176,8 @@ def generate_3d_mesh(
         points.append(grid_points)
         print(f'added {len(grid_points)} points (1)')
 
-        # adding points to holes helps to get a cleaner result
-        n_points0 = int(np.sum(image == 0) * point_density)
+        # adding a few points to holes helps to get a cleaner result
+        n_points0 = int(np.sum(image == 0) * (point_density / 10))
         grid_points = add_points_kmeans_sklearn(1 - image,
                                                 iters=10,
                                                 n_points=n_points0,
@@ -207,12 +207,22 @@ def generate_3d_mesh(
     tetrahedra = Delaunay(points, incremental=False).simplices
     print(f'generated {len(tetrahedra)} tetrahedra')
 
-    centers = points[tetrahedra].mean(1)
+    # align points with voxel centers
+    points_shifted = points + 0.5
+
+    centers = points_shifted[tetrahedra].mean(1)
 
     print('masking')
-    pore_mask = image[tuple(centers.astype(int).T)] == 1
+    pore_mask_center = image[tuple(centers.astype(int).T)] == 1
 
-    masks = [pore_mask]
+    index = np.clip(points_shifted, a_min=0,
+                    a_max=np.array(image.shape) - 1).astype(int)
+    point_in_pore = image[tuple(index.T)]
+    index_of_point_in_pore = np.argwhere(point_in_pore)
+    pore_mask_vert = np.any(np.isin(tetrahedra, index_of_point_in_pore),
+                            axis=1)
+
+    masks = [pore_mask_vert, pore_mask_center]
 
     if pad_width:
         for i, dim in enumerate(reversed(image.shape)):

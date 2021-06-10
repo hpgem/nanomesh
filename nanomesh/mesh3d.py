@@ -1,4 +1,6 @@
-from typing import Any, List
+import logging
+from dataclasses import dataclass
+from typing import List
 
 import meshio
 import numpy as np
@@ -8,7 +10,34 @@ from scipy.spatial import Delaunay
 from skimage import measure, transform
 from sklearn import cluster
 
-from .mesh_utils import meshio_to_polydata, tetrahedra_to_mesh
+from .mesh_utils import (meshio_to_polydata, tetrahedra_to_mesh,
+                         triangles_to_mesh)
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class SurfaceMeshContainer:
+    vertices: np.ndarray
+    faces: np.ndarray
+
+    def to_trimesh(self) -> 'trimesh.Trimesh':
+        """Return instance of `trimesh.Trimesh`."""
+        return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
+
+    def to_meshio(self) -> 'meshio.Mesh':
+        """Return instance of `meshio.Mesh`."""
+        return triangles_to_mesh(self.vertices, self.faces)
+
+
+@dataclass
+class VolumeMeshContainer:
+    vertices: np.ndarray
+    faces: np.ndarray
+
+    def to_meshio(self) -> 'meshio.Mesh':
+        """Return instance of `meshio.Mesh`."""
+        return tetrahedra_to_mesh(self.vertices, self.faces)
 
 
 def show_submesh(*meshes: List[meshio.Mesh],
@@ -56,26 +85,11 @@ def show_submesh(*meshes: List[meshio.Mesh],
     return plotter
 
 
-def simplify_mesh_trimesh(vertices, faces, n_faces):
+def simplify_mesh_trimesh(vertices: np.ndarray, faces: np.ndarray,
+                          n_faces: int):
     """Simplify mesh using trimesh."""
     mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
     decimated = mesh.simplify_quadratic_decimation(n_faces)
-    return decimated
-
-
-def simplify_mesh_open3d(vertices: np.ndarray, faces: np.ndarray, n_faces):
-    """Simplify mesh using open3d."""
-    import open3d
-    o3d_verts = open3d.utility.Vector3dVector(vertices)
-    o3d_faces = open3d.utility.Vector3iVector(faces)
-    o3d_mesh = open3d.geometry.TriangleMesh(o3d_verts, o3d_faces)
-
-    o3d_new_mesh = o3d_mesh.simplify_quadric_decimation(n_faces)
-
-    new_verts = np.array(o3d_new_mesh.vertices)
-    new_faces = np.array(o3d_new_mesh.triangles)
-
-    decimated = meshio.Mesh(points=new_verts, cells=[('triangle', new_faces)])
     return decimated
 
 
@@ -115,6 +129,158 @@ def add_points_kmeans_sklearn(image: np.ndarray,
     ret = kmeans.fit(coordinates)
 
     return ret.cluster_centers_ / scale
+
+
+class Mesher3D:
+    def __init__(self, image: np.ndarray):
+        self.image = image
+        self.points: List[np.ndarray] = []
+        self.pad_width = 0
+
+    def pad(self, pad_width: int, mode: str = 'reflect'):
+        """Pad the image so that the tetrahedra will extend beyond the
+        boundary. Uses `np.pad`.
+
+        Parameters
+        ----------
+        pad_width : int
+            Number of voxels to pad the image with on each side.
+        mode : str, optional
+            Set the padding mode. For more info see `np.pad`.
+        """
+        logger.info(f'padding image, {pad_width=}')
+        self.image = np.pad(self.image, pad_width, mode=mode)
+        self.pad_width = pad_width
+
+    def add_points(self,
+                   point_density: float = 1 / 10000,
+                   label: int = 1,
+                   step_size=2):
+        """Generate evenly distributed points using K-Means in the domain body
+        for generating tetrahedra.
+
+        Parameters
+        ----------
+        point_density : float, optional
+            Density of points (points per pixels) to distribute over the
+            domain for triangle generation.
+        label : int, optional
+            Label of the domain to add points to.
+        step_size : int, optional
+            If specified, downsample the image for point generation. This
+            speeds up the kmeans algorithm at the cost of lowered precision.
+        """
+        scale = 1 / step_size
+        logger.info(f'adding points, {step_size=}->{scale=}')
+
+        n_points = int(np.sum(self.image == label) * point_density)
+        grid_points = add_points_kmeans_sklearn(self.image,
+                                                iters=10,
+                                                n_points=n_points,
+                                                scale=scale)
+        self.points.append(grid_points)
+        logger.info(f'added {len(grid_points)} points ({label=})')
+
+    def generate_surface_mesh(self, step_size: int = 1):
+        """Generate surface mesh using marchin cubes algorithm.
+
+        Parameters
+        ----------
+        step_size : int, optional
+            Step size in voxels. Larger number means better performance at
+            the cost of lowered precision.
+        """
+        logger.info(f'generating vertices, {step_size=}')
+        verts, faces, normals, values = measure.marching_cubes(
+            self.image,
+            allow_degenerate=False,
+            step_size=step_size,
+        )
+        self.surface_mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
+        logger.info(f'generated {len(verts)} verts and {len(faces)} faces')
+
+    def simplify_mesh(self, n_faces: int):
+        """Reduce number of faces in surface mesh to `n_faces`.
+
+        Parameters
+        ----------
+        n_faces : int
+            The mesh is simplified until this number of faces is reached.
+        """
+        logger.info(f'simplifying mesh, {n_faces=}')
+
+        mesh = self.surface_mesh.to_trimesh()
+        decimated = mesh.simplify_quadratic_decimation(n_faces)
+        self.surface_mesh = decimated  # trimesh.Trimesh
+
+        logger.info(f'reduced to {len(self.surface_mesh.vertices)} verts '
+                    f'and {len(self.surface_mesh.faces)} faces')
+
+    def smooth_mesh(self):
+        """Smooth surface mesh using 'Taubin' algorithm."""
+        logger.info('smoothing mesh')
+
+        mesh = trimesh.smoothing.filter_taubin(self.surface_mesh,
+                                               iterations=50)
+        self.surface_mesh = mesh  # trimesh.Trimesh
+
+    def generate_volume_mesh(self):
+        """Generate volume mesh using Delauny triangulation with vertices from
+        surface mesh and k-means point generation."""
+        logger.info('triangulating')
+        verts = np.vstack([*self.points, self.surface_mesh.vertices])
+        tetrahedra = Delaunay(verts, incremental=False).simplices
+        logger.info(f'generated {len(tetrahedra)} tetrahedra')
+
+        self.volume_mesh = VolumeMeshContainer(vertices=verts,
+                                               faces=tetrahedra)
+
+    def generate_domain_mask(self, label: int = 1):
+        """Generate domain mask.
+
+        Parameters
+        ----------
+        label : int, optional
+            Domain to generate mask for.
+        """
+        # align points with voxel centers, and remove pad_width
+        logger.info('generating mask')
+        points_shifted = self.volume_mesh.vertices + 0.5
+
+        centers = points_shifted[self.volume_mesh.faces].mean(1)
+
+        pore_mask_center = self.image[tuple(centers.astype(int).T)] == 1
+
+        index = np.clip(points_shifted,
+                        a_min=0,
+                        a_max=np.array(self.image.shape) - 1).astype(int)
+        selection = self.image[tuple(index.T)] == label
+        selection = np.argwhere(selection)
+        pore_mask_vert = np.any(np.isin(self.volume_mesh.faces, selection),
+                                axis=1)
+
+        masks = [pore_mask_vert, pore_mask_center]
+
+        if self.pad_width:
+            for i, dim in enumerate(reversed(self.image.shape)):
+                bound_min = self.pad_width
+                bound_max = dim - self.pad_width
+                mask = (centers[:, i] >= bound_min) & (centers[:, i] <=
+                                                       bound_max)
+                masks.append(mask)
+            # move back to origin
+
+        mask = np.product(masks, axis=0).astype(bool)
+
+        self.mask = mask
+
+    def to_meshio(self) -> 'meshio.Mesh':
+        """Retrieve volume mesh as meshio object."""
+        verts = self.volume_mesh.vertices + 0.5 - self.pad_width
+        faces = self.volume_mesh.faces
+        mesh = tetrahedra_to_mesh(verts, faces, self.mask)
+        mesh.remove_orphaned_nodes()
+        return mesh
 
 
 def generate_3d_mesh(
@@ -157,85 +323,19 @@ def generate_3d_mesh(
     meshio.Mesh
         Description of the mesh.
     """
-    points: Any = []
-
-    if pad_width:
-        print(f'padding image, {pad_width=}')
-        image = np.pad(image, pad_width, mode='reflect')
-
-    if point_density:
-        scale = 1 / res_kmeans
-        print(f'adding points, {res_kmeans=}->{scale=}')
-
-        # grid_points = add_points_grid(image, border=5)
-        n_points1 = int(np.sum(image == 1) * point_density)
-        grid_points = add_points_kmeans_sklearn(image,
-                                                iters=10,
-                                                n_points=n_points1,
-                                                scale=scale)
-        points.append(grid_points)
-        print(f'added {len(grid_points)} points (1)')
-
-        # adding a few points to holes helps to get a cleaner result
-        n_points0 = int(np.sum(image == 0) * (point_density / 10))
-        grid_points = add_points_kmeans_sklearn(1 - image,
-                                                iters=10,
-                                                n_points=n_points0,
-                                                scale=scale)
-        points.append(grid_points)
-        print(f'added {len(grid_points)} points (0)')
-
-    print(f'generating vertices, {step_size=}')
-    verts, faces, normals, values = measure.marching_cubes(
-        image,
-        allow_degenerate=False,
-        step_size=step_size,
-    )
-    print(f'generated {len(verts)} verts and {len(faces)} faces')
-
-    print(f'simplifying mesh, {n_faces=}')
-    mesh = simplify_mesh_trimesh(vertices=verts, faces=faces, n_faces=n_faces)
-    print(f'reduced to {len(mesh.vertices)} verts and {len(mesh.faces)} faces')
-
-    print('smoothing mesh')
-    trimesh.smoothing.filter_taubin(mesh, iterations=50)
-
-    points.append(mesh.vertices)
-    points = np.vstack(points)
-
-    print('triangulating')
-    tetrahedra = Delaunay(points, incremental=False).simplices
-    print(f'generated {len(tetrahedra)} tetrahedra')
-
-    # align points with voxel centers
-    points_shifted = points + 0.5
-
-    centers = points_shifted[tetrahedra].mean(1)
-
-    print('masking')
-    pore_mask_center = image[tuple(centers.astype(int).T)] == 1
-
-    index = np.clip(points_shifted, a_min=0,
-                    a_max=np.array(image.shape) - 1).astype(int)
-    point_in_pore = image[tuple(index.T)]
-    index_of_point_in_pore = np.argwhere(point_in_pore)
-    pore_mask_vert = np.any(np.isin(tetrahedra, index_of_point_in_pore),
-                            axis=1)
-
-    masks = [pore_mask_vert, pore_mask_center]
-
-    if pad_width:
-        for i, dim in enumerate(reversed(image.shape)):
-            bound_min = pad_width
-            bound_max = dim - pad_width
-            mask = (centers[:, i] >= bound_min) & (centers[:, i] <= bound_max)
-            masks.append(mask)
-        # move back to origin
-        points -= pad_width
-
-    mask = np.product(masks, axis=0).astype(bool)
-
-    mesh = tetrahedra_to_mesh(points, tetrahedra, mask)
-    mesh.remove_orphaned_nodes()
+    mesher = Mesher3D(image)
+    mesher.pad(pad_width=pad_width)
+    mesher.add_points(point_density=point_density,
+                      step_size=res_kmeans,
+                      label=1)
+    mesher.add_points(point_density=point_density / 10,
+                      step_size=res_kmeans,
+                      label=0)
+    mesher.generate_surface_mesh(step_size=step_size)
+    mesher.simplify_mesh(n_faces=n_faces)
+    mesher.smooth_mesh()
+    mesher.generate_volume_mesh()
+    mesher.generate_domain_mask()
+    mesh = mesher.to_meshio()
 
     return mesh

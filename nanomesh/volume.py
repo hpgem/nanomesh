@@ -132,8 +132,24 @@ class Volume:
         else:
             raise ValueError(f'No such renderer: {renderer!r}')
 
+    def generate_mesh(self, **kwargs) -> 'meshio.Mesh':
+        """Generate mesh from binary (segmented) image.
+
+        Parameters
+        ----------
+        **kwargs:
+            Keyword arguments are passed to `mesh3d.generate_3d_mesh`
+
+        Returns
+        -------
+        meshio.Mesh
+            Description of the mesh.
+        """
+        from .mesh3d import generate_3d_mesh
+        return generate_3d_mesh(image=self.image, **kwargs)
+
     @requires(condition=pygalmesh, message='requires pygalmesh')
-    def generate_mesh(self, h=(1.0, 1.0, 1.0), **kwargs) -> 'meshio.Mesh':
+    def generate_mesh_cgal(self, h=(1.0, 1.0, 1.0), **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary image.
 
         Parameters

@@ -136,6 +136,7 @@ class Mesher3D:
         self.image = image
         self.points: List[np.ndarray] = []
         self.pad_width = 0
+        self.mask = None
 
     def pad(self, pad_width: int, mode: str = 'reflect'):
         """Pad the image so that the tetrahedra will extend beyond the

@@ -138,7 +138,7 @@ class Mesher3D:
         self.pad_width = 0
         self.mask = None
 
-    def pad(self, pad_width: int, mode: str = 'reflect'):
+    def pad(self, pad_width: int, mode: str = 'edge'):
         """Pad the image so that the tetrahedra will extend beyond the
         boundary. Uses `np.pad`.
 
@@ -189,10 +189,11 @@ class Mesher3D:
         ----------
         step_size : int, optional
             Step size in voxels. Larger number means better performance at
-            the cost of lowered precision.
+            the cost of lowered precision. Equivalent to
+            `self.image[::2,::2,::2]` for `step_size==2`.
         """
         logger.info(f'generating vertices, {step_size=}')
-        verts, faces, normals, values = measure.marching_cubes(
+        verts, faces, *_ = measure.marching_cubes(
             self.image,
             allow_degenerate=False,
             step_size=step_size,
@@ -246,30 +247,22 @@ class Mesher3D:
         """
         # align points with voxel centers, and remove pad_width
         logger.info('generating mask')
-        points_shifted = self.volume_mesh.vertices + 0.5
+        points_shifted = self.volume_mesh.vertices
 
         centers = points_shifted[self.volume_mesh.faces].mean(1)
 
-        pore_mask_center = self.image[tuple(centers.astype(int).T)] == 1
+        pore_mask_center = self.image[tuple(
+            np.round(centers).astype(int).T)] == label
 
-        index = np.clip(points_shifted,
-                        a_min=0,
-                        a_max=np.array(self.image.shape) - 1).astype(int)
-        selection = self.image[tuple(index.T)] == label
-        selection = np.argwhere(selection)
-        pore_mask_vert = np.any(np.isin(self.volume_mesh.faces, selection),
-                                axis=1)
-
-        masks = [pore_mask_vert, pore_mask_center]
+        masks = [pore_mask_center]
 
         if self.pad_width:
             for i, dim in enumerate(reversed(self.image.shape)):
                 bound_min = self.pad_width
                 bound_max = dim - self.pad_width
-                mask = (centers[:, i] >= bound_min) & (centers[:, i] <=
-                                                       bound_max)
+                mask = (centers[:, i] > bound_min) & (centers[:, i] <
+                                                      bound_max)
                 masks.append(mask)
-            # move back to origin
 
         mask = np.product(masks, axis=0).astype(bool)
 
@@ -277,7 +270,7 @@ class Mesher3D:
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Retrieve volume mesh as meshio object."""
-        verts = self.volume_mesh.vertices + 0.5 - self.pad_width
+        verts = self.volume_mesh.vertices - self.pad_width
         faces = self.volume_mesh.faces
         mesh = tetrahedra_to_mesh(verts, faces, self.mask)
         mesh.remove_orphaned_nodes()

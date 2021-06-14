@@ -3,6 +3,11 @@ import numpy as np
 
 def assert_mesh_almost_equal(this, other, tol=0.0):
     """Compare two meshes."""
+    this_shape = this.points.shape
+    other_shape = other.points.shape
+    assert this_shape == other_shape, (
+        f'{this_shape=} not equal to {other_shape=}')
+
     if tol:
         dist = np.linalg.norm(this.points - other.points, axis=1)
         assert dist.mean() < tol

@@ -28,12 +28,12 @@ def segmented():
     return image
 
 
-def test_generate_2d_mesh(segmented):
+def test_generate_3d_mesh(segmented):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
 
     np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = generate_3d_mesh(segmented, point_density=1 / 100, pad_width=5)
+    mesh = generate_3d_mesh(segmented, point_density=1 / 100, pad_width=2)
 
     if expected_fn.exists():
         with open(expected_fn, 'rb') as f:

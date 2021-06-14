@@ -278,9 +278,9 @@ class Mesher3D:
             Domain to generate mask for. Not implemented yet.
         """
         logger.info('generating mask')
-        points_shifted = self.volume_mesh.vertices
+        points = self.volume_mesh.vertices
 
-        centers = points_shifted[self.volume_mesh.faces].mean(1)
+        centers = points[self.volume_mesh.faces].mean(1)
 
         if self.surface_mesh.is_watertight:
             mask = self.surface_mesh.contains(centers)
@@ -329,7 +329,7 @@ def generate_3d_mesh(
     image: np.ndarray,
     *,
     step_size: int = 2,
-    pad_width: int = 20,
+    pad_width: int = 2,
     point_density: float = 1 / 10000,
     res_kmeans: float = 1.0,
     n_faces: int = 1000,
@@ -370,9 +370,6 @@ def generate_3d_mesh(
     mesher.add_points(point_density=point_density,
                       step_size=res_kmeans,
                       label=1)
-    mesher.add_points(point_density=point_density / 10,
-                      step_size=res_kmeans,
-                      label=0)
     mesher.generate_surface_mesh(step_size=step_size)
     mesher.simplify_mesh(n_faces=n_faces)
     mesher.smooth_mesh()

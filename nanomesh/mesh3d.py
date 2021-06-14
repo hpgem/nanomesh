@@ -138,7 +138,7 @@ class Mesher3D:
         self.pad_width = 0
         self.mask = None
 
-    def pad(self, pad_width: int, mode: str = 'edge'):
+    def pad(self, pad_width: int, mode: str = 'constant', **kwargs):
         """Pad the image so that the tetrahedra will extend beyond the
         boundary. Uses `np.pad`.
 
@@ -148,15 +148,17 @@ class Mesher3D:
             Number of voxels to pad the image with on each side.
         mode : str, optional
             Set the padding mode. For more info see `np.pad`.
+        **kwargs :
+            Keyword arguments passed to `np.pad`
         """
         logger.info(f'padding image, {pad_width=}')
-        self.image = np.pad(self.image, pad_width, mode=mode)
+        self.image = np.pad(self.image, pad_width, mode=mode, **kwargs)
         self.pad_width = pad_width
 
     def add_points(self,
                    point_density: float = 1 / 10000,
                    label: int = 1,
-                   step_size=2):
+                   step_size=1):
         """Generate evenly distributed points using K-Means in the domain body
         for generating tetrahedra.
 
@@ -198,8 +200,10 @@ class Mesher3D:
             allow_degenerate=False,
             step_size=step_size,
         )
-        self.surface_mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
+        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
+        self.surface_mesh = mesh.to_trimesh()
         logger.info(f'generated {len(verts)} verts and {len(faces)} faces')
+        logger.info(f'{self.surface_mesh.is_watertight=}')
 
     def simplify_mesh(self, n_faces: int):
         """Reduce number of faces in surface mesh to `n_faces`.
@@ -211,9 +215,8 @@ class Mesher3D:
         """
         logger.info(f'simplifying mesh, {n_faces=}')
 
-        mesh = self.surface_mesh.to_trimesh()
-        decimated = mesh.simplify_quadratic_decimation(n_faces)
-        self.surface_mesh = decimated  # trimesh.Trimesh
+        mesh = self.surface_mesh
+        self.surface_mesh = mesh.simplify_quadratic_decimation(n_faces)
 
         logger.info(f'reduced to {len(self.surface_mesh.vertices)} verts '
                     f'and {len(self.surface_mesh.faces)} faces')
@@ -225,6 +228,35 @@ class Mesher3D:
         mesh = trimesh.smoothing.filter_taubin(self.surface_mesh,
                                                iterations=50)
         self.surface_mesh = mesh  # trimesh.Trimesh
+
+    def optimize_mesh(self,
+                      *,
+                      method='CVT (block-diagonal)',
+                      tol: float = 1.0e-3,
+                      max_num_steps: int = 10,
+                      **kwargs):
+        """Optimize mesh using `optimesh`."""
+        logger.info('optimizing mesh')
+        import optimesh
+        verts, faces = optimesh.optimize_points_cells(
+            points=self.surface_mesh.vertices,
+            cells=self.surface_mesh.faces,
+            method=method,
+            tol=tol,
+            max_num_steps=max_num_steps,
+            **kwargs,
+        )
+        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
+        self.surface_mesh = mesh.to_trimesh()
+
+    def subdive_mesh(self, max_edge=10, iter=10):
+        from trimesh import remesh
+        verts, faces = remesh.subdivide_to_size(self.surface_mesh.vertices,
+                                                self.surface_mesh.faces,
+                                                max_edge=max_edge,
+                                                max_iter=10)
+        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
+        self.surface_mesh = mesh.to_trimesh()
 
     def generate_volume_mesh(self):
         """Generate volume mesh using Delauny triangulation with vertices from
@@ -243,13 +275,29 @@ class Mesher3D:
         Parameters
         ----------
         label : int, optional
-            Domain to generate mask for.
+            Domain to generate mask for. Not implemented yet.
         """
-        # align points with voxel centers, and remove pad_width
         logger.info('generating mask')
         points_shifted = self.volume_mesh.vertices
 
         centers = points_shifted[self.volume_mesh.faces].mean(1)
+
+        if self.surface_mesh.is_watertight:
+            mask = self.surface_mesh.contains(centers)
+        else:
+            mask = self.generate_domain_mask_from_image(centers, label=label)
+
+        self.mask = mask
+
+    def generate_domain_mask_from_image(self, centers, *, label):
+        """Alternative implementation to generate a domain mask for surface
+        meshes that are not closed, i.e. not watertight.
+
+        Returns
+        -------
+        mask : (n,1) np.ndarray
+            1-dimensional mask for the tetrahedra
+        """
 
         pore_mask_center = self.image[tuple(
             np.round(centers).astype(int).T)] == label
@@ -266,7 +314,7 @@ class Mesher3D:
 
         mask = np.product(masks, axis=0).astype(bool)
 
-        self.mask = mask
+        return mask
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Retrieve volume mesh as meshio object."""

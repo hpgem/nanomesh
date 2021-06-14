@@ -41,15 +41,16 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     install_requires=[
-        'gmsh',
+        'IPython!=7.23',  # 7.23 contains a bug that prevents matplotlib inline
         'ipywidgets',
         'itkwidgets',
         'matplotlib',
         'meshio',
         'numpy',
-        'IPython!=7.23',  # 7.23 contains a bug that prevents matplotlib inline
         'pyvista',
         'scikit-image',
+        'scikit-learn',
+        'trimesh',
     ],
     extras_require={
         'develop': [

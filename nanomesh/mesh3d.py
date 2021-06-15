@@ -68,11 +68,12 @@ def simplify_mesh_trimesh(vertices: np.ndarray, faces: np.ndarray,
     return decimated
 
 
-def add_points_kmeans_sklearn(image: np.ndarray,
-                              iters: int = 10,
-                              n_points: int = 100,
-                              scale=1.0,
-                              plot: bool = False):
+def add_points_kmeans_sklearn(
+    image: np.ndarray,
+    iters: int = 10,
+    n_points: int = 100,
+    scale=1.0,
+):
     """Add evenly distributed points to the image.
 
     Parameters
@@ -160,7 +161,7 @@ class Mesher3D:
         logger.info(f'added {len(grid_points)} points ({label=})')
 
     def generate_surface_mesh(self, step_size: int = 1):
-        """Generate surface mesh using marchin cubes algorithm.
+        """Generate surface mesh using marching cubes algorithm.
 
         Parameters
         ----------
@@ -235,7 +236,19 @@ class Mesher3D:
                       tol: float = 1.0e-3,
                       max_num_steps: int = 10,
                       **kwargs):
-        """Optimize mesh using `optimesh`."""
+        """Optimize mesh using `optimesh`.
+
+        Parameters
+        ----------
+        method : str, optional
+            Method name
+        tol : float, optional
+            Tolerance
+        max_num_steps : int, optional
+            Maximum number of optimization steps.
+        **kwargs
+            Description
+        """
         logger.info('optimizing mesh')
         import optimesh
         verts, faces = optimesh.optimize_points_cells(
@@ -248,7 +261,16 @@ class Mesher3D:
         )
         self.surface_mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
 
-    def subdive_mesh(self, max_edge=10, iter=10):
+    def subdivide_mesh(self, max_edge: int = 10, iter: int = 10):
+        """Subdivide triangles until the maximum edge size is reached.
+
+        Parameters
+        ----------
+        max_edge : int, optional
+            Max triangle edge distance.
+        iter : int, optional
+            Maximum number of iterations of iterations.
+        """
         from trimesh import remesh
         verts, faces = remesh.subdivide_to_size(self.surface_mesh.vertices,
                                                 self.surface_mesh.faces,
@@ -297,7 +319,7 @@ class Mesher3D:
         Returns
         -------
         mask : (n,1) np.ndarray
-            1-dimensional mask for the tetrahedra
+            1-dimensional mask for the faces
         """
 
         pore_mask_center = self.image[tuple(
@@ -337,8 +359,6 @@ def generate_3d_mesh(
 ) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
-    Code derived from https://forum.image.sc/t/create-3d-volume-mesh/34052/9
-
     Parameters
     ----------
     image : 3D np.ndarray
@@ -347,10 +367,9 @@ def generate_3d_mesh(
         Number of voxels to pad the images with on each side. Tetrahedra will
         extend beyond the boundary. The image is padded with the edge values
         of the array `mode='edge'` in `np.pad`).
-        Pad the image by this number of pixels by reflecting the
     point_density : float, optional
         Density of points to distribute over the domains for triangle
-        generation. Expressed as a fraction of the number of pixels.
+        generation. Expressed as a fraction of the number of voxels.
     step_size : int
         Step size in voxels for the marching cubes algorithms. Larger steps
         yield faster but coarser results.

@@ -36,8 +36,6 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
     install_requires=[
@@ -51,6 +49,8 @@ setup(
         'scikit-image',
         'scikit-learn',
         'trimesh',
+        'open3d',  # 3d mesh simplification
+        'rtree',  # soft dependency of trimesh
     ],
     extras_require={
         'develop': [

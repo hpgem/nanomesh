@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from typing import List
 
 import meshio
@@ -10,34 +9,10 @@ from scipy.spatial import Delaunay
 from skimage import measure, transform
 from sklearn import cluster
 
-from .mesh_utils import (meshio_to_polydata, tetrahedra_to_mesh,
-                         triangles_to_mesh)
+from .mesh_utils import (SurfaceMeshContainer, VolumeMeshContainer,
+                         meshio_to_polydata)
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class SurfaceMeshContainer:
-    vertices: np.ndarray
-    faces: np.ndarray
-
-    def to_trimesh(self) -> 'trimesh.Trimesh':
-        """Return instance of `trimesh.Trimesh`."""
-        return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
-
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
-        return triangles_to_mesh(self.vertices, self.faces)
-
-
-@dataclass
-class VolumeMeshContainer:
-    vertices: np.ndarray
-    faces: np.ndarray
-
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
-        return tetrahedra_to_mesh(self.vertices, self.faces)
 
 
 def show_submesh(*meshes: List[meshio.Mesh],
@@ -54,7 +29,7 @@ def show_submesh(*meshes: List[meshio.Mesh],
         Index of where to cut the mesh.
     along : str, optional
         Direction along which to cut.
-    plotter : TYPE, optional
+    plotter : pyvista.Plotter, optional
         Plotting instance (`pv.PlotterITK` or `pv.Plotter`)
 
     Returns
@@ -201,9 +176,10 @@ class Mesher3D:
             step_size=step_size,
         )
         mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
-        self.surface_mesh = mesh.to_trimesh()
+
         logger.info(f'generated {len(verts)} verts and {len(faces)} faces')
-        logger.info(f'{self.surface_mesh.is_watertight=}')
+
+        self.surface_mesh = mesh
 
     def simplify_mesh(self, n_faces: int):
         """Reduce number of faces in surface mesh to `n_faces`.
@@ -215,19 +191,43 @@ class Mesher3D:
         """
         logger.info(f'simplifying mesh, {n_faces=}')
 
-        mesh = self.surface_mesh
-        self.surface_mesh = mesh.simplify_quadratic_decimation(n_faces)
+        mesh = self.surface_mesh.to_open3d()
+        mesh.simplify_quadric_decimation(int(n_faces))
+        self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh)
 
         logger.info(f'reduced to {len(self.surface_mesh.vertices)} verts '
                     f'and {len(self.surface_mesh.faces)} faces')
 
+    def simplify_mesh_by_vertex_clustering(self, voxel_size: float = 1.0):
+        """Simplify mesh geometry using vertex clustering.
+
+        Parameters
+        ----------
+        voxel_size : float, optional
+            Size of the target voxel within which vertices are grouped.
+        """
+        import open3d as o3d
+        mesh_in = self.surface_mesh.to_open3d()
+        mesh_smp = mesh_in.simplify_vertex_clustering(
+            voxel_size=voxel_size,
+            contraction=o3d.geometry.SimplificationContraction.Average)
+
+        self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh_smp)
+
     def smooth_mesh(self):
-        """Smooth surface mesh using 'Taubin' algorithm."""
+        """Smooth surface mesh using 'Taubin' algorithm.
+
+        The advantage of the Taubin algorithm is that it avoids
+        shrinkage of the object.
+        """
         logger.info('smoothing mesh')
 
-        mesh = trimesh.smoothing.filter_taubin(self.surface_mesh,
-                                               iterations=50)
-        self.surface_mesh = mesh  # trimesh.Trimesh
+        mesh = trimesh.smoothing.filter_taubin(
+            self.surface_mesh.to_trimesh(),
+            iterations=50,
+        )
+        self.surface_mesh = SurfaceMeshContainer.from_trimesh(
+            mesh)  # trimesh.Trimesh
 
     def optimize_mesh(self,
                       *,
@@ -246,8 +246,7 @@ class Mesher3D:
             max_num_steps=max_num_steps,
             **kwargs,
         )
-        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
-        self.surface_mesh = mesh.to_trimesh()
+        self.surface_mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
 
     def subdive_mesh(self, max_edge=10, iter=10):
         from trimesh import remesh
@@ -278,12 +277,14 @@ class Mesher3D:
             Domain to generate mask for. Not implemented yet.
         """
         logger.info('generating mask')
-        points = self.volume_mesh.vertices
+        vertices = self.volume_mesh.vertices
 
-        centers = points[self.volume_mesh.faces].mean(1)
+        centers = vertices[self.volume_mesh.faces].mean(1)
 
-        if self.surface_mesh.is_watertight:
-            mask = self.surface_mesh.contains(centers)
+        mesh = self.surface_mesh.to_trimesh()
+
+        if mesh.is_watertight:
+            mask = mesh.contains(centers)
         else:
             mask = self.generate_domain_mask_from_image(centers, label=label)
 
@@ -319,8 +320,8 @@ class Mesher3D:
     def to_meshio(self) -> 'meshio.Mesh':
         """Retrieve volume mesh as meshio object."""
         verts = self.volume_mesh.vertices - self.pad_width
-        faces = self.volume_mesh.faces
-        mesh = tetrahedra_to_mesh(verts, faces, self.mask)
+        faces = self.volume_mesh.faces[self.mask]
+        mesh = VolumeMeshContainer(vertices=verts, faces=faces).to_meshio()
         mesh.remove_orphaned_nodes()
         return mesh
 

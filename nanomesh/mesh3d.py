@@ -1,77 +1,18 @@
 import logging
-from dataclasses import dataclass
 from typing import List
 
 import meshio
 import numpy as np
-import open3d
 import pyvista as pv
 import trimesh
 from scipy.spatial import Delaunay
 from skimage import measure, transform
 from sklearn import cluster
 
-from .mesh_utils import (meshio_to_polydata, tetrahedra_to_mesh,
-                         triangles_to_mesh)
+from .mesh_utils import (SurfaceMeshContainer, VolumeMeshContainer,
+                         meshio_to_polydata)
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class SurfaceMeshContainer:
-    vertices: np.ndarray
-    faces: np.ndarray
-
-    def to_trimesh(self) -> 'trimesh.Trimesh':
-        """Return instance of `trimesh.Trimesh`."""
-        return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
-
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
-        return triangles_to_mesh(self.vertices, self.faces)
-
-    def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
-        """Return instance of `open3d.geometry.TriangleMesh`."""
-        import open3d
-        return open3d.geometry.TriangleMesh(
-            vertices=open3d.utility.Vector3dVector(self.vertices),
-            triangles=open3d.utility.Vector3iVector(self.faces))
-
-    @classmethod
-    def from_open3d(cls, mesh: 'open3d.geometry.TriangleMesh'):
-        """Return instance of `SurfaceMeshContainer` from open3d."""
-        vertices = np.asarray(mesh.vertices)
-        faces = np.asarray(mesh.triangles)
-        return cls(vertices=vertices, faces=faces)
-
-    @classmethod
-    def from_trimesh(cls, mesh: 'trimesh.Trimesh'):
-        """Return instance of `SurfaceMeshContainer` from open3d."""
-        return cls(vertices=mesh.vertices, faces=mesh.faces)
-
-
-@dataclass
-class VolumeMeshContainer:
-    vertices: np.ndarray
-    faces: np.ndarray
-
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
-        return tetrahedra_to_mesh(self.vertices, self.faces)
-
-    def to_open3d(self):
-        """Return instance of `open3d.geometry.TetraMesh`."""
-        import open3d
-        return open3d.geometry.TetraMesh(
-            vertices=open3d.utility.Vector3dVector(self.vertices),
-            tetras=open3d.utility.Vector4iVector(self.faces))
-
-    @classmethod
-    def from_open3d(cls, mesh):
-        """Return instance of `VolumeMeshContainer` from open3d."""
-        vertices = np.asarray(mesh.vertices)
-        faces = np.asarray(mesh.tetras)
-        return cls(vertices=vertices, faces=faces)
 
 
 def show_submesh(*meshes: List[meshio.Mesh],
@@ -88,7 +29,7 @@ def show_submesh(*meshes: List[meshio.Mesh],
         Index of where to cut the mesh.
     along : str, optional
         Direction along which to cut.
-    plotter : TYPE, optional
+    plotter : pyvista.Plotter, optional
         Plotting instance (`pv.PlotterITK` or `pv.Plotter`)
 
     Returns

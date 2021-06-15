@@ -4,13 +4,12 @@ from typing import List
 
 import meshio
 import numpy as np
+import open3d
 import pyvista as pv
 import trimesh
 from scipy.spatial import Delaunay
 from skimage import measure, transform
 from sklearn import cluster
-
-import open3d
 
 from .mesh_utils import (meshio_to_polydata, tetrahedra_to_mesh,
                          triangles_to_mesh)
@@ -251,8 +250,9 @@ class Mesher3D:
         """
         logger.info(f'simplifying mesh, {n_faces=}')
 
-        mesh = self.surface_mesh
-        self.surface_mesh = mesh.simplify_quadratic_decimation(n_faces)
+        mesh = self.surface_mesh.to_open3d()
+        mesh.simplify_quadric_decimation(int(n_faces))
+        self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh)
 
         logger.info(f'reduced to {len(self.surface_mesh.vertices)} verts '
                     f'and {len(self.surface_mesh.faces)} faces')
@@ -281,9 +281,12 @@ class Mesher3D:
         """
         logger.info('smoothing mesh')
 
-        mesh = trimesh.smoothing.filter_taubin(self.surface_mesh,
-                                               iterations=50)
-        self.surface_mesh = mesh  # trimesh.Trimesh
+        mesh = trimesh.smoothing.filter_taubin(
+            self.surface_mesh.to_trimesh(),
+            iterations=50,
+        )
+        self.surface_mesh = SurfaceMeshContainer.from_trimesh(
+            mesh)  # trimesh.Trimesh
 
     def optimize_mesh(self,
                       *,
@@ -302,8 +305,7 @@ class Mesher3D:
             max_num_steps=max_num_steps,
             **kwargs,
         )
-        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
-        self.surface_mesh = mesh.to_trimesh()
+        self.surface_mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
 
     def subdive_mesh(self, max_edge=10, iter=10):
         from trimesh import remesh
@@ -334,12 +336,14 @@ class Mesher3D:
             Domain to generate mask for. Not implemented yet.
         """
         logger.info('generating mask')
-        points = self.volume_mesh.vertices
+        vertices = self.volume_mesh.vertices
 
-        centers = points[self.volume_mesh.faces].mean(1)
+        centers = vertices[self.volume_mesh.faces].mean(1)
 
-        if self.surface_mesh.is_watertight:
-            mask = self.surface_mesh.contains(centers)
+        mesh = self.surface_mesh.to_trimesh()
+
+        if mesh.is_watertight:
+            mask = mesh.contains(centers)
         else:
             mask = self.generate_domain_mask_from_image(centers, label=label)
 

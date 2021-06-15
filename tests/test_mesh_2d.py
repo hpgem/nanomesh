@@ -7,9 +7,8 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
-from nanomesh.mesh2d import (add_edge_points, add_points_grid,
-                             add_points_kmeans, generate_2d_mesh,
-                             subdivide_contour)
+from nanomesh.mesh2d import (add_edge_points, add_points_kmeans,
+                             generate_2d_mesh, subdivide_contour)
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux). Allow some deviation if the platforms do not match.
@@ -40,11 +39,11 @@ def segmented():
 )
 def test_generate_2d_mesh(segmented):
     """Test 2D mesh generation and plot."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh.pickle'
+    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.pickle'
 
     np.random.seed(1234)  # set seed for reproducible clustering
     mesh = generate_2d_mesh(segmented,
-                            pad=True,
+                            pad_width=1,
                             point_density=1 / 100,
                             max_contour_dist=4,
                             plot=True)
@@ -64,11 +63,11 @@ def test_generate_2d_mesh(segmented):
 def test_generate_2d_mesh_no_extra_points(segmented):
     """Test if 2D mesh generation works when no extra points are passed."""
     expected_fn = Path(
-        __file__).parent / 'segmented_mesh_no_extra_points.pickle'
+        __file__).parent / 'segmented_mesh_2d_no_extra_points.pickle'
 
     np.random.seed(1234)  # set seed for reproducible clustering
     mesh = generate_2d_mesh(segmented,
-                            pad=False,
+                            pad_width=0,
                             point_density=0,
                             max_contour_dist=4,
                             plot=False)
@@ -99,20 +98,6 @@ def test_add_edge_points():
     assert np.all(ret == expected)
 
 
-def test_add_points_grid():
-    """Test grid method for adding points."""
-    image = np.zeros((10, 10))
-    image[:5, :5] = 1
-    image[-5:, -5:] = 1
-
-    ret = add_points_grid(image, border=1, n_points=4)
-
-    expected = np.array([[0, 0], [3, 0], [0, 3], [3, 3], [6, 6], [9, 6],
-                         [6, 9], [9, 9]])
-
-    assert np.all(ret == expected)
-
-
 def test_add_points_kmeans():
     """Test kmeans method for adding points."""
     image = np.zeros((10, 10))
@@ -122,9 +107,9 @@ def test_add_points_kmeans():
     np.random.seed(9)
     ret = add_points_kmeans(image, iters=5, n_points=10)
 
-    expected = np.array([[3.6, 2.8], [8., 6.], [0., 2.], [2., 3.75], [8., 8.5],
-                         [1.25, 2.], [2.2, 0.4], [4., 0.5], [5.5, 8.],
-                         [5.5, 5.5]])
+    expected = np.array([[3.6, 1.8], [8., 6.], [0., 2.], [2., 3.5], [8., 8.5],
+                         [1.5, 1.5], [2., 0.], [4., 0.], [5.5, 8.], [5.2,
+                                                                     5.2]])
 
     np.testing.assert_almost_equal(ret, expected)
 

@@ -1,13 +1,16 @@
-from typing import Any
+import logging
+from typing import Any, List
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
-from scipy._lib._util import _asarray_validated
-from scipy.cluster.vq import kmeans2
 from scipy.spatial import Delaunay
-from skimage import morphology
 from skimage.measure import approximate_polygon, find_contours
+from sklearn import cluster
+
+from .mesh_utils import TwoDMeshContainer
+
+logger = logging.getLogger(__name__)
 
 
 def add_edge_points(image: np.ndarray, n_points: tuple = (10, 10), plot=False):
@@ -51,93 +54,37 @@ def add_edge_points(image: np.ndarray, n_points: tuple = (10, 10), plot=False):
     return edge_points
 
 
-def add_points_grid(image: np.ndarray, border: int = 5, n_points: int = 40):
-    """Add dummy points to aid triangulation.
-
-    Parameters
-    ----------
-    image : 2D np.ndarray
-        Input image.
-    border : int, optional
-        Do not add points within this number of pixels around an object.
-    n_points : int, optional
-        Number of points to add in the x and y direction.
-
-    Returns
-    -------
-    (n,2) np.ndarray
-        Array with the generated points.
-    """
-    disk = morphology.disk(border)
-    image_dilated = morphology.binary_erosion(image, selem=disk)
-
-    shape_x, shape_y = image.shape
-
-    x, y = np.meshgrid(np.linspace(0, shape_x - 1, n_points),
-                       np.linspace(0, shape_y - 1, n_points))
-    grid_points = np.vstack((np.hstack(x), np.hstack(y))).T.astype(int)
-
-    mask = image_dilated[tuple(grid_points.T)] == True
-    grid_points = grid_points[mask]
-
-    return grid_points
-
-
-def whiten(obs, check_finite=False):
-    """Adapted from c:/python27/lib/site-
-    packages/skimage/filters/thresholding.py to return array and std_dev."""
-    obs = _asarray_validated(obs, check_finite=check_finite)
-    std_dev = np.std(obs, axis=0)
-    zero_std_mask = std_dev == 0
-    if zero_std_mask.any():
-        std_dev[zero_std_mask] = 1.0
-        raise RuntimeWarning('Some columns have standard deviation zero. '
-                             'The values of these columns will not change.')
-    return obs / std_dev, std_dev
-
-
 def add_points_kmeans(image: np.ndarray,
-                      iters: int = 20,
+                      iters: int = 10,
                       n_points: int = 100,
+                      label: int = 1,
                       plot: bool = False):
     """Add evenly distributed points to the image.
 
     Parameters
     ----------
-    image : 2D np.ndarray
+    image : 3D np.ndarray
         Input image
     iters : int, optional
         Number of iterations for the kmeans algorithm.
     n_points : int, optional
         Total number of points to add
-    plot : bool, optional
-        Show plot of the added points.
 
     Returns
     -------
-    (n,2) np.ndarray
+    (n,3) np.ndarray
         Array with the generated points.
     """
-    coordinates = np.argwhere(image)
+    coordinates = np.argwhere(image == label)
 
-    # kmeans needs normalized data (w),
-    # store std to calculate coordinates after
-    w, std = whiten(coordinates)
+    kmeans = cluster.KMeans(n_clusters=n_points,
+                            n_init=1,
+                            init='random',
+                            max_iter=iters,
+                            algorithm='full')
+    ret = kmeans.fit(coordinates)
 
-    # nclust must be an integer for some reason
-    cluster_centroids, closest_centroids = kmeans2(w,
-                                                   n_points,
-                                                   iter=iters,
-                                                   minit='points')
-
-    # convert to image coordinates
-    grid_points = (cluster_centroids * std)
-
-    if plot:
-        plt.imshow(image)
-        plt.scatter(*grid_points.T[::-1])
-
-    return grid_points
+    return ret.cluster_centers_
 
 
 def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
@@ -222,7 +169,7 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
         ax.plot(contour_x, contour_y, color='red')
 
     ax = plt.subplot(222)
-    ax.set_title(f'Vertices ({len(points)} points')
+    ax.set_title(f'Vertices ({len(points)} points)')
     ax.imshow(image, cmap='gray')
     ax.scatter(*points.T[::-1], s=2, color='red')
 
@@ -237,24 +184,178 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
     ax.triplot(x, y, triangles, mask=~mask)
 
 
+class Mesher2D:
+    def __init__(self, image: np.ndarray):
+        self.image = image
+        self.points: List[np.ndarray] = []
+        self.pad_width = 0
+        self.mask = None
+
+    def pad(self, pad_width: int, mode: str = 'constant', **kwargs):
+        """Pad the image so that the triangles will extend beyond the boundary.
+        Uses `np.pad`.
+
+        Parameters
+        ----------
+        pad_width : int
+            Number of voxels to pad the image with on each side.
+        mode : str, optional
+            Set the padding mode. For more info see `np.pad`.
+        **kwargs :
+            Keyword arguments passed to `np.pad`
+        """
+        logger.info(f'padding image, {pad_width=}')
+        self.image = np.pad(self.image, pad_width, mode=mode, **kwargs)
+        self.pad_width = pad_width
+
+    def add_points(
+        self,
+        point_density: float = 1 / 100,
+        label: int = 1,
+    ):
+        """Generate evenly distributed points using K-Means in the domain body
+        for generating tetrahedra.
+
+        Parameters
+        ----------
+        point_density : float, optional
+            Density of points (points per pixels) to distribute over the
+            domain for triangle generation.
+        label : int, optional
+            Label of the domain to add points to.
+        """
+        n_points = int(np.sum(self.image == label) * point_density)
+        grid_points = add_points_kmeans(self.image,
+                                        iters=10,
+                                        n_points=n_points,
+                                        label=1)
+        self.points.append(grid_points)
+        logger.info(f'added {len(grid_points)} points ({label=})')
+
+    def generate_contours(
+        self,
+        contour_precision: int = 1,
+        max_contour_dist: int = 10,
+    ):
+        """Generate surface mesh using marching cubes algorithm.
+
+        Contours are approximated by a polygon, where the maximum distance
+        between points is decided by `max_contour_dist`.
+
+        Parameters
+        ----------
+        contour_precision : int, optional
+            Maximum distance from original points in polygon approximation
+            routine.
+        max_contour_dist : int, optional
+            Divide long edges so that maximum distance between points does not
+            exceed this value.
+        """
+
+        contours = find_contours(self.image)
+        contours = [
+            approximate_polygon(contour, contour_precision)
+            for contour in contours
+        ]
+        contours = [
+            subdivide_contour(contour, max_dist=max_contour_dist)
+            for contour in contours
+        ]
+        self.contours = contours
+
+    def generate_mesh(self):
+        """Generate 2D triangle mesh using Delauny triangulation with vertices
+        from contours and k-means point generation."""
+        verts = np.vstack([*self.points, *self.contours])
+
+        faces = Delaunay(verts, incremental=False).simplices
+
+        self.surface_mesh = TwoDMeshContainer(vertices=verts, faces=faces)
+
+    def generate_domain_mask(self, label: int = 1):
+        """Generate domain mask.
+
+        Parameters
+        ----------
+        label : int, optional
+            Domain to generate mask for. Not implemented yet.
+        """
+        logger.info('generating mask')
+        vertices = self.surface_mesh.vertices
+
+        centers = vertices[self.surface_mesh.faces].mean(1)
+
+        mesh = self.surface_mesh.to_trimesh()
+
+        if mesh.is_watertight:
+            mask = mesh.contains(centers)
+        else:
+            mask = self.generate_domain_mask_from_image(centers, label=label)
+
+        self.mask = mask
+
+    def generate_domain_mask_from_image(self, centers, *, label):
+        """Alternative implementation to generate a domain mask for surface
+        meshes that are not closed, i.e. not watertight.
+
+        Returns
+        -------
+        mask : (n,1) np.ndarray
+            1-dimensional mask for the faces
+        """
+
+        pore_mask_center = self.image[tuple(
+            np.round(centers).astype(int).T)] == label
+
+        masks = [pore_mask_center]
+
+        if self.pad_width:
+            for i, dim in enumerate(reversed(self.image.shape)):
+                bound_min = self.pad_width
+                bound_max = dim - self.pad_width
+                mask = (centers[:, i] > bound_min) & (centers[:, i] <
+                                                      bound_max)
+                masks.append(mask)
+
+        mask = np.product(masks, axis=0).astype(bool)
+
+        return mask
+
+    def plot_steps(self):
+        """Plot meshing steps."""
+        plot_mesh_steps(
+            image=self.image,
+            contours=self.contours,
+            points=self.surface_mesh.vertices,
+            triangles=self.surface_mesh.faces,
+            mask=self.mask,
+        )
+
+    def to_meshio(self) -> 'meshio.Mesh':
+        """Retrieve volume mesh as `meshio.Mesh` object."""
+        verts = self.surface_mesh.vertices - self.pad_width
+        faces = self.surface_mesh.faces[self.mask]
+        mesh = TwoDMeshContainer(vertices=verts, faces=faces).to_meshio()
+        mesh.remove_orphaned_nodes()
+        return mesh
+
+
 def generate_2d_mesh(image: np.ndarray,
                      *,
-                     pad: bool = True,
+                     pad_width: int = 1,
                      point_density: float = 1 / 100,
                      contour_precision: int = 1,
                      max_contour_dist: int = 10,
                      plot: bool = False) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
-    Code derived from https://forum.image.sc/t/create-3d-volume-mesh/34052/9
-
     Parameters
     ----------
     image : 2D np.ndarray
         Input image to mesh.
-    pad : bool, optional
-        Pad the image using zeros to ensure the contours are closed at the
-        image edge. The number of points are derived from `points_density`.
+    pad_width : int, optional
+        Number of pixel to pad the images with on each side. Triangles will
+        be generated to the boundary.
     point_density : float, optional
         Density of points to distribute over the domains for triangle
         generation. Expressed as a fraction of the number of pixels.
@@ -270,59 +371,18 @@ def generate_2d_mesh(image: np.ndarray,
     meshio.Mesh
         Description of the mesh.
     """
-    points: Any = []
+    mesher = Mesher2D(image)
 
-    if point_density:
-        # grid_points = add_points_grid(image, border=5)
-        n_points1 = int(np.sum(image == 1) * point_density)
-        grid_points = add_points_kmeans(image, iters=20, n_points=n_points1)
-        points.append(grid_points)
-
-        # adding points to holes helps to get a cleaner result
-        n_points0 = int(np.sum(image == 0) * point_density)
-        grid_points = add_points_kmeans(1 - image,
-                                        iters=20,
-                                        n_points=n_points0)
-        points.append(grid_points)
-
-    if pad:
-        n_points_edge = (np.array(image.shape) *
-                         (point_density**0.5)).astype(int)
-        pad_points = add_edge_points(image, n_points=n_points_edge)
-        points.append(pad_points)
-        # image = np.pad(image, 1, constant_values=0)
-
-    contours = find_contours(image)
-    contours = [
-        approximate_polygon(contour, contour_precision) for contour in contours
-    ]
-    contours = [
-        subdivide_contour(contour, max_dist=max_contour_dist)
-        for contour in contours
-    ]
-
-    points.extend(contours)
-    points = np.vstack(points)
-
-    triangles = Delaunay(points, incremental=False).simplices
-    tri_x, tri_y, tri_z = triangles.T
-    centers = (points[tri_x] + points[tri_y] + points[tri_z]) / 3
-    mask = image[tuple(centers.astype(int).T)] == 0
+    mesher.pad(pad_width)
+    if point_density > 0:
+        mesher.add_points(label=1, point_density=point_density)
+    mesher.generate_contours(contour_precision=contour_precision,
+                             max_contour_dist=max_contour_dist)
+    mesher.generate_mesh()
+    mesher.generate_domain_mask()
 
     if plot:
-        plot_mesh_steps(
-            image=image,
-            contours=contours,
-            points=points,
-            triangles=triangles,
-            mask=mask,
-        )
+        mesher.plot_steps()
 
-    cells = [
-        ('triangle', triangles[~mask]),
-    ]
-
-    mesh = meshio.Mesh(points, cells)
-    mesh.remove_orphaned_nodes()
-
+    mesh = mesher.to_meshio()
     return mesh

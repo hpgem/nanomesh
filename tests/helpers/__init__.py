@@ -10,7 +10,7 @@ def assert_mesh_almost_equal(this, other, tol=0.0):
 
     if tol:
         dist = np.linalg.norm(this.points - other.points, axis=1)
-        assert dist.mean() < tol
+        assert dist.mean() < tol, f'{dist.mean()=} {tol=}'
     else:
         assert np.allclose(this.points, other.points)
 

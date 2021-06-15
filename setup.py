@@ -51,6 +51,8 @@ setup(
         'scikit-image',
         'scikit-learn',
         'trimesh',
+        'open3d',  # 3d mesh simplification
+        'rtree',  # soft dependency of trimesh
     ],
     extras_require={
         'develop': [

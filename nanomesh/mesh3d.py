@@ -10,6 +10,8 @@ from scipy.spatial import Delaunay
 from skimage import measure, transform
 from sklearn import cluster
 
+import open3d
+
 from .mesh_utils import (meshio_to_polydata, tetrahedra_to_mesh,
                          triangles_to_mesh)
 
@@ -29,7 +31,7 @@ class SurfaceMeshContainer:
         """Return instance of `meshio.Mesh`."""
         return triangles_to_mesh(self.vertices, self.faces)
 
-    def to_open3d(self):
+    def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
         """Return instance of `open3d.geometry.TriangleMesh`."""
         import open3d
         return open3d.geometry.TriangleMesh(
@@ -37,7 +39,7 @@ class SurfaceMeshContainer:
             triangles=open3d.utility.Vector3iVector(self.faces))
 
     @classmethod
-    def from_open3d(cls, mesh):
+    def from_open3d(cls, mesh: 'open3d.geometry.TriangleMesh'):
         """Return instance of `SurfaceMeshContainer` from open3d."""
         vertices = np.asarray(mesh.vertices)
         faces = np.asarray(mesh.triangles)
@@ -234,9 +236,10 @@ class Mesher3D:
             step_size=step_size,
         )
         mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
-        self.surface_mesh = mesh.to_trimesh()
+
         logger.info(f'generated {len(verts)} verts and {len(faces)} faces')
-        logger.info(f'{self.surface_mesh.is_watertight=}')
+
+        self.surface_mesh = mesh
 
     def simplify_mesh(self, n_faces: int):
         """Reduce number of faces in surface mesh to `n_faces`.
@@ -271,7 +274,11 @@ class Mesher3D:
         self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh_smp)
 
     def smooth_mesh(self):
-        """Smooth surface mesh using 'Taubin' algorithm."""
+        """Smooth surface mesh using 'Taubin' algorithm.
+
+        The advantage of the Taubin algorithm is that it avoids
+        shrinkage of the object.
+        """
         logger.info('smoothing mesh')
 
         mesh = trimesh.smoothing.filter_taubin(self.surface_mesh,
@@ -368,8 +375,8 @@ class Mesher3D:
     def to_meshio(self) -> 'meshio.Mesh':
         """Retrieve volume mesh as meshio object."""
         verts = self.volume_mesh.vertices - self.pad_width
-        faces = self.volume_mesh.faces
-        mesh = tetrahedra_to_mesh(verts, faces, self.mask)
+        faces = self.volume_mesh.faces[self.mask]
+        mesh = VolumeMeshContainer(vertices=verts, faces=faces).to_meshio()
         mesh.remove_orphaned_nodes()
         return mesh
 

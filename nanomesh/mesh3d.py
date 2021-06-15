@@ -29,6 +29,25 @@ class SurfaceMeshContainer:
         """Return instance of `meshio.Mesh`."""
         return triangles_to_mesh(self.vertices, self.faces)
 
+    def to_open3d(self):
+        """Return instance of `open3d.geometry.TriangleMesh`."""
+        import open3d
+        return open3d.geometry.TriangleMesh(
+            vertices=open3d.utility.Vector3dVector(self.vertices),
+            triangles=open3d.utility.Vector3iVector(self.faces))
+
+    @classmethod
+    def from_open3d(cls, mesh):
+        """Return instance of `SurfaceMeshContainer` from open3d."""
+        vertices = np.asarray(mesh.vertices)
+        faces = np.asarray(mesh.triangles)
+        return cls(vertices=vertices, faces=faces)
+
+    @classmethod
+    def from_trimesh(cls, mesh: 'trimesh.Trimesh'):
+        """Return instance of `SurfaceMeshContainer` from open3d."""
+        return cls(vertices=mesh.vertices, faces=mesh.faces)
+
 
 @dataclass
 class VolumeMeshContainer:
@@ -38,6 +57,20 @@ class VolumeMeshContainer:
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
         return tetrahedra_to_mesh(self.vertices, self.faces)
+
+    def to_open3d(self):
+        """Return instance of `open3d.geometry.TetraMesh`."""
+        import open3d
+        return open3d.geometry.TetraMesh(
+            vertices=open3d.utility.Vector3dVector(self.vertices),
+            tetras=open3d.utility.Vector4iVector(self.faces))
+
+    @classmethod
+    def from_open3d(cls, mesh):
+        """Return instance of `VolumeMeshContainer` from open3d."""
+        vertices = np.asarray(mesh.vertices)
+        faces = np.asarray(mesh.tetras)
+        return cls(vertices=vertices, faces=faces)
 
 
 def show_submesh(*meshes: List[meshio.Mesh],
@@ -220,6 +253,22 @@ class Mesher3D:
 
         logger.info(f'reduced to {len(self.surface_mesh.vertices)} verts '
                     f'and {len(self.surface_mesh.faces)} faces')
+
+    def simplify_mesh_by_vertex_clustering(self, voxel_size: float = 1.0):
+        """Simplify mesh geometry using vertex clustering.
+
+        Parameters
+        ----------
+        voxel_size : float, optional
+            Size of the target voxel within which vertices are grouped.
+        """
+        import open3d as o3d
+        mesh_in = self.surface_mesh.to_open3d()
+        mesh_smp = mesh_in.simplify_vertex_clustering(
+            voxel_size=voxel_size,
+            contraction=o3d.geometry.SimplificationContraction.Average)
+
+        self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh_smp)
 
     def smooth_mesh(self):
         """Smooth surface mesh using 'Taubin' algorithm."""

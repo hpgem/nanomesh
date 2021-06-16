@@ -3,7 +3,7 @@ import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
-from ipywidgets import IntSlider, interact
+from ipywidgets import IntSlider, RadioButtons, interact
 
 try:
     import pygalmesh
@@ -39,21 +39,51 @@ class SliceViewer:
     update_delay : int
         Minimum delay between events in milliseconds. Reduces lag
         by limiting the Limit update rate.
+    **kwargs :
+        Passed to first call of `SliceViewer.update`.
     """
-    def __init__(self, data: np.ndarray, update_delay: int = 50):
+    def __init__(
+        self,
+        data: np.ndarray,
+        update_delay: int = 50,
+        **kwargs,
+    ):
         self.fig, self.ax = plt.subplots()
         self.data = data
         self.update_delay = update_delay / 1000
 
+        self.max_vals = dict(zip('xyz', np.array(data.shape) - 1))
+        self.labels = {
+            'x': ('y', 'z'),
+            'y': ('x', 'z'),
+            'z': ('x', 'y'),
+        }
+
         self.last_update = 0.0
-        self.max_z, self.max_y, self.max_x = np.array(data.shape) - 1
-        self.int_slider = IntSlider(min=0, max=self.max_x)
+
+        along = kwargs.get('along', 'x')
+        init_max_val = self.max_vals[along]
+        init_val = kwargs.get('index', int(init_max_val / 2))
+
+        self.int_slider = IntSlider(value=init_val, min=0, max=init_max_val)
+        self.radio_buttons = RadioButtons(options=('x', 'y', 'z'), value=along)
 
         self.im = self.ax.imshow(data[0])
         self.im.set_clim(vmin=data.min(), vmax=data.max())
-        self.update()
+        self.update(index=init_val, along=along)
 
-    def update(self, index: int = 0, along: str = 'x'):
+    def get_slice(self, *, index: int, along: str):
+        """Get slice associated with index along given axes."""
+        if along == 'x':
+            return self.data[:, :, index]
+        elif along == 'y':
+            return self.data[:, index, :]
+        elif along == 'z':
+            return self.data[index, ...]
+        else:
+            raise ValueError('`along` must be one of `x`,`y`,`z`')
+
+    def update(self, index: int, along: str):
         """Update the image in place."""
         now = time.time()
         diff = now - self.last_update
@@ -61,23 +91,13 @@ class SliceViewer:
         if diff < self.update_delay:
             return
 
-        if along == 'x':
-            self.int_slider.max = self.max_x
-            index = min(index, self.max_x)
-            slice = self.data[:, :, index]
-            xlabel, ylabel = 'y', 'z'
-        elif along == 'y':
-            self.int_slider.max = self.max_y
-            index = min(index, self.max_y)
-            slice = self.data[:, index, :]
-            xlabel, ylabel = 'x', 'z'
-        elif along == 'z':
-            self.int_slider.max = self.max_z
-            index = min(index, self.max_z)
-            slice = self.data[index, ...]
-            xlabel, ylabel = 'x', 'y'
-        else:
-            raise ValueError('`along` must be one of `x`,`y`,`z`')
+        max_val = self.max_vals[along]
+
+        xlabel, ylabel = self.labels[along]
+        index = min(index, max_val)
+        self.int_slider_max = max_val
+
+        slice = self.get_slice(along=along, index=index)
 
         self.im.set_data(slice)
         self.ax.set_title(f'slice {index} along {along}')
@@ -89,7 +109,7 @@ class SliceViewer:
 
     def interact(self):
         """Call interactive `ipywidgets` widget."""
-        interact(self.update, index=self.int_slider, along=['x', 'y', 'z'])
+        interact(self.update, index=self.int_slider, along=self.radio_buttons)
 
 
 def show_image(image, *, dpi=80, title=None):

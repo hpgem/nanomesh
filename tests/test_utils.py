@@ -21,8 +21,11 @@ def test_SliceViewer_fails():
     data = np.arange(27).reshape(3, 3, 3)
     sv = SliceViewer(data, update_delay=0)
 
-    with pytest.raises(ValueError):
-        sv.update(along='FAIL')
+    with pytest.raises(TypeError):  # argument index missing
+        sv.update(along='x')
+
+    with pytest.raises(KeyError):
+        sv.update(index=0, along='FAIL')
 
     plt.close()
 

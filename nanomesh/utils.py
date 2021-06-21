@@ -52,7 +52,7 @@ class SliceViewer:
         self.data = data
         self.update_delay = update_delay / 1000
 
-        self.max_vals = dict(zip('xyz', np.array(data.shape) - 1))
+        self.max_vals = dict(zip('zyx', np.array(data.shape) - 1))
         self.labels = {
             'x': ('y', 'z'),
             'y': ('x', 'z'),
@@ -68,7 +68,7 @@ class SliceViewer:
         self.int_slider = IntSlider(value=init_val, min=0, max=init_max_val)
         self.radio_buttons = RadioButtons(options=('x', 'y', 'z'), value=along)
 
-        self.im = self.ax.imshow(data[0])
+        self.im = self.ax.imshow(data[0], interpolation=None)
         self.im.set_clim(vmin=data.min(), vmax=data.max())
         self.update(index=init_val, along=along)
 
@@ -92,14 +92,17 @@ class SliceViewer:
             return
 
         max_val = self.max_vals[along]
-
         xlabel, ylabel = self.labels[along]
         index = min(index, max_val)
-        self.int_slider_max = max_val
+        self.int_slider.max = max_val
 
         slice = self.get_slice(along=along, index=index)
 
+        top, right = slice.shape
+
         self.im.set_data(slice)
+        self.im.set_extent((0, right, 0, top))
+
         self.ax.set_title(f'slice {index} along {along}')
         self.ax.set_xlabel(xlabel)
         self.ax.set_ylabel(ylabel)

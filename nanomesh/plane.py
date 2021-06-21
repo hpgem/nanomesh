@@ -121,6 +121,21 @@ class Plane:
         roi = ROISelector(ax)
         return roi
 
+    def crop(self, left: int, top: int, right: int, bottom: int) -> 'Plane':
+        """Crop image to pixel indices.
+
+        Parameters
+        ----------
+        left, top, right, bottom : int
+            Index of pixel delimiting cropping box.
+
+        Returns
+        -------
+        Plane
+            New instance of `Plane`.
+        """
+        return Plane(self.image[top:bottom, left, right])
+
     def crop_to_roi(self, bbox):
         """Crop plane to rectangle defined by bounding box.
 

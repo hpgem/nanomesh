@@ -103,6 +103,7 @@ def extract_rectangle(image: np.ndarray, *, bbox: np.ndarray):
 
 
 class ROISelector:
+    ROTATE = False
     """Select a region of interest points in the figure by enclosing them
     within a polygon. A rectangle is fitted to the polygon.
 
@@ -126,7 +127,7 @@ class ROISelector:
     def onselect(self, verts):
         """Trigger this function when a polygon is closed."""
         self.verts = np.array(verts)
-        self.bbox = minimum_bounding_rectangle(self.verts)
+        self.bbox = self.bounding_rectangle(self.verts, rotate=self.ROTATE)
 
         bounds = self.get_bounds()
         self.ax.set_title(f'left {bounds.left:.0f} '
@@ -157,3 +158,26 @@ class ROISelector:
                                  right=right,
                                  bottom=bottom)
         return bounds
+
+    def bounding_rectangle(self, rotate=True) -> np.ndarray:
+        """Return bounding rectangle.
+
+        Parameters
+        ----------
+        rotate : bool, optional
+            If True, allow rotation of the bounding box to find the minumum
+            bounding rectangle.
+
+        Returns
+        -------
+        np.ndarray
+            Description
+        """
+        if rotate:
+            return minimum_bounding_rectangle
+        else:
+            left, top = self.verts.min(axis=0)
+            right, bottom = self.verts.max(axis=0)
+
+            return np.array([[right, bottom], [right, top], [left, top],
+                             [left, bottom]])

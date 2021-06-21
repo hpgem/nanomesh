@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import numpy as np
 from matplotlib.patches import Polygon
 from matplotlib.widgets import PolygonSelector
@@ -125,6 +127,12 @@ class ROISelector:
         """Trigger this function when a polygon is closed."""
         self.verts = np.array(verts)
         self.bbox = minimum_bounding_rectangle(self.verts)
+
+        bounds = self.get_bounds()
+        self.ax.set_title(f'left {bounds.left:.0f} '
+                          f'right {bounds.right:.0f}'
+                          f'\ntop {bounds.top:.0f} '
+                          f'bottom {bounds.bottom:.0f}')
         self.draw_bbox()
         self.canvas.draw_idle()
 
@@ -139,3 +147,13 @@ class ROISelector:
         self.ax.patches = []
         polygon = Polygon(self.bbox, facecolor='red', alpha=0.3)
         self.ax.add_patch(polygon)
+
+    def get_bounds(self) -> SimpleNamespace:
+        """Get bounds of bbox (left, right, top, bottom)."""
+        left, top = self.bbox.min(axis=0)
+        right, bottom = self.bbox.max(axis=0)
+        bounds = SimpleNamespace(left=left,
+                                 top=top,
+                                 right=right,
+                                 bottom=bottom)
+        return bounds

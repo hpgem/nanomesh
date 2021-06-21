@@ -53,6 +53,17 @@ class Plane:
         array = np.load(filename)
         return cls(array)
 
+    @classmethod
+    def save(self, filename: str):
+        """Save the data. Supported filetypes: `.npy`.
+
+        Parameters
+        ----------
+        filename : str
+            Name of the file to save to.
+        """
+        np.save(filename, self.image)
+
     def apply(self, function, **kwargs):
         """Apply function to `.image` array. Return an instance of `Plane` if
         the result is a 2D image, otherwise return the result of the operation.
@@ -134,7 +145,7 @@ class Plane:
         Plane
             New instance of `Plane`.
         """
-        return Plane(self.image[top:bottom, left, right])
+        return Plane(self.image[top:bottom, left:right])
 
     def crop_to_roi(self, bbox):
         """Crop plane to rectangle defined by bounding box.

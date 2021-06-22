@@ -285,14 +285,40 @@ class Mesher2D:
 
         centers = vertices[self.surface_mesh.faces].mean(1)
 
-        mesh = self.surface_mesh.to_trimesh()
-
-        if mesh.is_watertight:
-            mask = mesh.contains(centers)
+        # cannot use `trimesh.Trimesh.contains` which relies on watertight meshes
+        # 2d meshes are per definition not watertight
+        if self.contours:
+            mask = self.generate_domain_mask_from_contours(centers,
+                                                           label=label)
         else:
             mask = self.generate_domain_mask_from_image(centers, label=label)
 
         self.mask = mask
+
+    def generate_domain_mask_from_contours(self, centers, *, label):
+        """Alternative implementation to generate a domain mask for surface
+        meshes that are not closed, i.e. not watertight.
+
+        Returns
+        -------
+        mask : (n,1) np.ndarray
+            1-dimensional mask for the faces
+        """
+        from skimage.measure import points_in_poly
+        masks = []
+
+        for contour in self.contours:
+            mask = points_in_poly(centers, contour)
+            masks.append(~mask)
+
+        if self.pad_width:
+            # if padded, invert mask for first contour to avoid
+            # masking entire image
+            masks[0] = ~masks[0]
+
+        mask = np.product(masks, axis=0).astype(bool)
+
+        return mask
 
     def generate_domain_mask_from_image(self, centers, *, label):
         """Alternative implementation to generate a domain mask for surface

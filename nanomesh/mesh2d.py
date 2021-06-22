@@ -186,6 +186,7 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
 
 class Mesher2D:
     def __init__(self, image: np.ndarray):
+        self.image_orig = image
         self.image = image
         self.points: List[np.ndarray] = []
         self.pad_width = 0
@@ -205,7 +206,7 @@ class Mesher2D:
             Keyword arguments passed to `np.pad`
         """
         logger.info(f'padding image, {pad_width=}')
-        self.image = np.pad(self.image, pad_width, mode=mode, **kwargs)
+        self.image = np.pad(self.image_orig, pad_width, mode=mode, **kwargs)
         self.pad_width = pad_width
 
     def add_points(
@@ -228,7 +229,7 @@ class Mesher2D:
         grid_points = add_points_kmeans(self.image,
                                         iters=10,
                                         n_points=n_points,
-                                        label=1)
+                                        label=label)
         self.points.append(grid_points)
         logger.info(f'added {len(grid_points)} points ({label=})')
 
@@ -285,8 +286,8 @@ class Mesher2D:
 
         centers = vertices[self.surface_mesh.faces].mean(1)
 
-        # cannot use `trimesh.Trimesh.contains` which relies on watertight meshes
-        # 2d meshes are per definition not watertight
+        # cannot use `trimesh.Trimesh.contains` which relies on watertight
+        # meshes, 2d meshes are per definition not watertight
         if self.contours:
             mask = self.generate_domain_mask_from_contours(centers,
                                                            label=label)
@@ -336,7 +337,7 @@ class Mesher2D:
         masks = [pore_mask_center]
 
         if self.pad_width:
-            for i, dim in enumerate(reversed(self.image.shape)):
+            for i, dim in enumerate(self.image.shape):
                 bound_min = self.pad_width
                 bound_max = dim - self.pad_width
                 mask = (centers[:, i] > bound_min) & (centers[:, i] <

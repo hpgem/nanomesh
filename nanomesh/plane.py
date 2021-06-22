@@ -53,7 +53,6 @@ class Plane:
         array = np.load(filename)
         return cls(array)
 
-    @classmethod
     def save(self, filename: str):
         """Save the data. Supported filetypes: `.npy`.
 

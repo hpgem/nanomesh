@@ -1,11 +1,13 @@
 import logging
+from itertools import chain, tee
 from typing import Any, List
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 from scipy.spatial import Delaunay
-from skimage.measure import approximate_polygon, find_contours
+from skimage.measure import (approximate_polygon, find_contours, label,
+                             points_in_poly)
 from sklearn import cluster
 
 from .mesh_utils import TwoDMeshContainer
@@ -13,45 +15,111 @@ from .mesh_utils import TwoDMeshContainer
 logger = logging.getLogger(__name__)
 
 
-def add_edge_points(image: np.ndarray, n_points: tuple = (10, 10), plot=False):
-    """Add points around the edge of the image.
+def pairwise_circle(iterable):
+    """s -> (s0,s1), (s1,s2), ..., (sn,s0)"""
+    a, b = tee(iterable)
+    first = next(b, None)
+    return zip(a, chain(b, (first, )))
 
-    The points are masked by the image.
+
+def get_edge_coords(shape: tuple) -> np.ndarray:
+    """Get sorted list of edge coordinates around an image of given shape.
 
     Parameters
     ----------
-    image : 2D np.ndarray
-        Input image.
-    n_points : tuple, optional
-        Number of points to add along the edges in the x and y direction.
-    plot : bool, optional
-        Show plot of the added points.
+    shape : tuple
+        Shape of the image.
 
     Returns
     -------
-    (n,2) np.ndarray
-        Array with the generated points.
+    edge_coords : (n,2) np.ndarray
+        Coordinate array going in clockwise orientation from (0, 0)
     """
-    shape_x, shape_y = image.shape
-    n_points_x, n_points_y = n_points
+    shape_x, shape_y = shape
 
-    x_grid = np.linspace(0, shape_x - 1, n_points_x).astype(int)
-    y_grid = np.linspace(0, shape_y - 1, n_points_y).astype(int)[1:-1]
+    x_grid = np.arange(0, shape_x, dtype=float)
+    y_grid = np.arange(0, shape_y, dtype=float)[1:-1]
 
-    top_edge = np.vstack((x_grid, np.zeros_like(x_grid))).T
-    bottom_edge = np.vstack((x_grid, (shape_y - 1) * np.ones_like(x_grid))).T
-    left_edge = np.vstack((np.zeros_like(y_grid), y_grid)).T
-    right_edge = np.vstack(((shape_x - 1) * np.ones_like(y_grid), y_grid)).T
+    max_y = shape_y - 1
+    max_x = shape_x - 1
 
-    edge_points = np.vstack((top_edge, bottom_edge, left_edge, right_edge))
-    mask = image[tuple(edge_points.T)] == True
-    edge_points = edge_points[mask]
+    ones = np.ones_like
+    zeros = np.zeros_like
 
-    if plot:
-        plt.imshow(image)
-        plt.scatter(*edge_points.T[::-1])
+    top_edge = np.vstack((x_grid, zeros(x_grid))).T
+    bottom_edge = np.vstack((x_grid, max_y * ones(x_grid))).T
+    left_edge = np.vstack((zeros(y_grid), y_grid)).T
+    right_edge = np.vstack((max_x * ones(y_grid), y_grid)).T
 
-    return edge_points
+    edge_coords = np.vstack((
+        top_edge,
+        right_edge,
+        bottom_edge[::-1],
+        left_edge[::-1],
+    ))
+
+    return edge_coords
+
+
+def generate_edge_contours(shape: tuple, contours: list) -> list:
+    """Generate edge contours for given shape. The edge contour is split by any
+    objects defined by the contours parameter.
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of the image.
+    contours : list
+        List of object contours used to split the edge contour.
+
+    Returns
+    -------
+    edge_contours : list
+        List of coordinate arrays with the edge contours.
+    """
+    edge_coords = get_edge_coords(shape)
+
+    in_contour = []
+
+    for contour in contours:
+        index = points_in_poly(edge_coords, contour)
+        in_contour.append(index)
+
+    in_contour = np.any(in_contour, axis=0)
+
+    grouped = label(in_contour + 1)
+
+    # generate edge coordinates
+    beginnings = np.argwhere(grouped - np.roll(grouped, shift=1))
+    ends = np.argwhere(grouped - np.roll(grouped, shift=-1))
+
+    edge_indices = np.hstack((beginnings, ends))
+
+    edge_contours = []
+
+    for i, j in edge_indices:
+        contour = edge_coords[i:j + 1]
+        edge_contours.append(contour)
+
+    if in_contour[0] == in_contour[-1]:
+        print('Connecting first and last contour')
+        loop_around_contour = np.vstack(
+            (edge_contours.pop(-1), edge_contours.pop(0)))
+        edge_contours.append(loop_around_contour)
+
+    print('Updating boundary values')
+    for contour_1, contour_2 in pairwise_circle(edge_contours):
+        boundary = (contour_1[-1] + contour_2[0]) / 2
+        contour_1[-1] = boundary
+        contour_2[0] = boundary
+
+    # use low tolerance for floating point errors
+    edge_contours = [
+        approximate_polygon(contour, tolerance=1e-3)
+        for contour in edge_contours
+    ]
+
+    return edge_contours
 
 
 def add_points_kmeans(image: np.ndarray,
@@ -189,25 +257,7 @@ class Mesher2D:
         self.image_orig = image
         self.image = image
         self.points: List[np.ndarray] = []
-        self.pad_width = 0
         self.mask = None
-
-    def pad(self, pad_width: int, mode: str = 'constant', **kwargs):
-        """Pad the image so that the triangles will extend beyond the boundary.
-        Uses `np.pad`.
-
-        Parameters
-        ----------
-        pad_width : int
-            Number of voxels to pad the image with on each side.
-        mode : str, optional
-            Set the padding mode. For more info see `np.pad`.
-        **kwargs :
-            Keyword arguments passed to `np.pad`
-        """
-        logger.info(f'padding image, {pad_width=}')
-        self.image = np.pad(self.image_orig, pad_width, mode=mode, **kwargs)
-        self.pad_width = pad_width
 
     def add_points(
         self,
@@ -231,14 +281,15 @@ class Mesher2D:
                                         n_points=n_points,
                                         label=label)
         self.points.append(grid_points)
-        logger.info(f'added {len(grid_points)} points ({label=})')
+        logger.info(
+            f'added {len(grid_points)} points ({label=}), {point_density=}')
 
     def generate_contours(
         self,
         contour_precision: int = 1,
         max_contour_dist: int = 10,
     ):
-        """Generate surface mesh using marching cubes algorithm.
+        """Generate contours using marching cubes algorithm.
 
         Contours are approximated by a polygon, where the maximum distance
         between points is decided by `max_contour_dist`.
@@ -264,10 +315,34 @@ class Mesher2D:
         ]
         self.contours = contours
 
+    def generate_edge_contours(self, max_contour_dist: int = 10):
+        """Generate contours around the edge of the image.
+
+        If the edge contour is intersected by an existing contour
+        (`self.contours`), the contour is split at that point.
+
+        Contours are given as a polygon, where the maximum distance
+        between points is decided by `max_contour_dist`.
+
+        Parameters
+        ----------
+        max_contour_dist : int, optional
+            Divide long edges so that maximum distance between points does not
+            exceed this value.
+        """
+        contours = generate_edge_contours(self.image.shape, self.contours)
+        contours = [
+            subdivide_contour(contour, max_dist=max_contour_dist)
+            for contour in contours
+        ]
+        self.edge_contours = contours
+
     def generate_mesh(self):
         """Generate 2D triangle mesh using Delauny triangulation with vertices
         from contours and k-means point generation."""
-        verts = np.vstack([*self.points, *self.contours])
+        verts = np.vstack([*self.points, *self.contours, *self.edge_contours])
+
+        # TODO: merge close vertices
 
         faces = Delaunay(verts, incremental=False).simplices
 
@@ -288,11 +363,7 @@ class Mesher2D:
 
         # cannot use `trimesh.Trimesh.contains` which relies on watertight
         # meshes, 2d meshes are per definition not watertight
-        if self.contours:
-            mask = self.generate_domain_mask_from_contours(centers,
-                                                           label=label)
-        else:
-            mask = self.generate_domain_mask_from_image(centers, label=label)
+        mask = self.generate_domain_mask_from_contours(centers, label=label)
 
         self.mask = mask
 
@@ -305,44 +376,11 @@ class Mesher2D:
         mask : (n,1) np.ndarray
             1-dimensional mask for the faces
         """
-        from skimage.measure import points_in_poly
         masks = []
 
         for contour in self.contours:
             mask = points_in_poly(centers, contour)
             masks.append(~mask)
-
-        if self.pad_width:
-            # if padded, invert mask for first contour to avoid
-            # masking entire image
-            masks[0] = ~masks[0]
-
-        mask = np.product(masks, axis=0).astype(bool)
-
-        return mask
-
-    def generate_domain_mask_from_image(self, centers, *, label):
-        """Alternative implementation to generate a domain mask for surface
-        meshes that are not closed, i.e. not watertight.
-
-        Returns
-        -------
-        mask : (n,1) np.ndarray
-            1-dimensional mask for the faces
-        """
-
-        pore_mask_center = self.image[tuple(
-            np.round(centers).astype(int).T)] == label
-
-        masks = [pore_mask_center]
-
-        if self.pad_width:
-            for i, dim in enumerate(self.image.shape):
-                bound_min = self.pad_width
-                bound_max = dim - self.pad_width
-                mask = (centers[:, i] > bound_min) & (centers[:, i] <
-                                                      bound_max)
-                masks.append(mask)
 
         mask = np.product(masks, axis=0).astype(bool)
 
@@ -360,7 +398,7 @@ class Mesher2D:
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Retrieve volume mesh as `meshio.Mesh` object."""
-        verts = self.surface_mesh.vertices - self.pad_width
+        verts = self.surface_mesh.vertices
         faces = self.surface_mesh.faces[self.mask]
         mesh = TwoDMeshContainer(vertices=verts, faces=faces).to_meshio()
         mesh.remove_orphaned_nodes()
@@ -372,7 +410,8 @@ def generate_2d_mesh(image: np.ndarray,
                      pad_width: int = 1,
                      point_density: float = 1 / 100,
                      contour_precision: int = 1,
-                     max_contour_dist: int = 10,
+                     max_contour_dist: int = 5,
+                     max_edge_contour_dist: int = 10,
                      plot: bool = False) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
@@ -380,9 +419,6 @@ def generate_2d_mesh(image: np.ndarray,
     ----------
     image : 2D np.ndarray
         Input image to mesh.
-    pad_width : int, optional
-        Number of pixel to pad the images with on each side. Triangles will
-        be generated to the boundary.
     point_density : float, optional
         Density of points to distribute over the domains for triangle
         generation. Expressed as a fraction of the number of pixels.
@@ -390,6 +426,8 @@ def generate_2d_mesh(image: np.ndarray,
         Maximum distance from original contour to approximate polygon.
     max_contour_dist : int, optional
         Maximum distance between neighbouring pixels in contours.
+    max_edge_contour_dist : int, optional
+        Maximum distance between neighbouring pixels in edge contours.
     plot : bool, optional
         Plot the meshing steps using matplotlib.
 
@@ -400,11 +438,11 @@ def generate_2d_mesh(image: np.ndarray,
     """
     mesher = Mesher2D(image)
 
-    mesher.pad(pad_width)
     if point_density > 0:
         mesher.add_points(label=1, point_density=point_density)
     mesher.generate_contours(contour_precision=contour_precision,
                              max_contour_dist=max_contour_dist)
+    mesher.generate_edge_contours(max_contour_dist=max_edge_contour_dist)
     mesher.generate_mesh()
     mesher.generate_domain_mask()
 

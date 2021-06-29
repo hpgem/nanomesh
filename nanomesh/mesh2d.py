@@ -1,13 +1,13 @@
 import logging
+from collections import defaultdict
 from itertools import chain, tee
-from typing import Any, List
+from typing import Any, Dict
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 from scipy.spatial import Delaunay
-from skimage.measure import (approximate_polygon, find_contours, label,
-                             points_in_poly)
+from skimage import measure
 from sklearn import cluster, mixture
 
 from .mesh_utils import TwoDMeshContainer
@@ -82,12 +82,12 @@ def generate_edge_contours(shape: tuple, contours: list) -> list:
     in_contour = []
 
     for contour in contours:
-        index = points_in_poly(edge_coords, contour)
+        index = measure.points_in_poly(edge_coords, contour)
         in_contour.append(index)
 
     in_contour = np.any(in_contour, axis=0)
 
-    grouped = label(in_contour + 1)
+    grouped = measure.label(in_contour + 1)
 
     # generate edge coordinates
     beginnings = np.argwhere(grouped - np.roll(grouped, shift=1))
@@ -115,7 +115,7 @@ def generate_edge_contours(shape: tuple, contours: list) -> list:
 
     # use low tolerance for floating point errors
     edge_contours = [
-        approximate_polygon(contour, tolerance=1e-3)
+        measure.approximate_polygon(contour, tolerance=1e-3)
         for contour in edge_contours
     ]
 
@@ -245,7 +245,7 @@ def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
 
 
 def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
-                    triangles: np.ndarray, mask: np.ndarray):
+                    triangles: np.ndarray, labels: np.ndarray):
     """Plot meshing steps.
 
     Parameters
@@ -259,44 +259,42 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
         Coordinates of input points
     triangles : (j,3) np.ndarray
         Indices of points forming a triangle.
-    mask : (j,) np.ndarray of booleans
-        Array of booleans for which triangles are masked out
+    labels : (j,) np.ndarray of int
+        Array of integers corresponding to triangle labels
     """
     import matplotlib.pyplot as plt
 
-    plt.figure(figsize=(8, 8))
-
     x, y = points.T[::-1]
 
-    ax = plt.subplot(221)
-    ax.set_title(f'Contours ({len(contours)})')
-    ax.imshow(image, cmap='gray')
+    fig, axes = plt.subplots(nrows=3, figsize=(8, 6), sharex=True, sharey=True)
+    ax = axes.ravel()
+
+    ax[0].set_title(f'Contours ({len(contours)})')
+    ax[0].imshow(image, cmap='gray')
     for contour in contours:
         contour_x, contour_y = contour.T[::-1]
-        ax.plot(contour_x, contour_y, color='red')
+        ax[0].plot(contour_x, contour_y, color='red')
 
-    ax = plt.subplot(222)
-    ax.set_title(f'Vertices ({len(points)} points)')
-    ax.imshow(image, cmap='gray')
-    ax.scatter(*points.T[::-1], s=2, color='red')
+    ax[1].set_title(f'Vertices ({len(points)} points)')
+    ax[1].imshow(image, cmap='gray')
+    ax[1].scatter(*points.T[::-1], s=2, color='red')
 
-    ax = plt.subplot(223)
-    ax.set_title(f'Inside mesh ({(mask==0).sum()} triangles)')
-    ax.imshow(image, cmap='gray')
-    ax.triplot(x, y, triangles=triangles, mask=mask)
+    ax[2].set_title(f'Labeled mesh ({len(triangles)} triangles)')
+    ax[2].imshow(image, cmap='gray')
+    for label in (0, 1):
+        mask = (labels == label)
+        lines, *_ = ax[2].triplot(x, y, triangles=triangles, mask=mask)
+        lines.set_label(f'label = {label} ({np.count_nonzero(~mask)})')
 
-    ax = plt.subplot(224)
-    ax.set_title(f'Outside mesh ({(mask==1).sum()} triangles)')
-    ax.imshow(image, cmap='gray')
-    ax.triplot(x, y, triangles, mask=~mask)
+    ax[2].legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 
 
 class Mesher2D:
     def __init__(self, image: np.ndarray):
         self.image_orig = image
         self.image = image
-        self.points: List[np.ndarray] = []
-        self.mask = None
+        self.points: Dict[int, list] = defaultdict(list)
+        self.contours: Dict[int, list] = defaultdict(list)
 
     def add_points(
         self,
@@ -336,7 +334,7 @@ class Mesher2D:
                                       n_points=n_points,
                                       label=label,
                                       **kwargs)
-        self.points.append(grid_points)
+        self.points[label].append(grid_points)
         logger.info(f'added {len(grid_points)} points ({label=}), '
                     f'{point_density=}, {method=}')
 
@@ -344,6 +342,7 @@ class Mesher2D:
         self,
         contour_precision: int = 1,
         max_contour_dist: int = 10,
+        label: int = 1,
     ):
         """Generate contours using marching cubes algorithm.
 
@@ -358,18 +357,38 @@ class Mesher2D:
         max_contour_dist : int, optional
             Divide long edges so that maximum distance between points does not
             exceed this value.
+        label : int
+            Label to assign to contour.
         """
 
-        contours = find_contours(self.image)
+        contours = measure.find_contours(self.image)
         contours = [
-            approximate_polygon(contour, contour_precision)
+            measure.approximate_polygon(contour, contour_precision)
             for contour in contours
         ]
         contours = [
             subdivide_contour(contour, max_dist=max_contour_dist)
             for contour in contours
         ]
-        self.contours = contours
+        self.contours[label] = contours
+
+    @property
+    def flattened_contours(self) -> list:
+        """Return flattened list of contours."""
+        flat_list = [
+            contour for contour_subset in self.contours.values()
+            for contour in contour_subset
+        ]
+        return flat_list
+
+    @property
+    def flattened_points(self) -> list:
+        """Return flattened list of pointss."""
+        flat_list = [
+            points for points_subset in self.points.values()
+            for points in points_subset
+        ]
+        return flat_list
 
     def generate_edge_contours(self, max_contour_dist: int = 10):
         """Generate contours around the edge of the image.
@@ -386,7 +405,8 @@ class Mesher2D:
             Divide long edges so that maximum distance between points does not
             exceed this value.
         """
-        contours = generate_edge_contours(self.image.shape, self.contours)
+        contours = generate_edge_contours(self.image.shape,
+                                          self.flattened_contours)
         contours = [
             subdivide_contour(contour, max_dist=max_contour_dist)
             for contour in contours
@@ -396,7 +416,10 @@ class Mesher2D:
     def generate_mesh(self):
         """Generate 2D triangle mesh using Delauny triangulation with vertices
         from contours and k-means point generation."""
-        verts = np.vstack([*self.points, *self.contours, *self.edge_contours])
+        verts = np.vstack([
+            *self.flattened_points, *self.flattened_contours,
+            *self.edge_contours
+        ])
 
         # TODO: merge close vertices
 
@@ -419,9 +442,9 @@ class Mesher2D:
 
         # cannot use `trimesh.Trimesh.contains` which relies on watertight
         # meshes, 2d meshes are per definition not watertight
-        mask = self.generate_domain_mask_from_contours(centers, label=label)
+        labels = self.generate_domain_mask_from_contours(centers, label=label)
 
-        self.mask = mask
+        self.labels = labels
 
     def generate_domain_mask_from_contours(self, centers, *, label):
         """Alternative implementation to generate a domain mask for surface
@@ -432,30 +455,30 @@ class Mesher2D:
         mask : (n,1) np.ndarray
             1-dimensional mask for the faces
         """
-        masks = []
+        labels = np.zeros(len(centers), dtype=int)
 
-        for contour in self.contours:
-            mask = points_in_poly(centers, contour)
-            masks.append(~mask)
+        for label, contours in self.contours.items():
+            for contour in contours:
+                mask = measure.points_in_poly(centers, contour)
+                labels[mask] = label
 
-        mask = np.product(masks, axis=0).astype(bool)
-
-        return mask
+        return labels
 
     def plot_steps(self):
         """Plot meshing steps."""
         plot_mesh_steps(
             image=self.image,
-            contours=self.contours,
+            contours=self.flattened_contours,
             points=self.surface_mesh.vertices,
             triangles=self.surface_mesh.faces,
-            mask=self.mask,
+            labels=self.labels,
         )
 
-    def to_meshio(self) -> 'meshio.Mesh':
+    def to_meshio(self, label: int = 0) -> 'meshio.Mesh':
         """Retrieve volume mesh as `meshio.Mesh` object."""
         verts = self.surface_mesh.vertices
-        faces = self.surface_mesh.faces[self.mask]
+        mask = (self.labels != label)
+        faces = self.surface_mesh.faces[mask]
         mesh = TwoDMeshContainer(vertices=verts, faces=faces).to_meshio()
         mesh.remove_orphaned_nodes()
         return mesh

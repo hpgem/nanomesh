@@ -93,25 +93,29 @@ def generate_edge_contours(shape: tuple, contours: list) -> list:
     beginnings = np.argwhere(grouped - np.roll(grouped, shift=1))
     ends = np.argwhere(grouped - np.roll(grouped, shift=-1))
 
-    edge_indices = np.hstack((beginnings, ends))
+    edge_splits = np.hstack((beginnings, ends))
 
-    edge_contours = []
+    if len(edge_splits) == 0:
+        edge_contours = [edge_coords]
+    else:
+        edge_contours = []
 
-    for i, j in edge_indices:
-        contour = edge_coords[i:j + 1]
-        edge_contours.append(contour)
+        for i, j in edge_splits:
+            contour = edge_coords[i:j + 1]
+            edge_contours.append(contour)
 
-    if in_contour[0] == in_contour[-1]:
-        print('Connecting first and last contour')
-        loop_around_contour = np.vstack(
-            (edge_contours.pop(-1), edge_contours.pop(0)))
-        edge_contours.append(loop_around_contour)
+        connect_first_and_last_contour = (in_contour[0] == in_contour[-1])
+        if connect_first_and_last_contour:
+            logger.info('Connecting first and last contour')
+            loop_around_contour = np.vstack(
+                (edge_contours.pop(-1), edge_contours.pop(0)))
+            edge_contours.append(loop_around_contour)
 
-    print('Updating boundary values')
-    for contour_1, contour_2 in pairwise_circle(edge_contours):
-        boundary = (contour_1[-1] + contour_2[0]) / 2
-        contour_1[-1] = boundary
-        contour_2[0] = boundary
+        logger.info('Updating boundary values')
+        for contour_1, contour_2 in pairwise_circle(edge_contours):
+            boundary = (contour_1[-1] + contour_2[0]) / 2
+            contour_1[-1] = boundary
+            contour_2[0] = boundary
 
     # use low tolerance for floating point errors
     edge_contours = [

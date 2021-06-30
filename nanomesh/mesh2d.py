@@ -499,7 +499,6 @@ class Mesher2D:
 
 def generate_2d_mesh(image: np.ndarray,
                      *,
-                     pad_width: int = 1,
                      point_density: float = 1 / 100,
                      contour_precision: int = 1,
                      max_contour_dist: int = 5,
@@ -531,7 +530,10 @@ def generate_2d_mesh(image: np.ndarray,
     mesher = Mesher2D(image)
 
     if point_density > 0:
-        mesher.add_points(label=1, point_density=point_density)
+        mesher.add_points(label=1,
+                          point_density=point_density,
+                          method='kmeans')
+        mesher.add_points(label=0, point_density=point_density, method='gmm')
     mesher.generate_contours(contour_precision=contour_precision,
                              max_contour_dist=max_contour_dist)
     mesher.generate_edge_contours(max_contour_dist=max_edge_contour_dist)

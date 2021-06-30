@@ -474,13 +474,22 @@ class Mesher2D:
             labels=self.labels,
         )
 
-    def to_meshio(self, label: int = 0) -> 'meshio.Mesh':
+    def to_meshio(self, label: int = None) -> 'meshio.Mesh':
         """Retrieve volume mesh as `meshio.Mesh` object."""
         verts = self.surface_mesh.vertices
-        mask = (self.labels != label)
-        faces = self.surface_mesh.faces[mask]
+        faces = self.surface_mesh.faces
+        labels = self.labels
+
+        if label is not None:
+            mask = (labels != label)
+            faces = faces[mask]
+            labels = labels[mask]
+
         mesh = TwoDMeshContainer(vertices=verts, faces=faces).to_meshio()
         mesh.remove_orphaned_nodes()
+
+        mesh.cell_data['labels'] = [labels]
+
         return mesh
 
 

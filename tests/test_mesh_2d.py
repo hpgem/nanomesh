@@ -14,8 +14,8 @@ from nanomesh.mesh2d import (add_points_gaussian_mixture, add_points_kmeans,
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux). Allow some deviation if the platforms do not match.
 # windows: nt, linux/mac: posix
-generated_on = 'nt'
-if os.name == generated_on:
+GENERATED_ON = 'nt'
+if os.name == GENERATED_ON:
     MPL_TOL = 0.0
     MESH_TOL = None
 else:
@@ -40,6 +40,11 @@ def segmented():
     return image
 
 
+@pytest.mark.xfail(
+    os.name != GENERATED_ON,
+    raises=AssertionError,
+    reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
+            'are exactly the same.'))
 @image_comparison(
     baseline_images=['segment_2d'],
     remove_text=True,

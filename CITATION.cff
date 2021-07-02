@@ -2,16 +2,24 @@
 ---
 cff-version: "1.1.0"
 title: "nanomesh"
+abstract: Create 2d and 3d meshes from experimental imaging data.
 authors:
   -
-    family-names: "Nicolas Renaud"
-    given-names:
-    orcid: "https://orcid.org/0000-0000-0000-0000"
-date-released: 20??-MM-DD
-doi: <insert your DOI here>
+    affiliation: "Netherlands eScience Center"
+    family-names: Renaud
+    given-names: Nicolas
+    orcid: "0000-0001-9589-269"
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Smeets
+    given-names: Stef
+    orcid: "0000-0002-5413-9038"
 version: "0.1.0"
 repository-code: "https://github.com/hpgem/nanomesh"
 identifiers:
 keywords:
+  - "materials-science"
+  - "mesh-generation"
+  - "microscopy"
 message: "If you use this software, please cite it using these metadata."
-license: "Apache Software License 2.0"
+license: "Apache-2.0"

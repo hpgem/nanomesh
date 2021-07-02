@@ -10,4 +10,4 @@ pytest --no-cov --nbmake \
    "./notebooks/sample_data/sample_data.ipynb" \
    "./notebooks/sample_data/sample_data_2D.ipynb" \
    "./notebooks/sample_data/sample_data_3D.ipynb" \
-   "./notebooks/sample_data/select_roi_2d.ipynb " \
+   "./notebooks/sample_data/select_roi_2d.ipynb" \

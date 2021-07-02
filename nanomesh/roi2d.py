@@ -119,7 +119,7 @@ class ROISelector:
     def __init__(self, ax):
         self.ax = ax
         self.canvas = ax.figure.canvas
-        self.bbox = None
+        self.bbox = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
         self.verts = None
 
         self.poly = PolygonSelector(ax, self.onselect)
@@ -127,7 +127,7 @@ class ROISelector:
     def onselect(self, verts):
         """Trigger this function when a polygon is closed."""
         self.verts = np.array(verts)
-        self.bbox = self.bounding_rectangle(self.verts, rotate=self.ROTATE)
+        self.bbox = self.bounding_rectangle(rotate=self.ROTATE)
 
         bounds = self.get_bounds()
         self.ax.set_title(f'left {bounds.left:.0f} '
@@ -174,7 +174,7 @@ class ROISelector:
             Description
         """
         if rotate:
-            return minimum_bounding_rectangle
+            return minimum_bounding_rectangle(self.verts)
         else:
             left, top = self.verts.min(axis=0)
             right, bottom = self.verts.max(axis=0)

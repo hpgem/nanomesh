@@ -59,6 +59,7 @@ setup(
             'pre-commit',
             'yapf',
             # testing
+            'nbmake',
             'pytest',
             'pytest-cov',
             'pycodestyle',

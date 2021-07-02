@@ -45,7 +45,6 @@ class Volume:
         image = sitk.GetArrayFromImage(sitk_image)
         return cls(image)
 
-    @classmethod
     def save(self, filename: str):
         """Save the data. Supported filetypes: `.npy`.
 
@@ -57,7 +56,7 @@ class Volume:
         np.save(filename, self.image)
 
     @classmethod
-    def load(cls, filename: os.PathLike, mmap: bool = True) -> 'Volume':
+    def load(cls, filename: os.PathLike, mmap: bool = False) -> 'Volume':
         """Load the data. Supported filetypes: `.npy`, `.vol`.
 
         Parameters
@@ -84,7 +83,7 @@ class Volume:
         IOError
             Raised if the file extension is unknown.
         """
-        mmap_mode = 'r'
+        mmap_mode = 'r' if mmap else None
         filename = Path(filename)
         suffix = filename.suffix.lower()
 

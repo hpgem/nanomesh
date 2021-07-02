@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import numpy as np
 from matplotlib.patches import Polygon
 from matplotlib.widgets import PolygonSelector
@@ -101,6 +103,7 @@ def extract_rectangle(image: np.ndarray, *, bbox: np.ndarray):
 
 
 class ROISelector:
+    ROTATE = False
     """Select a region of interest points in the figure by enclosing them
     within a polygon. A rectangle is fitted to the polygon.
 
@@ -124,7 +127,13 @@ class ROISelector:
     def onselect(self, verts):
         """Trigger this function when a polygon is closed."""
         self.verts = np.array(verts)
-        self.bbox = minimum_bounding_rectangle(self.verts)
+        self.bbox = self.bounding_rectangle(self.verts, rotate=self.ROTATE)
+
+        bounds = self.get_bounds()
+        self.ax.set_title(f'left {bounds.left:.0f} '
+                          f'right {bounds.right:.0f}'
+                          f'\ntop {bounds.top:.0f} '
+                          f'bottom {bounds.bottom:.0f}')
         self.draw_bbox()
         self.canvas.draw_idle()
 
@@ -139,3 +148,36 @@ class ROISelector:
         self.ax.patches = []
         polygon = Polygon(self.bbox, facecolor='red', alpha=0.3)
         self.ax.add_patch(polygon)
+
+    def get_bounds(self) -> SimpleNamespace:
+        """Get bounds of bbox (left, right, top, bottom)."""
+        left, top = self.bbox.min(axis=0)
+        right, bottom = self.bbox.max(axis=0)
+        bounds = SimpleNamespace(left=left,
+                                 top=top,
+                                 right=right,
+                                 bottom=bottom)
+        return bounds
+
+    def bounding_rectangle(self, rotate=True) -> np.ndarray:
+        """Return bounding rectangle.
+
+        Parameters
+        ----------
+        rotate : bool, optional
+            If True, allow rotation of the bounding box to find the minumum
+            bounding rectangle.
+
+        Returns
+        -------
+        np.ndarray
+            Description
+        """
+        if rotate:
+            return minimum_bounding_rectangle
+        else:
+            left, top = self.verts.min(axis=0)
+            right, bottom = self.verts.max(axis=0)
+
+            return np.array([[right, bottom], [right, top], [left, top],
+                             [left, bottom]])

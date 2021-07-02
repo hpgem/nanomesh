@@ -46,6 +46,17 @@ class Volume:
         return cls(image)
 
     @classmethod
+    def save(self, filename: str):
+        """Save the data. Supported filetypes: `.npy`.
+
+        Parameters
+        ----------
+        filename : str
+            Name of the file to save to.
+        """
+        np.save(filename, self.image)
+
+    @classmethod
     def load(cls, filename: os.PathLike, mmap: bool = True) -> 'Volume':
         """Load the data. Supported filetypes: `.npy`, `.vol`.
 

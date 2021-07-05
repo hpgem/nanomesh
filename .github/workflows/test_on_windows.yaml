@@ -29,7 +29,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
       # Disabled -> https://github.com/hpgem/nanomesh/issues/36
       # - name: Install yasm-tool
@@ -50,9 +50,8 @@ jobs:
 
       - name: Install dependencies
         shell: pwsh
-        # make sure to do eager upgrade to avoice cache going stale
         run: |
-          python -m pip install --upgrade --upgrade-strategy eager -e .[develop]
+          python -m pip install -r requirements.txt -e .[develop]
 
       - name: Test with pytest
         shell: pwsh

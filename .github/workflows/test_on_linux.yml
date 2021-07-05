@@ -29,7 +29,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
       - name: Python info
         shell: bash -l {0}
@@ -45,7 +45,7 @@ jobs:
         shell: bash -l {0}
         # make sure to do eager upgrade to avoice cache going stale
         run: |
-          python -m pip install --upgrade --upgrade-strategy eager -e .[develop,with_pygalmesh]
+          python -m pip install  -r requirements.txt -e .[develop,with_pygalmesh]
 
       - name: Test with pytest
         shell: bash -l {0}

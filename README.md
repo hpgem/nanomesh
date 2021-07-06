@@ -59,7 +59,7 @@ pip install .[with_pygalmesh]
 
 Install `nanomesh` using the development dependencies:
 
-`pip install -e .[develop]`
+`pip install -e .[develop] -c constraints.txt`
 
 Running the tests:
 

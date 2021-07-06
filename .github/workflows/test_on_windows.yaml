@@ -29,7 +29,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('constraints.txt') }}
 
       # Disabled -> https://github.com/hpgem/nanomesh/issues/36
       # - name: Install yasm-tool
@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         shell: pwsh
         run: |
-          python -m pip install -r requirements.txt -e .[develop]
+          python -m pip install -c constraints.txt -e .[develop]
 
       - name: Test with pytest
         shell: pwsh

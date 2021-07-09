@@ -22,6 +22,40 @@ from pathlib import Path
 root = Path(__file__).absolute().parent.parent
 sys.path.insert(0, str(root))
 
+DOCSDIR = '.'
+BUILDDIR = '_build'
+TEMPLATESDIR = '_templates'
+STATICDIR = '_static'
+SOURCEDIR = '../nanomesh'
+
+
+def make_examples(app):
+    import make_examples
+    make_examples.main()
+
+
+def make_readme(app):
+    import subprocess
+    cmd = 'pandoc --from=gfm --to=rst --output=README.rst ../README.md'
+    args = cmd.split()
+    subprocess.run(args)
+
+
+def make_apidoc(app):
+    import subprocess
+    cmd = 'sphinx-apidoc -eTf -t {TEMPLATESDIR} -o {DOCSDIR} {SOURCEDIR}'
+    args = cmd.split()
+    subprocess.run(args)
+
+
+def setup(app):
+    # https://www.sphinx-doc.org/en/master/extdev/appapi.html#sphinx-core-events
+    # https://github.com/readthedocs/readthedocs.org/issues/2276
+    app.connect('builder-inited', make_examples)
+    app.connect('builder-inited', make_readme)
+    app.connect('builder-inited', make_apidoc)
+
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -67,12 +101,12 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [BUILDDIR, 'Thumbs.db', '.DS_Store']
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = [STATICDIR]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -81,7 +115,7 @@ pygments_style = 'sphinx'
 todo_include_todos = False
 
 # Use autoapi.extension to run sphinx-apidoc
-autoapi_dirs = ['../nanomesh']
+autoapi_dirs = [SOURCEDIR]
 
 # -- Options for HTML output ----------------------------------------------
 

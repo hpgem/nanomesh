@@ -9,10 +9,17 @@ SUBDIR = Path('examples')
 OUTDIR = Path(__file__).parent / '_static' / SUBDIR
 OUTDIR.mkdir(exist_ok=True, parents=True)
 
-exporters = {
+EXPORTERS = {
     '.rst': RSTExporter(),
     '.html': HTMLExporter(),
 }
+
+NOTEBOOKS = ('../notebooks/sample_data/multi-domain-plane.ipynb',
+             '../notebooks/sample_data/process_raw_data.ipynb',
+             '../notebooks/sample_data/sample_data.ipynb',
+             '../notebooks/sample_data/sample_data_2D.ipynb',
+             '../notebooks/sample_data/sample_data_3D.ipynb',
+             '../notebooks/sample_data/select_roi_2d.ipynb')
 
 
 class NotebookObject:
@@ -50,7 +57,7 @@ class NotebookObject:
             metadata=self.notebook['metadata'],
             nbformat=self.notebook['nbformat'],
             nbformat_minor=self.notebook['nbformat_minor'])
-        exporter = exporters['.rst']
+        exporter = EXPORTERS['.rst']
         (body, resources) = exporter.from_notebook_node(new)
 
         return body
@@ -62,7 +69,7 @@ def notebook_as(path, ext):
 
     notebook = nbformat.read(path, as_version=4)
 
-    exporter = exporters[ext]
+    exporter = EXPORTERS[ext]
     (body, resources) = exporter.from_notebook_node(notebook)
 
     with open(outfile, 'w') as f:
@@ -105,7 +112,7 @@ NOTEBOOK_T = Template("""{{ object.title }}
 
 
 def main():
-    filenames = (Path(filename) for filename in sys.argv[1:])
+    filenames = (Path(filename) for filename in NOTEBOOKS)
 
     objects = []
 
@@ -128,4 +135,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # NOTEBOOKS = sys.argv[1:]
+    main(NOTEBOOKS)

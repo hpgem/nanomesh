@@ -83,7 +83,6 @@ todo_include_todos = False
 # Use autoapi.extension to run sphinx-apidoc
 autoapi_dirs = ['../nanomesh']
 
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -91,7 +90,6 @@ autoapi_dirs = ['../nanomesh']
 #
 html_theme = 'sphinx_rtd_theme'
 # html_theme_options = {}
-
 
 # options for rtd-theme
 # html_theme_options = {
@@ -106,12 +104,10 @@ html_theme = 'sphinx_rtd_theme'
 #     'titles_only': False,
 # }
 
-
 autodoc_default_options = {
     'autosummary': True,
     'special-members': '__init__',
 }
-
 
 autodoc_mock_imports = [
     'ipywidgets',
@@ -120,10 +116,11 @@ autodoc_mock_imports = [
     'open3d',
 ]
 
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
-                       'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-                       'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-                       'scikit-image': ('https://scikit-image.org/docs/stable/', None),
-                       'scikit-learn': ('https://scikit-learn.org/stable/', None),
-                       'matplotlib': ('https://matplotlib.org/stable/', None),
-                       }
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'scikit-image': ('https://scikit-image.org/docs/stable/', None),
+    'scikit-learn': ('https://scikit-learn.org/stable/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
+}

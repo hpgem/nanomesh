@@ -14,8 +14,15 @@ BUILDDIR      = _build
 TEMPLATESDIR  = _templates
 STATICDIR     = _static
 
+# ../notebooks/logo/logo.ipynb \
 
-notebooks = ../notebooks/logo/logo.ipynb ../notebooks/sample_data/multi-domain-plane.ipynb ../notebooks/sample_data/process_raw_data.ipynb ../notebooks/sample_data/sample_data.ipynb ../notebooks/sample_data/sample_data_2D.ipynb ../notebooks/sample_data/sample_data_3D.ipynb ../notebooks/sample_data/select_roi_2d.ipynb
+notebooks = \
+../notebooks/sample_data/multi-domain-plane.ipynb \
+../notebooks/sample_data/process_raw_data.ipynb \
+../notebooks/sample_data/sample_data.ipynb \
+../notebooks/sample_data/sample_data_2D.ipynb \
+../notebooks/sample_data/sample_data_3D.ipynb \
+../notebooks/sample_data/select_roi_2d.ipynb
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

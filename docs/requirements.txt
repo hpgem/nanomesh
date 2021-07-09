@@ -7,3 +7,5 @@ matplotlib
 meshio
 scipy
 scikit-image
+nbformat
+nbconvert

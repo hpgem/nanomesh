@@ -41,6 +41,16 @@ Examples
    examples.reference
 
 
+Examples2
+========
+.. toctree::
+   :maxdepth: 1
+   :caption: Examples2
+   :glob:
+
+   examples/*
+
+
 API Reference
 =============
 

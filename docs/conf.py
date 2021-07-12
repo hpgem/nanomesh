@@ -9,14 +9,6 @@ BUILDDIR = '_build'
 TEMPLATESDIR = '_templates'
 STATICDIR = '_static'
 SOURCEDIR = '../nanomesh'
-NOTEBOOKS = (
-    '../notebooks/sample_data/multi-domain-plane.ipynb',
-    '../notebooks/sample_data/process_raw_data.ipynb',
-    '../notebooks/sample_data/sample_data.ipynb',
-    '../notebooks/sample_data/sample_data_2D.ipynb',
-    '../notebooks/sample_data/sample_data_3D.ipynb',
-    '../notebooks/sample_data/select_roi_2d.ipynb',
-)
 
 
 # -- Run apidoc plug-in manually, as readthedocs doesn't support it -------
@@ -35,11 +27,6 @@ def run_apidoc(app):
     apidoc.main(args)
 
 
-def make_examples(app):
-    import make_examples
-    make_examples.main(NOTEBOOKS)
-
-
 def make_readme(app):
     import subprocess
     cmd = 'pandoc --from=gfm --to=rst --output=README.rst ../README.md'
@@ -50,7 +37,6 @@ def make_readme(app):
 def setup(app):
     # https://www.sphinx-doc.org/en/master/extdev/appapi.html#sphinx-core-events
     # https://github.com/readthedocs/readthedocs.org/issues/2276
-    app.connect('builder-inited', make_examples)
     app.connect('builder-inited', make_readme)
     app.connect('builder-inited', run_apidoc)
 
@@ -70,6 +56,8 @@ extensions = [
     # 'sphinx.ext.intersphinx',
     # 'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
+    'nbsphinx',
+    'nbsphinx_link'
     # 'sphinx.ext.todo',
     # 'sphinx.ext.viewcode',
     # 'autodocsumm',
@@ -141,6 +129,9 @@ autodoc_default_options = {
     'autosummary': True,
     'special-members': '__init__',
 }
+
+nbsphinx_allow_errors = True
+nbsphinx_execute = 'never'
 
 autodoc_mock_imports = [
     'ipywidgets',

@@ -26,9 +26,8 @@ notebooks = \
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-html: conf.py nanomesh.rst README.rst examples.rst install.rst examples.rst
+html: conf.py nanomesh.rst README.rst install.rst
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-	mv "$(BUILDDIR)/html/_static/examples" "$(BUILDDIR)/html/examples" || true
 
 README.rst: ../README.md
 	pandoc --from=gfm --to=rst --output=README.rst ../README.md

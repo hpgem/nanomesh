@@ -3,23 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to nanomesh's documentation!
-====================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-.. include:: README.rst
-
-
-Links
-=====
-.. toctree::
-   :caption: Links
-
-   🔗 Source code <http://github.com/HPGEM/nanomesh>
-   🔗 Issues <http://github.com/HPGEM/nanomesh/issues>
+.. include:: readme.rst
 
 
 Getting started
@@ -34,20 +18,11 @@ Getting started
 Examples
 ========
 .. toctree::
-   :maxdepth: 2
-   :caption: Examples
-
-   examples
-   examples.reference
-
-
-Examples2
-========
-.. toctree::
    :maxdepth: 1
-   :caption: Examples2
+   :caption: Examples
    :glob:
 
+   examples
    examples/*
 
 
@@ -67,6 +42,15 @@ API Reference
    nanomesh.plane.rst
    nanomesh.roi2d.rst
    nanomesh.utils.rst
+
+
+Links
+=====
+.. toctree::
+   :caption: Links
+
+   🔗 Source code <http://github.com/HPGEM/nanomesh>
+   🔗 Issues <http://github.com/HPGEM/nanomesh/issues>
 
 
 Indices and tables

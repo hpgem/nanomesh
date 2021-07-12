@@ -22,7 +22,6 @@ Examples
    :caption: Examples
    :glob:
 
-   examples
    examples/*
 
 

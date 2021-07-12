@@ -43,7 +43,7 @@ def setup(app):
 
 
 extensions = [
-    # 'sphinx.ext.autodoc',
+    'sphinx.ext.autodoc',
     # 'sphinx.ext.coverage',
     # 'sphinx.ext.doctest',
     # 'sphinx.ext.intersphinx',
@@ -53,7 +53,7 @@ extensions = [
     'nbsphinx_link',
     # 'sphinx.ext.todo',
     # 'sphinx.ext.viewcode',
-    # 'autodocsumm',
+    'autodocsumm',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -125,6 +125,8 @@ autodoc_mock_imports = [
     'itkwidgets',
     'pygalmesh',
     'open3d',
+    'pyvista',
+    'trimesh',
 ]
 
 intersphinx_mapping = {

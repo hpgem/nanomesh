@@ -10,5 +10,4 @@ meshio
 scipy
 scikit-image
 scikit-learn
-pyvista
 ipython

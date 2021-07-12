@@ -3,23 +3,53 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to nanomesh's documentation!
-====================================
+.. include:: README.rst
 
-`nanomesh` is a toolkit for creating meshes for `hpgem` from experimental data.
 
+Getting started
+===============
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started
+
+   install
+
+
+Examples
+========
+.. toctree::
+   :maxdepth: 1
+   :caption: Examples
+   :glob:
+
+   examples/*
 
 
 API Reference
 =============
 
 .. toctree::
-  :maxdepth: 2
+   :maxdepth: 1
+   :caption: API reference
 
-  nanomesh <apidocs/nanomesh.rst>
+   nanomesh.generator.rst
+   nanomesh.io.rst
+   nanomesh.mesh2d.rst
+   nanomesh.mesh3d.rst
+   nanomesh.mesh_utils.rst
+   nanomesh.periodic_utils.rst
+   nanomesh.plane.rst
+   nanomesh.roi2d.rst
+   nanomesh.utils.rst
+
+
+Links
+=====
+.. toctree::
+   :caption: Links
+
+   🔗 Source code <http://github.com/HPGEM/nanomesh>
+   🔗 Issues <http://github.com/HPGEM/nanomesh/issues>
 
 
 Indices and tables

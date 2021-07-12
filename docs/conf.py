@@ -27,11 +27,19 @@ BUILDDIR = '_build'
 TEMPLATESDIR = '_templates'
 STATICDIR = '_static'
 SOURCEDIR = '../nanomesh'
+NOTEBOOKS = (
+    '../notebooks/sample_data/multi-domain-plane.ipynb',
+    '../notebooks/sample_data/process_raw_data.ipynb',
+    '../notebooks/sample_data/sample_data.ipynb',
+    '../notebooks/sample_data/sample_data_2D.ipynb',
+    '../notebooks/sample_data/sample_data_3D.ipynb',
+    '../notebooks/sample_data/select_roi_2d.ipynb',
+)
 
 
 def make_examples(app):
     import make_examples
-    make_examples.main()
+    make_examples.main(NOTEBOOKS)
 
 
 def make_readme(app):

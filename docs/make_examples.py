@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import nbformat
@@ -12,13 +13,6 @@ EXPORTERS = {
     '.rst': RSTExporter(),
     '.html': HTMLExporter(),
 }
-
-NOTEBOOKS = ('../notebooks/sample_data/multi-domain-plane.ipynb',
-             '../notebooks/sample_data/process_raw_data.ipynb',
-             '../notebooks/sample_data/sample_data.ipynb',
-             '../notebooks/sample_data/sample_data_2D.ipynb',
-             '../notebooks/sample_data/sample_data_3D.ipynb',
-             '../notebooks/sample_data/select_roi_2d.ipynb')
 
 EXAMPLES_T = Template("""Examples
 ========
@@ -117,8 +111,8 @@ def notebook2rst(path):
     return notebook_as(path, '.rst')
 
 
-def main():
-    filenames = (Path(filename) for filename in NOTEBOOKS)
+def main(notebooks):
+    filenames = (Path(filename) for filename in notebooks)
 
     objects = []
 
@@ -145,4 +139,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    notebooks = sys.argv[1:]
+    main(notebooks)

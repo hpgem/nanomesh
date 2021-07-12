@@ -38,6 +38,7 @@ Examples
    :caption: Examples
 
    examples
+   examples.reference
 
 
 API Reference

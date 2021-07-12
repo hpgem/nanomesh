@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 
 import nbformat
@@ -20,6 +19,38 @@ NOTEBOOKS = ('../notebooks/sample_data/multi-domain-plane.ipynb',
              '../notebooks/sample_data/sample_data_2D.ipynb',
              '../notebooks/sample_data/sample_data_3D.ipynb',
              '../notebooks/sample_data/select_roi_2d.ipynb')
+
+EXAMPLES_T = Template("""Examples
+========
+
+.. toctree::
+   :hidden:
+
+
+{% for object in objects %}
+
+{{ object.body_text }}
+
+See: 🔗 `{{ object.path.name }} <{{ object.link }}>`_
+
+{% endfor %}
+""")
+
+REFERENCE_T = Template("""Reference
+=========
+
+.. toctree::
+
+{% for object in objects %}
+   examples.{{ object.path.stem }}
+{%- endfor %}
+""")
+
+NOTEBOOK_T = Template("""{{ object.title }}
+
+.. raw:: html
+   :file: {{ object.path }}
+""")
 
 
 class NotebookObject:
@@ -86,31 +117,6 @@ def notebook2rst(path):
     return notebook_as(path, '.rst')
 
 
-EXAMPLES_T = Template("""Examples
-========
-
-.. toctree::
-   :hidden:
-{% for object in objects %}
-   examples.{{ object.name }}
-{%- endfor %}
-
-{% for object in objects %}
-
-{{ object.body_text }}
-
-See: `{{ object.name }} <{{ object.link }}>`_
-
-{% endfor %}
-""")
-
-NOTEBOOK_T = Template("""{{ object.title }}
-
-.. raw:: html
-   :file: {{ object.path }}
-""")
-
-
 def main():
     filenames = (Path(filename) for filename in NOTEBOOKS)
 
@@ -133,7 +139,10 @@ def main():
         examples = EXAMPLES_T.render(objects=objects)
         f.writelines(examples)
 
+    with open('examples.reference.rst', 'w') as f:
+        reference = REFERENCE_T.render(objects=objects)
+        f.writelines(reference)
+
 
 if __name__ == '__main__':
-    # NOTEBOOKS = sys.argv[1:]
-    main(NOTEBOOKS)
+    main()

@@ -106,17 +106,75 @@ def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:
     return dct
 
 
-def histogram(mesh: meshio.Mesh, *, metric: str):
+def histogram(
+    mesh: meshio.Mesh,
+    *,
+    metric: str,
+    ax: plt.Axes = None,
+    **kwargs,
+) -> plt.Axes:
+    """Create a mesh plot with the faces are colored by the face quality.
+
+    Parameters
+    ----------
+    mesh : meshio.Mesh
+        Input mesh
+    metric : str
+        Metric to calculate.
+    ax : `matplotlib.Axes`
+        If specified, `ax` will be used to create the subplot.
+    vmin, vmax : int, float
+        Set the lower/upper boundary for the color value.
+    cmap : str
+        Set the color map.
+    **kwargs
+        Keyword arguments passed on to `ax.hist`.
+
+    Returns
+    -------
+    ax : `matplotlib.Axes`
+    """
+    kwargs.setdefault('bins', 50)
+    kwargs.setdefault('density', True)
+    kwargs.setdefault('rwidth', 0.8)
+
     func = _func_dispatch[metric]
     quality = func(mesh)  # type: ignore
 
     fig, ax = plt.subplots()
-    n, bins, patches = ax.hist(quality, 50, rwidth=0.8, density=True)
+    n, bins, patches = ax.hist(quality, **kwargs)
     ax.set_title(metric)
-    plt.show()
+    return ax
 
 
-def plot2d(mesh: meshio.Mesh, *, metric):
+def plot2d(
+    mesh: meshio.Mesh,
+    *,
+    metric: str,
+    ax: plt.Axes = None,
+    **kwargs,
+) -> plt.Axes:
+    """Create a mesh plot with the faces are colored by the face quality.
+
+    Parameters
+    ----------
+    mesh : meshio.Mesh
+        Input mesh
+    metric : str
+        Metric to calculate.
+    ax : `matplotlib.Axes`
+        If specified, `ax` will be used to create the subplot.
+    vmin, vmax : int, float
+        Set the lower/upper boundary for the color value.
+    cmap : str
+        Set the color map.
+    **kwargs
+        Keyword arguments passed on to `ax.tripcolor`.
+
+    Returns
+    -------
+    ax : `matplotlib.Axes`
+    """
     func = _func_dispatch[metric]
     quality = func(mesh)  # type: ignore
 
@@ -127,7 +185,7 @@ def plot2d(mesh: meshio.Mesh, *, metric):
 
     ax.set_title(metric)
 
-    tpc = ax.tripcolor(x, y, quality, triangles=faces)
-    fig.colorbar(tpc)
+    tpc = ax.tripcolor(x, y, quality, triangles=faces, **kwargs)
+    ax.figure.colorbar(tpc)
     ax.axis('equal')
-    plt.show()
+    return ax

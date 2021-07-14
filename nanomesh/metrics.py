@@ -180,7 +180,9 @@ def plot2d(
 
     fig, ax = plt.subplots()
 
-    x, y, _ = mesh.points.T
+    x = mesh.points[:, 0]
+    y = mesh.points[:, 1]
+
     faces = mesh.cells[0].data
 
     ax.set_title(metric)

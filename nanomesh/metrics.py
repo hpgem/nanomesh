@@ -97,7 +97,7 @@ def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:
     """
     dct = {}
     for metric, func in _func_dispatch.items():
-        quality = func(mesh)
+        quality = func(mesh)  # type: ignore
         dct[metric] = quality
 
         if inplace:
@@ -108,7 +108,7 @@ def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:
 
 def histogram(mesh: meshio.Mesh, *, metric: str):
     func = _func_dispatch[metric]
-    quality = func(mesh)
+    quality = func(mesh)  # type: ignore
 
     fig, ax = plt.subplots()
     n, bins, patches = ax.hist(quality, 50, rwidth=0.8, density=True)
@@ -118,12 +118,12 @@ def histogram(mesh: meshio.Mesh, *, metric: str):
 
 def plot2d(mesh: meshio.Mesh, *, metric):
     func = _func_dispatch[metric]
-    quality = func(mesh)
+    quality = func(mesh)  # type: ignore
 
     fig, ax = plt.subplots()
 
     x, y, _ = mesh.points.T
-    faces = mesh.cells[0]
+    faces = mesh.cells[0].data
 
     ax.set_title(metric)
 

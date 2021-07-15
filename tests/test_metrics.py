@@ -23,7 +23,7 @@ def test_metrics(sample_mesh, inplace):
 
     for metric, output in ret.items():
         assert isinstance(metric, str)
-        assert metric in metrics._func_dispatch
+        assert metric in metrics._metric_dispatch
 
         if inplace:
             assert metric in sample_mesh.cell_data

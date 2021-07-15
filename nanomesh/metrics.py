@@ -70,7 +70,7 @@ def max_min_edge_ratio(mesh: meshio.Mesh) -> np.ndarray:
 
 
 @dataclass
-class MetadataContainer:
+class MetricDescriptor:
     name: str
     description: str
     units: str
@@ -90,9 +90,9 @@ class MetadataContainer:
 # coreform.com/cubit_help/mesh_generation/mesh_quality_assessment/triangular_metrics.htm
 # vtk.org/doc/nightly/html/classvtkMeshQuality.html#aefa3db78933a64e68c2718cf83eac3c5
 # www.feflow.info/html/help73/feflow/09_Parameters/Auxiliary_Data/condition_number.html
-_func_dispatch = {
+_metric_dispatch = {
     'area':
-    MetadataContainer(
+    MetricDescriptor(
         name='Triangle area',
         description='Calculate the area of a triangle.',
         units='px^2',
@@ -101,7 +101,7 @@ _func_dispatch = {
         func=area,
     ),
     'aspect_frobenius':
-    MetadataContainer(
+    MetricDescriptor(
         name='Frobenius aspect',
         description=(
             'Calculate the Frobenius condition number of the '
@@ -113,7 +113,7 @@ _func_dispatch = {
         func=aspect_frobenius,
     ),
     'aspect_ratio':
-    MetadataContainer(
+    MetricDescriptor(
         name='Aspect ratio',
         description='Calculate the aspect ratio of a triangle.',
         units='',
@@ -122,7 +122,7 @@ _func_dispatch = {
         func=aspect_ratio,
     ),
     'condition':
-    MetadataContainer(
+    MetricDescriptor(
         name='Condition number',
         description='Calculate the condition number of a triangle.',
         units='',
@@ -131,7 +131,7 @@ _func_dispatch = {
         func=condition,
     ),
     'max_angle':
-    MetadataContainer(
+    MetricDescriptor(
         name='Maximum angle',
         description=(
             'Calculate the maximal (nonoriented) angle of a triangle.'),
@@ -141,7 +141,7 @@ _func_dispatch = {
         func=max_angle,
     ),
     'min_angle':
-    MetadataContainer(
+    MetricDescriptor(
         name='Minimum angle',
         description=(
             'Calculate the minimal (nonoriented) angle of a triangle.'),
@@ -151,7 +151,7 @@ _func_dispatch = {
         func=min_angle,
     ),
     'radius_ratio':
-    MetadataContainer(
+    MetricDescriptor(
         name='Radius ratio',
         description=(
             'Calculate the radius ratio of a triangle. The radius ratio of a '
@@ -163,7 +163,7 @@ _func_dispatch = {
         func=radius_ratio,
     ),
     'scaled_jacobian':
-    MetadataContainer(
+    MetricDescriptor(
         name='Scaled Jacobian',
         description='Calculate the scaled Jacobian of a triangle.',
         units='',
@@ -172,7 +172,7 @@ _func_dispatch = {
         func=scaled_jacobian,
     ),
     'shape':
-    MetadataContainer(
+    MetricDescriptor(
         name='Shape',
         description='Calculate the shape of a triangle.',
         units='',
@@ -181,7 +181,7 @@ _func_dispatch = {
         func=shape,
     ),
     'relative_size_squared':
-    MetadataContainer(
+    MetricDescriptor(
         name='Relative size',
         description='Calculate the square of the relative size of a triangle.',
         units='',
@@ -190,7 +190,7 @@ _func_dispatch = {
         func=relative_size_squared,
     ),
     'shape_and_size':
-    MetadataContainer(
+    MetricDescriptor(
         name='Shape and size',
         description=(
             'Calculate the product of shape and relative size of a triangle.'),
@@ -200,7 +200,7 @@ _func_dispatch = {
         func=shape_and_size,
     ),
     'distortion':
-    MetadataContainer(
+    MetricDescriptor(
         name='Distortion',
         description='Calculate the distortion of a triangle.',
         units='px^2',
@@ -209,7 +209,7 @@ _func_dispatch = {
         func=distortion,
     ),
     'max_min_edge_ratio':
-    MetadataContainer(
+    MetricDescriptor(
         name='Ratio max/min edge',
         description=('Calculate the ratio between the longest '
                      'and shortest edge lengths of a triangle.'),
@@ -221,8 +221,8 @@ _func_dispatch = {
 }
 
 # patch docstrings
-for metadata in _func_dispatch.values():
-    metadata.func.__doc__ = f"""{metadata.description}
+for descriptor in _metric_dispatch.values():
+    descriptor.func.__doc__ = f"""{descriptor.description}
 
 Parameters
 ----------
@@ -252,7 +252,7 @@ def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:
         Return a dict
     """
     dct = {}
-    for metric, descriptor in _func_dispatch.items():
+    for metric, descriptor in _metric_dispatch.items():
         quality = descriptor.func(mesh)  # type: ignore
         dct[metric] = quality
 
@@ -293,7 +293,7 @@ def histogram(
     kwargs.setdefault('bins', 50)
     kwargs.setdefault('rwidth', 0.8)
 
-    descriptor = _func_dispatch[metric]
+    descriptor = _metric_dispatch[metric]
     quality = descriptor.func(mesh)  # type: ignore
 
     fig, ax = plt.subplots()
@@ -341,7 +341,7 @@ def plot2d(
     -------
     ax : `matplotlib.Axes`
     """
-    descriptor = _func_dispatch[metric]
+    descriptor = _metric_dispatch[metric]
     quality = descriptor.func(mesh)  # type: ignore
 
     kwargs.setdefault('vmin', np.percentile(quality, 1))

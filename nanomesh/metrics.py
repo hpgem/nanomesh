@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Callable, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import meshio
@@ -73,9 +74,9 @@ class MetadataContainer:
     name: str
     description: str
     units: str
-    optimal: tuple
-    range: tuple
-    func: callable
+    func: Callable
+    optimal: Optional[Tuple[float, float]] = None
+    range: Optional[Tuple[float, float]] = None
 
     @property
     def label(self):
@@ -86,8 +87,9 @@ class MetadataContainer:
         return string
 
 
-# https://coreform.com/cubit_help/mesh_generation/mesh_quality_assessment/triangular_metrics.htm
-# https://vtk.org/doc/nightly/html/classvtkMeshQuality.html#aefa3db78933a64e68c2718cf83eac3c5
+# coreform.com/cubit_help/mesh_generation/mesh_quality_assessment/triangular_metrics.htm
+# vtk.org/doc/nightly/html/classvtkMeshQuality.html#aefa3db78933a64e68c2718cf83eac3c5
+# www.feflow.info/html/help73/feflow/09_Parameters/Auxiliary_Data/condition_number.html
 _func_dispatch = {
     'area':
     MetadataContainer(
@@ -101,8 +103,10 @@ _func_dispatch = {
     'aspect_frobenius':
     MetadataContainer(
         name='Frobenius aspect',
-        description=
-        'Calculate the Frobenius condition number of the transformation matrix from an equilateral triangle to a triangle.',
+        description=(
+            'Calculate the Frobenius condition number of the '
+            'transformation matrix from an equilateral triangle to a triangle.'
+        ),
         units='',
         optimal=None,
         range=None,
@@ -119,7 +123,6 @@ _func_dispatch = {
     ),
     'condition':
     MetadataContainer(
-        # htp =/www.feflow.info/html/help73/feflow/09_Parameters/Auxiliary_Data/condition_number.html
         name='Condition number',
         description='Calculate the condition number of a triangle.',
         units='',
@@ -130,7 +133,8 @@ _func_dispatch = {
     'max_angle':
     MetadataContainer(
         name='Maximum angle',
-        description='Calculate the maximal (nonoriented) angle of a triangle.',
+        description=(
+            'Calculate the maximal (nonoriented) angle of a triangle.'),
         units='degrees',
         optimal=(60, 90),
         range=(60, 180),
@@ -139,7 +143,8 @@ _func_dispatch = {
     'min_angle':
     MetadataContainer(
         name='Minimum angle',
-        description='Calculate the minimal (nonoriented) angle of a triangle.',
+        description=(
+            'Calculate the minimal (nonoriented) angle of a triangle.'),
         units='degrees',
         optimal=(30, 60),
         range=(0, 60),
@@ -148,8 +153,10 @@ _func_dispatch = {
     'radius_ratio':
     MetadataContainer(
         name='Radius ratio',
-        description=
-        'Calculate the radius ratio of a triangle. The radius ratio of a triangle $t$ is: $\frac{R}{2r}$, where $R$ and $r$ respectively denote the circumradius and the inradius of $t$.',
+        description=(
+            'Calculate the radius ratio of a triangle. The radius ratio of a '
+            'triangle $t$ is: $\frac{R}{2r}$, where $R$ and $r$ respectively '
+            'denote the circumradius and the inradius of $t$.'),
         units='',
         optimal=(1.0, 2.0),
         range=(1, np.inf),
@@ -185,8 +192,8 @@ _func_dispatch = {
     'shape_and_size':
     MetadataContainer(
         name='Shape and size',
-        description=
-        'Calculate the product of shape and relative size of a triangle.',
+        description=(
+            'Calculate the product of shape and relative size of a triangle.'),
         units='',
         optimal=(0.25, 1.0),
         range=(0, 1),
@@ -204,8 +211,8 @@ _func_dispatch = {
     'max_min_edge_ratio':
     MetadataContainer(
         name='Ratio max/min edge',
-        description=
-        'Calculate the ratio between the longest and shortest edge lengths of a triangle.',
+        description=('Calculate the ratio between the longest '
+                     'and shortest edge lengths of a triangle.'),
         units='',
         optimal=(1.0, 2.0),
         range=(1, np.inf),
@@ -215,7 +222,18 @@ _func_dispatch = {
 
 # patch docstrings
 for metadata in _func_dispatch.values():
-    metadata.func.__doc__ = metadata.description
+    metadata.func.__doc__ = f"""{metadata.description}
+
+Parameters
+----------
+mesh : meshio.Mesh
+    Input mesh
+
+Returns
+-------
+quality : np.ndarray
+    Array with face qualities.
+    """
 
 
 def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:

@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import Callable, Optional, Tuple
+
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
@@ -16,8 +19,6 @@ class Metric:
     def __init__(self, metric: str):
         super().__init__()
         self.metric = metric
-        self.__doc__ = ('Compute the {metric} cell quality metric for the '
-                        'given data.')
 
     def __call__(self, mesh: meshio.Mesh) -> np.ndarray:
         pvmesh = pv.from_meshio(mesh)
@@ -38,8 +39,6 @@ class Metric:
 # max_edge_ratio = Metric('max_edge_ratio')
 # med_aspect_frobenius = Metric('med_aspect_frobenius')
 # oddy = Metric('oddy')
-# relative_size_squared = Metric('relative_size_squared')
-# shape_and_size = Metric('shape_and_size')
 # shear = Metric('shear')
 # shear_and_size = Metric('shear_and_size')
 # skew = Metric('skew')
@@ -47,37 +46,194 @@ class Metric:
 # taper = Metric('taper')
 # volume = Metric('volume')
 # warpage = Metric('warpage')
+
 area = Metric('area')
 aspect_frobenius = Metric('aspect_frobenius')
 aspect_ratio = Metric('aspect_ratio')
 condition = Metric('condition')
+distortion = Metric('distortion')
 max_angle = Metric('max_angle')
 min_angle = Metric('min_angle')
 radius_ratio = Metric('radius_ratio')
+relative_size_squared = Metric('relative_size_squared')
 scaled_jacobian = Metric('scaled_jacobian')
 shape = Metric('shape')
+shape_and_size = Metric('shape_and_size')
 
 
 def max_min_edge_ratio(mesh: meshio.Mesh) -> np.ndarray:
-    """Compute the min/max cell edge ratio for the given data."""
+    """Place holder, updated dynamically."""
     cell_points = mesh.points[mesh.cells[0].data]
     diff = cell_points - np.roll(cell_points, shift=1, axis=1)
     lengths = np.linalg.norm(diff, axis=2)
     return lengths.max(axis=1) / lengths.min(axis=1)
 
 
+@dataclass
+class MetadataContainer:
+    name: str
+    description: str
+    units: str
+    func: Callable
+    optimal: Optional[Tuple[float, float]] = None
+    range: Optional[Tuple[float, float]] = None
+
+    @property
+    def label(self):
+        """Return label with units."""
+        string = self.name
+        if units := self.units:
+            string += f' ({units})'
+        return string
+
+
+# coreform.com/cubit_help/mesh_generation/mesh_quality_assessment/triangular_metrics.htm
+# vtk.org/doc/nightly/html/classvtkMeshQuality.html#aefa3db78933a64e68c2718cf83eac3c5
+# www.feflow.info/html/help73/feflow/09_Parameters/Auxiliary_Data/condition_number.html
 _func_dispatch = {
-    'area': area,
-    'aspect_frobenius': aspect_frobenius,
-    'aspect_ratio': aspect_ratio,
-    'condition': condition,
-    'max_angle': max_angle,
-    'min_angle': min_angle,
-    'radius_ratio': radius_ratio,
-    'scaled_jacobian': scaled_jacobian,
-    'shape': shape,
-    'max_min_edge_ratio': max_min_edge_ratio,
+    'area':
+    MetadataContainer(
+        name='Triangle area',
+        description='Calculate the area of a triangle.',
+        units='px^2',
+        optimal=None,
+        range=(0, np.inf),
+        func=area,
+    ),
+    'aspect_frobenius':
+    MetadataContainer(
+        name='Frobenius aspect',
+        description=(
+            'Calculate the Frobenius condition number of the '
+            'transformation matrix from an equilateral triangle to a triangle.'
+        ),
+        units='',
+        optimal=None,
+        range=None,
+        func=aspect_frobenius,
+    ),
+    'aspect_ratio':
+    MetadataContainer(
+        name='Aspect ratio',
+        description='Calculate the aspect ratio of a triangle.',
+        units='',
+        optimal=None,
+        range=None,
+        func=aspect_ratio,
+    ),
+    'condition':
+    MetadataContainer(
+        name='Condition number',
+        description='Calculate the condition number of a triangle.',
+        units='',
+        optimal=(1, 1.3),
+        range=(1, np.inf),
+        func=condition,
+    ),
+    'max_angle':
+    MetadataContainer(
+        name='Maximum angle',
+        description=(
+            'Calculate the maximal (nonoriented) angle of a triangle.'),
+        units='degrees',
+        optimal=(60, 90),
+        range=(60, 180),
+        func=max_angle,
+    ),
+    'min_angle':
+    MetadataContainer(
+        name='Minimum angle',
+        description=(
+            'Calculate the minimal (nonoriented) angle of a triangle.'),
+        units='degrees',
+        optimal=(30, 60),
+        range=(0, 60),
+        func=min_angle,
+    ),
+    'radius_ratio':
+    MetadataContainer(
+        name='Radius ratio',
+        description=(
+            'Calculate the radius ratio of a triangle. The radius ratio of a '
+            'triangle $t$ is: $\frac{R}{2r}$, where $R$ and $r$ respectively '
+            'denote the circumradius and the inradius of $t$.'),
+        units='',
+        optimal=(1.0, 2.0),
+        range=(1, np.inf),
+        func=radius_ratio,
+    ),
+    'scaled_jacobian':
+    MetadataContainer(
+        name='Scaled Jacobian',
+        description='Calculate the scaled Jacobian of a triangle.',
+        units='',
+        optimal=(0.2, 1.0),
+        range=(-1, 1),
+        func=scaled_jacobian,
+    ),
+    'shape':
+    MetadataContainer(
+        name='Shape',
+        description='Calculate the shape of a triangle.',
+        units='',
+        optimal=(0.25, 1.0),
+        range=(0, 1),
+        func=shape,
+    ),
+    'relative_size_squared':
+    MetadataContainer(
+        name='Relative size',
+        description='Calculate the square of the relative size of a triangle.',
+        units='',
+        optimal=(0.25, 1.0),
+        range=(0, 1),
+        func=relative_size_squared,
+    ),
+    'shape_and_size':
+    MetadataContainer(
+        name='Shape and size',
+        description=(
+            'Calculate the product of shape and relative size of a triangle.'),
+        units='',
+        optimal=(0.25, 1.0),
+        range=(0, 1),
+        func=shape_and_size,
+    ),
+    'distortion':
+    MetadataContainer(
+        name='Distortion',
+        description='Calculate the distortion of a triangle.',
+        units='px^2',
+        optimal=(0.6, 1.0),
+        range=(0, 1),
+        func=distortion,
+    ),
+    'max_min_edge_ratio':
+    MetadataContainer(
+        name='Ratio max/min edge',
+        description=('Calculate the ratio between the longest '
+                     'and shortest edge lengths of a triangle.'),
+        units='',
+        optimal=(1.0, 2.0),
+        range=(1, np.inf),
+        func=max_min_edge_ratio,
+    ),
 }
+
+# patch docstrings
+for metadata in _func_dispatch.values():
+    metadata.func.__doc__ = f"""{metadata.description}
+
+Parameters
+----------
+mesh : meshio.Mesh
+    Input mesh
+
+Returns
+-------
+quality : np.ndarray
+    Array with face qualities.
+    """
 
 
 def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:
@@ -96,8 +252,8 @@ def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:
         Return a dict
     """
     dct = {}
-    for metric, func in _func_dispatch.items():
-        quality = func(mesh)  # type: ignore
+    for metric, descriptor in _func_dispatch.items():
+        quality = descriptor.func(mesh)  # type: ignore
         dct[metric] = quality
 
         if inplace:
@@ -135,15 +291,24 @@ def histogram(
     ax : `matplotlib.Axes`
     """
     kwargs.setdefault('bins', 50)
-    kwargs.setdefault('density', True)
     kwargs.setdefault('rwidth', 0.8)
 
-    func = _func_dispatch[metric]
-    quality = func(mesh)  # type: ignore
+    descriptor = _func_dispatch[metric]
+    quality = descriptor.func(mesh)  # type: ignore
 
     fig, ax = plt.subplots()
     n, bins, patches = ax.hist(quality, **kwargs)
-    ax.set_title(metric)
+    ax.set_title(f'Histogram of {descriptor.name.lower()}')
+
+    if optimal_range := descriptor.optimal:
+        ax.axvspan(*optimal_range, color='limegreen', zorder=0, alpha=0.1)
+
+    xlabel = descriptor.label
+    ax.set_xlabel(xlabel)
+
+    ylabel = 'probability' if kwargs.get('density') else 'frequency'
+    ax.set_ylabel(ylabel)
+
     return ax
 
 
@@ -166,6 +331,7 @@ def plot2d(
         If specified, `ax` will be used to create the subplot.
     vmin, vmax : int, float
         Set the lower/upper boundary for the color value.
+        Defaults to the 1st and 99th percentile, respectively.
     cmap : str
         Set the color map.
     **kwargs
@@ -175,8 +341,11 @@ def plot2d(
     -------
     ax : `matplotlib.Axes`
     """
-    func = _func_dispatch[metric]
-    quality = func(mesh)  # type: ignore
+    descriptor = _func_dispatch[metric]
+    quality = descriptor.func(mesh)  # type: ignore
+
+    kwargs.setdefault('vmin', np.percentile(quality, 1))
+    kwargs.setdefault('vmax', np.percentile(quality, 99))
 
     fig, ax = plt.subplots()
 
@@ -185,9 +354,10 @@ def plot2d(
 
     faces = mesh.cells[0].data
 
-    ax.set_title(metric)
-
     tpc = ax.tripcolor(x, y, quality, triangles=faces, **kwargs)
     ax.figure.colorbar(tpc)
-    ax.axis('equal')
+    ax.axis('scaled')
+
+    ax.set_title(f'Triplot of {descriptor.name.lower()}')
+
     return ax

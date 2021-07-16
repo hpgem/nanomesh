@@ -193,7 +193,7 @@ class Mesher3D:
         logger.info(f'simplifying mesh, {n_faces=}')
 
         mesh = self.surface_mesh.to_open3d()
-        mesh.simplify_quadric_decimation(int(n_faces))
+        mesh = mesh.simplify_quadric_decimation(int(n_faces))
         self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh)
 
         logger.info(f'reduced to {len(self.surface_mesh.vertices)} verts '
@@ -298,13 +298,13 @@ class Mesher3D:
         label : int, optional
             Domain to generate mask for. Not implemented yet.
         """
-        logger.info('generating mask')
         vertices = self.volume_mesh.vertices
 
         centers = vertices[self.volume_mesh.faces].mean(1)
 
         mesh = self.surface_mesh.to_trimesh()
 
+        logger.info(f'generating mask, {mesh.is_watertight=}')
         if mesh.is_watertight:
             mask = mesh.contains(centers)
         else:

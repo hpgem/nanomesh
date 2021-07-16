@@ -73,3 +73,26 @@ def test_select_plane(volume, kwargs, expected):
     ret = volume.select_plane(**kwargs)
     assert isinstance(ret, Plane)
     np.testing.assert_array_equal(ret.image, volume.image[expected])
+
+
+@pytest.mark.parametrize('kwargs,expected', (
+    ({
+        'xs': (1, 2)
+    }, np.s_[:, :, 1:2]),
+    ({
+        'ys': (2, 3)
+    }, np.s_[:, 2:3, :]),
+    ({
+        'zs': (3, 4)
+    }, np.s_[3:4, :, :]),
+    ({
+        'xs': (1, 3),
+        'ys': (2, 4),
+        'zs': (3, 5)
+    }, np.s_[3:5, 2:4, 1:3]),
+))
+def test_select_subvolume(volume, kwargs, expected):
+    """Test plane selection method."""
+    ret = volume.select_subvolume(**kwargs)
+    assert isinstance(ret, Volume)
+    np.testing.assert_array_equal(ret.image, volume.image[expected])

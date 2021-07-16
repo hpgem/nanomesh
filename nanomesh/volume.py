@@ -215,3 +215,40 @@ class Volume:
 
         array = self.image[slice]
         return Plane(array)
+
+    def select_subvolume(self,
+                         *,
+                         xs: tuple = None,
+                         ys: tuple = None,
+                         zs: tuple = None) -> 'Volume':
+        """Select a subvolume from the current volume.
+
+        Each range must include a start and stop value, for example:
+
+        `vol.select_subvolume(xs=(10, 20))` is equivalent to:
+        `vol.image[[:,:,10:20]`
+
+        or
+
+        `vol.select_subvolume(ys=(20, 25), zs=(40, 50))` is equivalent to:
+        `vol.image[[40:50,20:25,:]`
+
+        Parameters
+        ----------
+        xs : tuple, optional
+            Range to select along y-axis
+        ys : tuple, optional
+            Range to select along y-axis
+        zs : tuple, optional
+            Range to select along z-axis
+
+        Returns
+        -------
+        Plane
+            Return 3D volume representation.
+        """
+        default = slice(None)
+        slices = tuple(slice(*r) if r else default for r in (zs, ys, xs))
+
+        array = self.image[slices]
+        return Volume(array)

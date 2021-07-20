@@ -8,15 +8,21 @@ import trimesh
 from trimesh import remesh
 
 
-class BaseMeshContainer:
-    pass
-
-
 @dataclass
-class TwoDMeshContainer(BaseMeshContainer):
+class BaseMeshContainer:
     vertices: np.ndarray
     faces: np.ndarray
 
+    def write(self, **kwargs):
+        """Simple wrapper around `meshio.write`."""
+        self.to_meshio().write(**kwargs)
+
+    def plot_itk(self):
+        """Wrapper for `pyvista.plot_itk`."""
+        pv.plot_itk(self.to_meshio())
+
+
+class TwoDMeshContainer(BaseMeshContainer):
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""
         return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
@@ -50,11 +56,7 @@ class TwoDMeshContainer(BaseMeshContainer):
         return cls(vertices=mesh.vertices, faces=mesh.faces)
 
 
-@dataclass
 class SurfaceMeshContainer(BaseMeshContainer):
-    vertices: np.ndarray
-    faces: np.ndarray
-
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""
         return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
@@ -74,6 +76,14 @@ class SurfaceMeshContainer(BaseMeshContainer):
         return open3d.geometry.TriangleMesh(
             vertices=open3d.utility.Vector3dVector(self.vertices),
             triangles=open3d.utility.Vector3iVector(self.faces))
+
+    def to_polydata(self) -> 'pv.PolyData':
+        """Return instance of `pyvista.Polydata`."""
+        vertices = self.vertices
+        faces = self.faces
+        # preprend 3 to indicate number of points per face
+        stacked_faces = np.hstack(np.insert(faces, 0, values=3, axis=1))
+        return pv.PolyData(vertices, stacked_faces, n_faces=len(faces))
 
     @classmethod
     def from_open3d(
@@ -171,7 +181,7 @@ class SurfaceMeshContainer(BaseMeshContainer):
         """
         import optimesh
         verts, faces = optimesh.optimize_points_cells(
-            points=self.vertices,
+            X=self.vertices,
             cells=self.faces,
             method=method,
             tol=tol,
@@ -198,12 +208,30 @@ class SurfaceMeshContainer(BaseMeshContainer):
                                                 max_iter=10)
         return SurfaceMeshContainer(vertices=verts, faces=faces)
 
+    def tetrahedralize(self, **kwargs) -> 'VolumeMeshContainer':
+        """Tetrahedralize a contour.
 
-@dataclass
+        Parameters
+        ----------
+        label : int
+            Label of the contour
+        **kwargs
+            Keyword arguments passed to `tetgen.TetGen`
+
+        Returns
+        -------
+        VolumeMeshContainer
+        """
+        import tetgen
+        kwargs.setdefault('order', 1)
+        polydata = self.to_polydata()
+        tet = tetgen.TetGen(polydata)
+        tet.tetrahedralize(**kwargs)
+        grid = tet.grid
+        return VolumeMeshContainer.from_pyvista_unstructured_grid(grid)
+
+
 class VolumeMeshContainer(BaseMeshContainer):
-    vertices: np.ndarray
-    faces: np.ndarray
-
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
         cells = [
@@ -220,6 +248,10 @@ class VolumeMeshContainer(BaseMeshContainer):
             vertices=open3d.utility.Vector3dVector(self.vertices),
             tetras=open3d.utility.Vector4iVector(self.faces))
 
+    def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
+        """Return instance of `pyvista.UnstructuredGrid`."""
+        return pv.from_meshio(self.to_meshio())
+
     @classmethod
     def from_open3d(cls, mesh):
         """Return instance of `VolumeMeshContainer` from open3d."""
@@ -227,7 +259,73 @@ class VolumeMeshContainer(BaseMeshContainer):
         faces = np.asarray(mesh.tetras)
         return cls(vertices=vertices, faces=faces)
 
+    @classmethod
+    def from_pyvista_unstructured_grid(cls, grid: 'pv.UnstructuredGrid'):
+        """Return infance of `VolumeMeshContainer` from
+        `pyvista.UnstructuredGrid`."""
+        assert grid.cells[0] == 4
+        faces = grid.cells.reshape(grid.n_cells, 5)[:, 1:]
+        vertices = np.array(grid.points)
+        return cls(vertices=vertices, faces=faces)
 
-def meshio_to_polydata(mesh):
-    """Convert instance of `meshio.Mesh` to `pyvista.PolyData`."""
-    return pv.from_meshio(mesh)
+    def plot(self, **kwargs):
+        """Show grid using `pyvista`.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments passed to `pyvista.Plotter().add_mesh`.
+        """
+        self.to_pyvista_unstructured_grid().plot(**kwargs)
+
+    def plot_submesh(
+        self,
+        index: int = None,
+        along: str = 'x',
+        invert: bool = False,
+        **kwargs,
+    ):
+        """Show submesh using `pyvista`.
+
+        Parameters
+        ----------
+        index : int, optional
+            Index of where to cut the mesh. Shows all tetrahedra
+            with cell center < index. Picks the half-way
+            point along the axis by default.
+        along : str, optional
+            Direction along which to cut.
+        invert : bool, optional
+            Invert the cutting operation, and show all tetrahedra with
+            cell center > index.
+        **kwargs:
+            Keyword arguments passed to `pyvista.Plotter().add_mesh`.
+        """
+        kwargs.setdefault('color', 'lightgray')
+
+        plotter = pv.Plotter()
+
+        grid = self.to_pyvista_unstructured_grid()
+
+        # get cell centroids
+        cells = grid.cells.reshape(-1, 5)[:, 1:]
+        cell_center = grid.points[cells].mean(1)
+
+        # extract cells below index
+        axis = 'zyx'.index(along)
+
+        if index is None:
+            # pick half-way point
+            i, j = axis * 2, axis * 2 + 2
+            index = np.mean(grid.bounds[i:j])
+
+        mask = cell_center[:, axis] < index
+
+        if invert:
+            mask = ~mask
+
+        cell_ind = mask.nonzero()[0]
+        subgrid = grid.extract_cells(cell_ind)
+
+        plotter.add_mesh(subgrid, **kwargs)
+        plotter.show()

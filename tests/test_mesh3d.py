@@ -2,7 +2,6 @@ import os
 import pickle
 from pathlib import Path
 
-import helpers
 import numpy as np
 import pytest
 
@@ -33,7 +32,7 @@ def test_generate_3d_mesh(segmented):
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
 
     np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = generate_3d_mesh(segmented, point_density=1 / 100, pad_width=2)
+    mesh = generate_3d_mesh(segmented)
 
     if expected_fn.exists():
         with open(expected_fn, 'rb') as f:
@@ -44,4 +43,7 @@ def test_generate_3d_mesh(segmented):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=MESH_TOL)
+    assert mesh.vertices.shape == expected_mesh.vertices.shape
+    assert mesh.faces.shape == expected_mesh.faces.shape
+    np.testing.assert_allclose(mesh.vertices, expected_mesh.vertices)
+    np.testing.assert_allclose(mesh.faces, expected_mesh.faces)

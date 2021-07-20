@@ -7,8 +7,9 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
-from nanomesh.mesh2d import (add_points_gaussian_mixture, add_points_kmeans,
-                             generate_2d_mesh, get_edge_coords,
+from nanomesh._mesh_shared import (add_points_gaussian_mixture,
+                                   add_points_kmeans)
+from nanomesh.mesh2d import (generate_2d_mesh, get_edge_coords,
                              subdivide_contour)
 
 # There is a small disparity between the data generated on Windows / posix

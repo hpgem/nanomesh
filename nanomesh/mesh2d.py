@@ -1,15 +1,15 @@
 import logging
 from collections import defaultdict
 from itertools import chain, tee
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 from scipy.spatial import Delaunay
 from skimage import measure
-from sklearn import cluster, mixture
 
+from ._mesh_shared import BaseMesher
 from .mesh_utils import TwoDMeshContainer
 
 logger = logging.getLogger(__name__)
@@ -126,78 +126,6 @@ def generate_edge_contours(shape: tuple, contours: list) -> list:
     return edge_contours
 
 
-def add_points_kmeans(image: np.ndarray,
-                      iters: int = 10,
-                      n_points: int = 100,
-                      label: int = 1,
-                      **kwargs):
-    """Add evenly distributed points to the image using K-Means clustering.
-
-    Parameters
-    ----------
-    image : 2D np.ndarray
-        Input image
-    iters : int, optional
-        Number of iterations for the algorithm.
-    n_points : int, optional
-        Total number of points to add
-    label : int, optional
-        Domain to select coordinates from
-    **kwargs
-        Extra keyword arguments to pass to `sklearn.cluster.KMeans`
-
-    Returns
-    -------
-    (n,2) np.ndarray
-        Array with the generated points.
-    """
-    coordinates = np.argwhere(image == label)
-
-    kmeans = cluster.KMeans(n_clusters=n_points,
-                            n_init=1,
-                            init='random',
-                            max_iter=iters,
-                            algorithm='full',
-                            **kwargs)
-    ret = kmeans.fit(coordinates)
-
-    return ret.cluster_centers_
-
-
-def add_points_gaussian_mixture(image: np.ndarray,
-                                iters: int = 10,
-                                n_points: int = 100,
-                                label: int = 1,
-                                **kwargs):
-    """Add evenly distributed points to the image using a Gaussian Mixture
-    model.
-
-    Parameters
-    ----------
-    image : 2D np.ndarray
-        Input image
-    iters : int, optional
-        Number of iterations for the algorithm.
-    n_points : int, optional
-        Total number of points to add
-    label : int, optional
-        Domain to select coordinates from
-    **kwargs
-        Extra keyword arguments to pass to `sklearn.mixture.GaussianMixture`
-
-    Returns
-    -------
-    (n,2) np.ndarray
-        Array with the generated points.
-    """
-    coordinates = np.argwhere(image == label)
-
-    gmm = mixture.GaussianMixture(n_components=n_points, max_iter=10, **kwargs)
-    ret = gmm.fit(coordinates)
-
-    return ret.means_
-
-
 def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
     """This algorithm looks for long edges in the contour and subdivides them
     so they are no longer than `max_dist`
@@ -293,54 +221,10 @@ def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
     ax[2].legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 
 
-class Mesher2D:
+class Mesher2D(BaseMesher):
     def __init__(self, image: np.ndarray):
-        self.image_orig = image
-        self.image = image
-        self.points: Dict[int, list] = defaultdict(list)
-        self.contours: Dict[int, list] = defaultdict(list)
-
-    def add_points(
-        self,
-        point_density: float = 1 / 100,
-        label: int = 1,
-        method: str = 'kmeans',
-        **kwargs,
-    ):
-        """Generate evenly distributed points using K-Means in the domain body
-        for generating tetrahedra. Alternative implementation using a Gaussian
-        Mixture model available via `method='gmm'`.
-
-        Parameters
-        ----------
-        point_density : float, optional
-            Density of points (points per pixels) to distribute over the
-            domain for triangle generation.
-        label : int, optional
-            Label of the domain to add points to.
-        method : str
-            Clustering algorithm to use,
-                `kmeans` : `sklearn.cluster.KMeans`
-                `gmm` : `sklearn.mixture.GaussianMixture`
-        **kwargs :
-            Keywords arguments for the clustering algorithm.
-        """
-        n_points = int(np.sum(self.image == label) * point_density)
-
-        if method == 'kmeans':
-            add_points_func = add_points_kmeans
-        elif method == 'gmm':
-            add_points_func = add_points_gaussian_mixture
-        else:
-            raise ValueError(f'Unknown method: {method!r}')
-        grid_points = add_points_func(self.image,
-                                      iters=10,
-                                      n_points=n_points,
-                                      label=label,
-                                      **kwargs)
-        self.points[label].append(grid_points)
-        logger.info(f'added {len(grid_points)} points ({label=}), '
-                    f'{point_density=}, {method=}')
+        super().__init__(image)
+        self.contours: Dict[int, List[list]] = defaultdict(list)
 
     def generate_contours(
         self,
@@ -382,15 +266,6 @@ class Mesher2D:
         flat_list = [
             contour for contour_subset in self.contours.values()
             for contour in contour_subset
-        ]
-        return flat_list
-
-    @property
-    def flattened_points(self) -> list:
-        """Return flattened list of pointss."""
-        flat_list = [
-            points for points_subset in self.points.values()
-            for points in points_subset
         ]
         return flat_list
 

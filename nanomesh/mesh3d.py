@@ -43,8 +43,8 @@ class Mesher3D(BaseMesher):
         # mesh = mesh.simplify(n_faces=10000)
         # mesh = mesh.simplify_by_vertex_clustering(voxel_size=2)
 
-        logger.info(
-            f'Generated contour with {len(mesh.faces)} faces ({label=})')
+        logger.info(f'Generated contour with {len(mesh.faces)} '
+                    f' faces ({label=})')
 
         self.contours[label] = mesh
 

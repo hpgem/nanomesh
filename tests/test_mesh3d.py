@@ -17,7 +17,7 @@ generated_on = 'nt'
 if os.name == generated_on:
     expected_raises = do_not_raise()
 else:
-    expected_raises = pytest.raises(ValueError)
+    expected_raises = pytest.raises(AssertionError)
 
 
 @pytest.fixture

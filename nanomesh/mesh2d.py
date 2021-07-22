@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from itertools import chain, tee
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 
 import matplotlib.pyplot as plt
 import meshio
@@ -14,15 +14,26 @@ from .mesh_utils import TwoDMeshContainer
 logger = logging.getLogger(__name__)
 
 
-def pairwise_circle(iterable):
+def pairwise_circle(iterable: Iterable) -> Iterable:
     """s -> (s0,s1), (s1,s2), ..., (sn,s0)"""
     a, b = tee(iterable)
     first = next(b, None)
     return zip(a, chain(b, (first, )))
 
 
-def find_point_in_contour(contour):
-    """Use rejection sampling to find point in contour."""
+def find_point_in_contour(contour: np.array) -> np.array:
+    """Use rejection sampling to find point in contour.
+
+    Parameters
+    ----------
+    contour : (n,2) np.ndarray
+        List of coordinates describing a contour.
+
+    Returns
+    -------
+    point : np.array
+        Coordinate of point in the contour
+    """
     # start with guess in center of contour
     point = contour.mean(axis=0)
 
@@ -34,8 +45,27 @@ def find_point_in_contour(contour):
     return point
 
 
-def close_corner_contour(contour, shape):
-    """Check if contours are in the corner, and close them if needed."""
+def close_corner_contour(contour: np.array, shape: tuple) -> np.array:
+    """Check if contours are in the corner, and close them if needed.
+
+    Contours which cover a corner cannot be closed by joining the first
+    and last element, because some of the area is missed. This algorithm
+    adds the corner point to close the contours.
+
+    Parameters
+    ----------
+    contour : (n,2) np.ndarray
+        List of coordinates describing a contour.
+    shape : tuple
+        Shape of the source image. Used to check which corners the
+        contour touches.
+
+    Returns
+    -------
+    contour : (n+1,2) or (n,2) np.array
+        Return a contour with a corner point added if needed,
+        otherwise return the input contour
+    """
     xmin, ymin = contour.min(axis=0)
     xmax, ymax = contour.max(axis=0)
 
@@ -60,110 +90,6 @@ def close_corner_contour(contour, shape):
 
     contour = np.vstack([contour, extra_point])
     return contour
-
-
-def get_edge_coords(shape: tuple) -> np.ndarray:
-    """Get sorted list of edge coordinates around an image of given shape.
-
-    Parameters
-    ----------
-    shape : tuple
-        Shape of the image.
-
-    Returns
-    -------
-    edge_coords : (n,2) np.ndarray
-        Coordinate array going in clockwise orientation from (0, 0)
-    """
-    shape_x, shape_y = shape
-
-    x_grid = np.arange(0, shape_x, dtype=float)
-    y_grid = np.arange(0, shape_y, dtype=float)[1:-1]
-
-    max_y = shape_y - 1
-    max_x = shape_x - 1
-
-    ones = np.ones_like
-    zeros = np.zeros_like
-
-    top_edge = np.vstack((x_grid, zeros(x_grid))).T
-    bottom_edge = np.vstack((x_grid, max_y * ones(x_grid))).T
-    left_edge = np.vstack((zeros(y_grid), y_grid)).T
-    right_edge = np.vstack((max_x * ones(y_grid), y_grid)).T
-
-    edge_coords = np.vstack((
-        top_edge,
-        right_edge,
-        bottom_edge[::-1],
-        left_edge[::-1],
-    ))
-
-    return edge_coords
-
-
-def generate_edge_contours(shape: tuple, contours: list) -> list:
-    """Generate edge contours for given shape. The edge contour is split by any
-    objects defined by the contours parameter.
-
-    Parameters
-    ----------
-    shape : tuple
-        Shape of the image.
-    contours : list
-        List of object contours used to split the edge contour.
-
-    Returns
-    -------
-    edge_contours : list
-        List of coordinate arrays with the edge contours.
-    """
-    edge_coords = get_edge_coords(shape)
-
-    in_contour = []
-
-    for contour in contours:
-        index = measure.points_in_poly(edge_coords, contour)
-        in_contour.append(index)
-
-    in_contour = np.any(in_contour, axis=0)
-
-    grouped = measure.label(in_contour + 1)
-
-    # generate edge coordinates
-    beginnings = np.argwhere(grouped - np.roll(grouped, shift=1))
-    ends = np.argwhere(grouped - np.roll(grouped, shift=-1))
-
-    edge_splits = np.hstack((beginnings, ends))
-
-    if len(edge_splits) == 0:
-        edge_contours = [edge_coords]
-    else:
-        edge_contours = []
-
-        for i, j in edge_splits:
-            contour = edge_coords[i:j + 1]
-            edge_contours.append(contour)
-
-        connect_first_and_last_contour = (in_contour[0] == in_contour[-1])
-        if connect_first_and_last_contour:
-            logger.info('Connecting first and last contour')
-            loop_around_contour = np.vstack(
-                (edge_contours.pop(-1), edge_contours.pop(0)))
-            edge_contours.append(loop_around_contour)
-
-        logger.info('Updating boundary values')
-        for contour_1, contour_2 in pairwise_circle(edge_contours):
-            boundary = (contour_1[-1] + contour_2[0]) / 2
-            contour_1[-1] = boundary
-            contour_2[0] = boundary
-
-    # use low tolerance for floating point errors
-    edge_contours = [
-        measure.approximate_polygon(contour, tolerance=1e-3)
-        for contour in edge_contours
-    ]
-
-    return edge_contours
 
 
 def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
@@ -315,7 +241,13 @@ class Mesher2D(BaseMesher):
 
     @property
     def image_bbox(self) -> np.array:
-        """Return bbox from image shape."""
+        """Return bbox from image shape.
+
+        Returns
+        -------
+        bbox : (4,2) np.array
+            Coordinates of bounding box contour.
+        """
         x, y = self.image.shape
         return np.array((
             (0, 0),
@@ -338,7 +270,8 @@ class Mesher2D(BaseMesher):
 
         Returns
         -------
-        TwoDMeshContainer
+        mesh : TwoDMeshContainer
+            Output 2D mesh with domain labels
         """
         import triangle as tr
         bbox = self.image_bbox
@@ -382,8 +315,24 @@ class Mesher2D(BaseMesher):
         mesh.labels = labels
         return mesh
 
-    def generate_domain_mask_from_contours(self, mesh, *, label: int = 1):
-        """Generate domain mask from contour."""
+    def generate_domain_mask_from_contours(self,
+                                           mesh: TwoDMeshContainer,
+                                           *,
+                                           label: int = 1) -> np.array:
+        """Generate domain mask from contour.
+
+        Parameters
+        ----------
+        mesh : TwoDMeshContainer
+            Input mesh
+        label : int, optional
+            Label of the contour set
+
+        Returns
+        -------
+        labels : (n,) np.array
+            Array face labels.
+        """
         centers = mesh.face_centers
 
         labels = np.zeros(len(centers), dtype=int)

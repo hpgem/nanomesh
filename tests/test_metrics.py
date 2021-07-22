@@ -26,12 +26,12 @@ def test_metrics(sample_mesh, inplace):
         assert metric in metrics._metric_dispatch
 
         if inplace:
-            assert metric in sample_mesh.cell_data
+            assert metric in sample_mesh.metadata
 
         assert isinstance(output, np.ndarray)
-        assert len(output) == len(sample_mesh.cells[0].data)
+        assert len(output) == len(sample_mesh.faces)
 
-    sample_mesh.cell_data.clear()
+    sample_mesh.metadata.clear()
 
 
 @image_comparison(

@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from abc import abstractmethod
+from typing import Union
 
 import meshio
 import numpy as np
@@ -8,15 +9,23 @@ import trimesh
 from trimesh import remesh
 
 
-@dataclass
 class BaseMeshContainer:
-    vertices: np.ndarray
-    faces: np.ndarray
-    labels: np.ndarray = None  # face markers
+    def __init__(self, vertices: np.array, faces: np.array, **metadata):
+        self.vertices = vertices
+        self.faces = faces
+        self.metadata = metadata
+
+    @abstractmethod
+    def to_meshio(self) -> 'meshio.Meshio':
+        ...
 
     def write(self, **kwargs):
         """Simple wrapper around `meshio.write`."""
         self.to_meshio().write(**kwargs)
+
+    def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
+        """Return instance of `pyvista.UnstructuredGrid`."""
+        return pv.from_meshio(self.to_meshio())
 
     def plot_itk(self):
         """Wrapper for `pyvista.plot_itk`."""
@@ -26,6 +35,11 @@ class BaseMeshContainer:
     def face_centers(self):
         """Return centers of faces (mean of vertices)."""
         return self.vertices[self.faces].mean(axis=1)
+
+    @property
+    def labels(self):
+        """Shortcut for face labels."""
+        return self.metadata['labels']
 
 
 class TwoDMeshContainer(BaseMeshContainer):
@@ -267,10 +281,6 @@ class VolumeMeshContainer(BaseMeshContainer):
             vertices=open3d.utility.Vector3dVector(self.vertices),
             tetras=open3d.utility.Vector4iVector(self.faces))
 
-    def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
-        """Return instance of `pyvista.UnstructuredGrid`."""
-        return pv.from_meshio(self.to_meshio())
-
     @classmethod
     def from_open3d(cls, mesh):
         """Return instance of `VolumeMeshContainer` from open3d."""
@@ -348,3 +358,7 @@ class VolumeMeshContainer(BaseMeshContainer):
 
         plotter.add_mesh(subgrid, **kwargs)
         plotter.show()
+
+
+MeshContainer = Union[TwoDMeshContainer, SurfaceMeshContainer,
+                      VolumeMeshContainer, ]

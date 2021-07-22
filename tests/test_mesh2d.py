@@ -2,26 +2,17 @@ import os
 import pickle
 from pathlib import Path
 
-import helpers
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
 
 from nanomesh._mesh_shared import (add_points_gaussian_mixture,
                                    add_points_kmeans)
-from nanomesh.mesh2d import (generate_2d_mesh, get_edge_coords,
-                             subdivide_contour)
+from nanomesh.mesh2d import generate_2d_mesh, subdivide_contour
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux). Allow some deviation if the platforms do not match.
 # windows: nt, linux/mac: posix
 GENERATED_ON = 'nt'
-if os.name == GENERATED_ON:
-    MPL_TOL = 0.0
-    MESH_TOL = None
-else:
-    MPL_TOL = 2.0
-    MESH_TOL = 0.005
 
 
 def block_image(shape=(10, 10)):
@@ -46,22 +37,12 @@ def segmented():
     raises=AssertionError,
     reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
             'are exactly the same.'))
-@image_comparison(
-    baseline_images=['segment_2d'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-    tol=MPL_TOL,
-)
 def test_generate_2d_mesh(segmented):
     """Test 2D mesh generation and plot."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_2d.pickle'
 
     np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = generate_2d_mesh(segmented,
-                            point_density=1 / 100,
-                            max_contour_dist=4,
-                            plot=True)
+    mesh = generate_2d_mesh(segmented, max_contour_dist=4, plot=True)
 
     if expected_fn.exists():
         with open(expected_fn, 'rb') as f:
@@ -72,42 +53,10 @@ def test_generate_2d_mesh(segmented):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=MESH_TOL)
-
-
-def test_generate_2d_mesh_no_extra_points(segmented):
-    """Test if 2D mesh generation works when no extra points are passed."""
-    expected_fn = Path(
-        __file__).parent / 'segmented_mesh_2d_no_extra_points.pickle'
-
-    np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = generate_2d_mesh(segmented,
-                            point_density=0,
-                            max_contour_dist=4,
-                            plot=False)
-
-    if expected_fn.exists():
-        with open(expected_fn, 'rb') as f:
-            expected_mesh = pickle.load(f)
-    else:
-        with open(expected_fn, 'wb') as f:
-            pickle.dump(mesh, f)
-
-        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
-
-    helpers.assert_mesh_almost_equal(mesh, expected_mesh, tol=MESH_TOL)
-
-
-def test_get_edge_coords():
-    """Test generation of edge points."""
-    shape = (3, 2)
-
-    ret = get_edge_coords(shape=shape)
-
-    expected = np.array([[0., 0.], [1., 0.], [2., 0.], [2., 1.], [1., 1.],
-                         [0., 1.]])
-
-    assert np.all(ret == expected)
+    assert mesh.vertices.shape == expected_mesh.vertices.shape
+    assert mesh.faces.shape == expected_mesh.faces.shape
+    np.testing.assert_allclose(mesh.vertices, expected_mesh.vertices)
+    np.testing.assert_allclose(mesh.faces, expected_mesh.faces)
 
 
 def test_add_points_kmeans():

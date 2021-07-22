@@ -1,8 +1,8 @@
 import logging
 
-import meshio
 import numpy as np
 
+from .mesh_utils import TwoDMeshContainer
 from .utils import show_image
 
 logger = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ class Plane:
         """
         return show_image(self.image, dpi=dpi, title=title)
 
-    def generate_mesh(self, **kwargs) -> 'meshio.Mesh':
+    def generate_mesh(self, **kwargs) -> 'TwoDMeshContainer':
         """Generate mesh from binary (segmented) image.
 
         Parameters
@@ -112,7 +112,7 @@ class Plane:
 
         Returns
         -------
-        meshio.Mesh
+        mesh : TwoDMeshContainer
             Description of the mesh.
         """
         from .mesh2d import generate_2d_mesh

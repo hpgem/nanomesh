@@ -312,7 +312,7 @@ class Mesher2D(BaseMesher):
 
         mesh = TwoDMeshContainer.from_triangle_dict(triangle_dict_out)
         labels = self.generate_domain_mask_from_contours(mesh, label=label)
-        mesh.labels = labels
+        mesh.metadata['labels'] = labels
         return mesh
 
     def generate_domain_mask_from_contours(self,

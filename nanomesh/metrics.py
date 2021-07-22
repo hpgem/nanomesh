@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Callable, Optional, Tuple
 
 import matplotlib.pyplot as plt
-import meshio
 import numpy as np
-import pyvista as pv
+
+from .mesh_utils import MeshContainer
 
 
 class Metric:
@@ -20,9 +20,9 @@ class Metric:
         super().__init__()
         self.metric = metric
 
-    def __call__(self, mesh: meshio.Mesh) -> np.ndarray:
-        pvmesh = pv.from_meshio(mesh)
-        ret = pvmesh.compute_cell_quality(self.metric)
+    def __call__(self, mesh: MeshContainer) -> np.ndarray:
+        grid = mesh.to_pyvista_unstructured_grid()
+        ret = grid.compute_cell_quality(self.metric)
         quality = ret.cell_arrays['CellQuality']
         return np.array(quality)
 
@@ -61,9 +61,9 @@ shape = Metric('shape')
 shape_and_size = Metric('shape_and_size')
 
 
-def max_min_edge_ratio(mesh: meshio.Mesh) -> np.ndarray:
+def max_min_edge_ratio(mesh: MeshContainer) -> np.ndarray:
     """Place holder, updated dynamically."""
-    cell_points = mesh.points[mesh.cells[0].data]
+    cell_points = mesh.vertices[mesh.faces]
     diff = cell_points - np.roll(cell_points, shift=1, axis=1)
     lengths = np.linalg.norm(diff, axis=2)
     return lengths.max(axis=1) / lengths.min(axis=1)
@@ -226,7 +226,7 @@ for descriptor in _metric_dispatch.values():
 
 Parameters
 ----------
-mesh : meshio.Mesh
+mesh : MeshContainer
     Input mesh
 
 Returns
@@ -236,34 +236,34 @@ quality : np.ndarray
     """
 
 
-def calculate_all_metrics(mesh: meshio.Mesh, inplace: bool = False) -> dict:
+def calculate_all_metrics(mesh: MeshContainer, inplace: bool = False) -> dict:
     """Calculate all available metrics.
 
     Parameters
     ----------
-    mesh : meshio.Mesh
+    mesh : MeshContainer
         Input mesh
     inplace : bool, optional
-        Updates the `cell_data` attribute on the mesh with the metrics.
+        Updates the `metadata` attribute on the mesh with the metrics.
 
     Returns
     -------
-    dict
-        Return a dict
+    metrics : dict
+        Return a dict with all the metrics
     """
-    dct = {}
+    metrics = {}
     for metric, descriptor in _metric_dispatch.items():
         quality = descriptor.func(mesh)  # type: ignore
-        dct[metric] = quality
+        metrics[metric] = quality
 
         if inplace:
-            mesh.cell_data[metric] = [quality]
+            mesh.metadata[metric] = quality
 
-    return dct
+    return metrics
 
 
 def histogram(
-    mesh: meshio.Mesh,
+    mesh: MeshContainer,
     *,
     metric: str,
     ax: plt.Axes = None,
@@ -273,7 +273,7 @@ def histogram(
 
     Parameters
     ----------
-    mesh : meshio.Mesh
+    mesh : MeshContainer
         Input mesh
     metric : str
         Metric to calculate.
@@ -313,7 +313,7 @@ def histogram(
 
 
 def plot2d(
-    mesh: meshio.Mesh,
+    mesh: MeshContainer,
     *,
     metric: str,
     ax: plt.Axes = None,
@@ -323,7 +323,7 @@ def plot2d(
 
     Parameters
     ----------
-    mesh : meshio.Mesh
+    mesh : MeshContainer
         Input mesh
     metric : str
         Metric to calculate.
@@ -349,10 +349,10 @@ def plot2d(
 
     fig, ax = plt.subplots()
 
-    x = mesh.points[:, 0]
-    y = mesh.points[:, 1]
+    x = mesh.vertices[:, 0]
+    y = mesh.vertices[:, 1]
 
-    faces = mesh.cells[0].data
+    faces = mesh.faces
 
     tpc = ax.tripcolor(x, y, quality, triangles=faces, **kwargs)
     ax.figure.colorbar(tpc)

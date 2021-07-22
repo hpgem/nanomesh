@@ -21,6 +21,19 @@ def pairwise_circle(iterable):
     return zip(a, chain(b, (first, )))
 
 
+def find_point_in_contour(contour):
+    """Use rejection sampling to find point in contour."""
+    # start with guess in center of contour
+    point = contour.mean(axis=0)
+
+    while not measure.points_in_poly([point], contour):
+        xmin, ymin = contour.min(axis=0)
+        xmax, ymax = contour.max(axis=0)
+        point = np.random.uniform(xmin, xmax), np.random.uniform(ymin, ymax)
+
+    return point
+
+
 def get_edge_coords(shape: tuple) -> np.ndarray:
     """Get sorted list of edge coordinates around an image of given shape.
 
@@ -248,7 +261,6 @@ class Mesher2D(BaseMesher):
         label : int, optional
             Label to assign to contour.
         """
-
         contours = measure.find_contours(self.image, level=level)
         contours = [
             measure.approximate_polygon(contour, contour_precision)
@@ -305,12 +317,11 @@ class Mesher2D(BaseMesher):
         i = 0
 
         for j, contour in enumerate(vertices):
-            center = contour.mean(axis=0)
-            if not measure.points_in_poly([center], contour):
-                raise NotImplementedError('Center not in contour')
+
+            point = find_point_in_contour(contour)
 
             # in triangle
-            regions.append([*center, j, 0])
+            regions.append([*point, j, 0])
             n_points = len(contour)
             rng = np.arange(i, i + n_points)
 

@@ -17,6 +17,7 @@ class BaseMeshContainer:
 
     @abstractmethod
     def to_meshio(self) -> 'meshio.Meshio':
+        """Return instance of `meshio.Mesh`."""
         ...
 
     def write(self, **kwargs):
@@ -48,7 +49,6 @@ class TwoDMeshContainer(BaseMeshContainer):
         return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
 
     def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
         cells = [
             ('triangle', self.faces),
         ]

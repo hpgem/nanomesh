@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
-from scipy.spatial import Delaunay
 from skimage import measure
 
 from ._mesh_shared import BaseMesher
@@ -228,8 +227,9 @@ class Mesher2D(BaseMesher):
 
     def generate_contours(
         self,
+        level: float = None,
         contour_precision: int = 1,
-        max_contour_dist: int = 10,
+        max_contour_dist: int = 5,
         label: int = 1,
     ):
         """Generate contours using marching cubes algorithm.
@@ -245,11 +245,11 @@ class Mesher2D(BaseMesher):
         max_contour_dist : int, optional
             Divide long edges so that maximum distance between points does not
             exceed this value.
-        label : int
+        label : int, optional
             Label to assign to contour.
         """
 
-        contours = measure.find_contours(self.image)
+        contours = measure.find_contours(self.image, level=level)
         contours = [
             measure.approximate_polygon(contour, contour_precision)
             for contour in contours
@@ -269,115 +269,99 @@ class Mesher2D(BaseMesher):
         ]
         return flat_list
 
-    def generate_edge_contours(self, max_contour_dist: int = 10):
-        """Generate contours around the edge of the image.
+    @property
+    def image_bbox(self) -> np.array:
+        """Return bbox from image shape."""
+        x, y = self.image.shape
+        return np.array((
+            (0, 0),
+            (x - 1, 0),
+            (x - 1, y - 1),
+            (0, y - 1),
+        ))
 
-        If the edge contour is intersected by an existing contour
-        (`self.contours`), the contour is split at that point.
-
-        Contours are given as a polygon, where the maximum distance
-        between points is decided by `max_contour_dist`.
-
-        Parameters
-        ----------
-        max_contour_dist : int, optional
-            Divide long edges so that maximum distance between points does not
-            exceed this value.
-        """
-        contours = generate_edge_contours(self.image.shape,
-                                          self.flattened_contours)
-        contours = [
-            subdivide_contour(contour, max_dist=max_contour_dist)
-            for contour in contours
-        ]
-        self.edge_contours = contours
-
-    def generate_mesh(self):
-        """Generate 2D triangle mesh using Delauny triangulation with vertices
-        from contours and k-means point generation."""
-        verts = np.vstack([
-            *self.flattened_points, *self.flattened_contours,
-            *self.edge_contours
-        ])
-
-        # TODO: merge close vertices
-
-        faces = Delaunay(verts, incremental=False).simplices
-
-        self.surface_mesh = TwoDMeshContainer(vertices=verts, faces=faces)
-
-    def generate_domain_mask(self, label: int = 1):
-        """Generate domain mask.
+    def triangulate(self, label: int = 1, plot: bool = False, **kwargs):
+        """Triangulate contours.
 
         Parameters
         ----------
         label : int, optional
-            Domain to generate mask for. Not implemented yet.
-        """
-        logger.info('generating mask')
-        vertices = self.surface_mesh.vertices
-
-        centers = vertices[self.surface_mesh.faces].mean(1)
-
-        # cannot use `trimesh.Trimesh.contains` which relies on watertight
-        # meshes, 2d meshes are per definition not watertight
-        labels = self.generate_domain_mask_from_contours(centers, label=label)
-
-        self.labels = labels
-
-    def generate_domain_mask_from_contours(self, centers, *, label):
-        """Alternative implementation to generate a domain mask for surface
-        meshes that are not closed, i.e. not watertight.
+            Label of the contour set
+        plot : bool, optional
+            If True, plot a comparison of the input/output
+        **kwargs
+            Keyword arguments passed to `triangle.triangulate`
 
         Returns
         -------
-        mask : (n,1) np.ndarray
-            1-dimensional mask for the faces
+        TwoDMeshContainer
         """
+        import triangle as tr
+        bbox = self.image_bbox
+
+        regions = []
+        vertices = [bbox, *self.contours[label]]
+        segments = []
+        i = 0
+
+        for j, contour in enumerate(vertices):
+            center = contour.mean(axis=0)
+            if not measure.points_in_poly([center], contour):
+                raise NotImplementedError('Center not in contour')
+
+            # in triangle
+            regions.append([*center, j, 0])
+            n_points = len(contour)
+            rng = np.arange(i, i + n_points)
+
+            # generate segment connectivity matrix
+            segment = np.vstack([rng, np.roll(rng, shift=-1)]).T
+            segments.append(segment)
+
+            i += n_points
+
+        segments = np.vstack(segments)
+        regions = np.array(regions)
+        vertices = np.vstack(vertices)
+
+        triangle_dict_in = {
+            'vertices': vertices,
+            'segments': segments,
+            'regions': regions,
+        }
+
+        triangle_dict_out = tr.triangulate(triangle_dict_in, **kwargs)
+
+        if plot:
+            tr.compare(plt, triangle_dict_in, triangle_dict_out)
+
+        mesh = TwoDMeshContainer.from_triangle_dict(triangle_dict_out)
+        labels = self.generate_domain_mask_from_contours(mesh, label=label)
+        mesh.labels = labels
+        return mesh
+
+    def generate_domain_mask_from_contours(self, mesh, *, label: int = 1):
+        """Generate domain mask from contour."""
+        centers = mesh.face_centers
+
         labels = np.zeros(len(centers), dtype=int)
 
-        for label, contours in self.contours.items():
-            for contour in contours:
-                mask = measure.points_in_poly(centers, contour)
-                labels[mask] = label
+        for contour in self.contours[label]:
+            mask = measure.points_in_poly(centers, contour)
+            labels[mask] = label
 
         return labels
 
     def plot_steps(self):
         """Plot meshing steps."""
-        plot_mesh_steps(
-            image=self.image,
-            contours=self.flattened_contours,
-            points=self.surface_mesh.vertices,
-            triangles=self.surface_mesh.faces,
-            labels=self.labels,
-        )
-
-    def to_meshio(self, label: int = None) -> 'meshio.Mesh':
-        """Retrieve volume mesh as `meshio.Mesh` object."""
-        verts = self.surface_mesh.vertices
-        faces = self.surface_mesh.faces
-        labels = self.labels
-
-        if label is not None:
-            mask = (labels != label)
-            faces = faces[mask]
-            labels = labels[mask]
-
-        mesh = TwoDMeshContainer(vertices=verts, faces=faces).to_meshio()
-        mesh.remove_orphaned_nodes()
-
-        mesh.cell_data['labels'] = [labels]
-
-        return mesh
+        raise NotImplementedError
 
 
 def generate_2d_mesh(image: np.ndarray,
                      *,
-                     point_density: float = 1 / 100,
-                     contour_precision: int = 1,
+                     level: float = None,
                      max_contour_dist: int = 5,
-                     max_edge_contour_dist: int = 10,
+                     opts: str = 'q30a100',
                      plot: bool = False) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
@@ -385,17 +369,12 @@ def generate_2d_mesh(image: np.ndarray,
     ----------
     image : 2D np.ndarray
         Input image to mesh.
-    point_density : float, optional
-        Density of points to distribute over the domains for triangle
-        generation. Expressed as a fraction of the number of pixels.
-    contour_precision : int, optional
-        Maximum distance from original contour to approximate polygon.
+    level : float, optional
+        Level to generate contours at from image
     max_contour_dist : int, optional
         Maximum distance between neighbouring pixels in contours.
-    max_edge_contour_dist : int, optional
-        Maximum distance between neighbouring pixels in edge contours.
-    plot : bool, optional
-        Plot the meshing steps using matplotlib.
+    opts : str, optional
+        Options passed to `triangle.triangulate`
 
     Returns
     -------
@@ -403,20 +382,5 @@ def generate_2d_mesh(image: np.ndarray,
         Description of the mesh.
     """
     mesher = Mesher2D(image)
-
-    if point_density > 0:
-        mesher.add_points(label=1,
-                          point_density=point_density,
-                          method='kmeans')
-        mesher.add_points(label=0, point_density=point_density, method='gmm')
-    mesher.generate_contours(contour_precision=contour_precision,
-                             max_contour_dist=max_contour_dist)
-    mesher.generate_edge_contours(max_contour_dist=max_edge_contour_dist)
-    mesher.generate_mesh()
-    mesher.generate_domain_mask()
-
-    if plot:
-        mesher.plot_steps()
-
-    mesh = mesher.to_meshio()
-    return mesh
+    mesher.generate_contours(label=1, max_contour_dist=5, level=level)
+    return mesher.triangulate(label=1, opts=opts)

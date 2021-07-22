@@ -49,7 +49,7 @@ class Mesher3D(BaseMesher):
         self.contours[label] = mesh
 
     def tetrahedralize(self, label: int = 1, **kwargs):
-        """Tetrahedralize a contour.
+        """Tetrahedralize a surface contour mesh.
 
         Parameters
         ----------

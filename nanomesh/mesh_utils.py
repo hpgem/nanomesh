@@ -12,6 +12,7 @@ from trimesh import remesh
 class BaseMeshContainer:
     vertices: np.ndarray
     faces: np.ndarray
+    labels: np.ndarray = None  # face markers
 
     def write(self, **kwargs):
         """Simple wrapper around `meshio.write`."""
@@ -20,6 +21,11 @@ class BaseMeshContainer:
     def plot_itk(self):
         """Wrapper for `pyvista.plot_itk`."""
         pv.plot_itk(self.to_meshio())
+
+    @property
+    def face_centers(self):
+        """Return centers of faces (mean of vertices)."""
+        return self.vertices[self.faces].mean(axis=1)
 
 
 class TwoDMeshContainer(BaseMeshContainer):
@@ -34,6 +40,10 @@ class TwoDMeshContainer(BaseMeshContainer):
         ]
 
         mesh = meshio.Mesh(self.vertices, cells)
+
+        if self.labels is not None:
+            mesh.cell_data['labels'] = [self.labels]
+
         return mesh
 
     def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
@@ -44,16 +54,25 @@ class TwoDMeshContainer(BaseMeshContainer):
             triangles=open3d.utility.Vector3iVector(self.faces))
 
     @classmethod
-    def from_open3d(cls, mesh: 'open3d.geometry.TriangleMesh'):
+    def from_open3d(
+            cls, mesh: 'open3d.geometry.TriangleMesh') -> 'TwoDMeshContainer':
         """Return instance of `TwoDMeshContainer` from open3d."""
         vertices = np.asarray(mesh.vertices)
         faces = np.asarray(mesh.triangles)
         return cls(vertices=vertices, faces=faces)
 
     @classmethod
-    def from_trimesh(cls, mesh: 'trimesh.Trimesh'):
+    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'TwoDMeshContainer':
         """Return instance of `TwoDMeshContainer` from open3d."""
         return cls(vertices=mesh.vertices, faces=mesh.faces)
+
+    @classmethod
+    def from_triangle_dict(cls, dct: dict) -> 'TwoDMeshContainer':
+        """Return instance of `TwoDMeshContainer` from trimesh results dict."""
+        vertices = dct['vertices']
+        faces = dct['triangles']
+        labels = dct['vertex_markers'].reshape(-1)
+        return cls(vertices=vertices, faces=faces, labels=labels)
 
 
 class SurfaceMeshContainer(BaseMeshContainer):

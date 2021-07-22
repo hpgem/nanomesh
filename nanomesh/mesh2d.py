@@ -34,6 +34,34 @@ def find_point_in_contour(contour):
     return point
 
 
+def close_corner_contour(contour, shape):
+    """Check if contours are in the corner, and close them if needed."""
+    xmin, ymin = contour.min(axis=0)
+    xmax, ymax = contour.max(axis=0)
+
+    xdim, ydim = np.array(shape) - 1
+
+    left = (xmin == 0)
+    right = (xmax == xdim)
+    bottom = (ymin == 0)
+    top = (ymax == ydim)
+
+    if bottom and left:
+        extra_point = (0, 0)
+    elif top and left:
+        extra_point = (ydim, 0)
+    elif top and right:
+        extra_point = (ydim, xdim)
+    elif bottom and right:
+        extra_point = (0, xdim)
+    else:
+        # all good
+        return contour
+
+    contour = np.vstack([contour, extra_point])
+    return contour
+
+
 def get_edge_coords(shape: tuple) -> np.ndarray:
     """Get sorted list of edge coordinates around an image of given shape.
 
@@ -270,6 +298,10 @@ class Mesher2D(BaseMesher):
             subdivide_contour(contour, max_dist=max_contour_dist)
             for contour in contours
         ]
+        contours = [
+            close_corner_contour(contour, self.image.shape)
+            for contour in contours
+        ]
         self.contours[label] = contours
 
     @property
@@ -317,7 +349,6 @@ class Mesher2D(BaseMesher):
         i = 0
 
         for j, contour in enumerate(vertices):
-
             point = find_point_in_contour(contour)
 
             # in triangle

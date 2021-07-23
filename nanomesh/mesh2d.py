@@ -9,7 +9,7 @@ import numpy as np
 from skimage import measure
 
 from ._mesh_shared import BaseMesher
-from .mesh_utils import SurfaceMeshContainer
+from .mesh_utils import TriangleMesh
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +270,7 @@ class Mesher2D(BaseMesher):
 
         Returns
         -------
-        mesh : SurfaceMeshContainer
+        mesh : TriangleMesh
             Output 2D mesh with domain labels
         """
         import triangle as tr
@@ -310,20 +310,20 @@ class Mesher2D(BaseMesher):
         if plot:
             tr.compare(plt, triangle_dict_in, triangle_dict_out)
 
-        mesh = SurfaceMeshContainer.from_triangle_dict(triangle_dict_out)
+        mesh = TriangleMesh.from_triangle_dict(triangle_dict_out)
         labels = self.generate_domain_mask_from_contours(mesh, label=label)
         mesh.metadata['labels'] = labels
         return mesh
 
     def generate_domain_mask_from_contours(self,
-                                           mesh: SurfaceMeshContainer,
+                                           mesh: TriangleMesh,
                                            *,
                                            label: int = 1) -> np.array:
         """Generate domain mask from contour.
 
         Parameters
         ----------
-        mesh : SurfaceMeshContainer
+        mesh : TriangleMesh
             Input mesh
         label : int, optional
             Label of the contour set

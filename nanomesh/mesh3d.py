@@ -6,7 +6,7 @@ import numpy as np
 from skimage import measure
 
 from ._mesh_shared import BaseMesher
-from .mesh_utils import SurfaceMeshContainer
+from .mesh_utils import TriangleMesh
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class Mesher3D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
-        self.contours: Dict[int, SurfaceMeshContainer] = {}
+        self.contours: Dict[int, TriangleMesh] = {}
         self.pad_width = 0
 
     def generate_contour(self, label: int = 1, smooth: bool = False):
@@ -36,7 +36,7 @@ class Mesher3D(BaseMesher):
             allow_degenerate=False,
         )
         verts -= np.array([2] * 3)
-        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
+        mesh = TriangleMesh(vertices=verts, faces=faces)
 
         if smooth:
             mesh = mesh.smooth(iterations=10)
@@ -60,7 +60,7 @@ class Mesher3D(BaseMesher):
 
         Returns
         -------
-        VolumeMeshContainer
+        TetraMesh
         """
         kwargs.setdefault('steinerleft', (self.image == label).sum())
         mesh = self.contours[label]
@@ -86,7 +86,7 @@ def generate_3d_mesh(
 
     Returns
     -------
-    volume_mesh : VolumeMeshContainer
+    volume_mesh : TetraMesh
         Description of the mesh.
     """
     mesher = Mesher3D(image)

@@ -3,7 +3,7 @@ import pytest
 from matplotlib.testing.decorators import image_comparison
 
 from nanomesh import Plane
-from nanomesh.mesh_utils import SurfaceMeshContainer
+from nanomesh.mesh_utils import TriangleMesh
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def test_generate_mesh(plane):
     """Property test for mesh generation method."""
     seg = Plane(1.0 * (plane.image > 5))
     mesh = seg.generate_mesh(plot=False)
-    assert isinstance(mesh, SurfaceMeshContainer)
+    assert isinstance(mesh, TriangleMesh)
 
 
 def test_select_roi(plane):

@@ -39,9 +39,9 @@ class BaseMeshContainer:
         """Class dispatcher."""
         n = faces.shape[1]
         if n == 3:
-            item_class = SurfaceMeshContainer
+            item_class = TriangleMesh
         elif n == 4:
-            item_class = VolumeMeshContainer
+            item_class = TetraMesh
         else:
             item_class = cls
         return item_class(vertices=vertices, faces=faces, **metadata)
@@ -79,7 +79,7 @@ class BaseMeshContainer:
         return self.metadata['labels']
 
 
-class SurfaceMeshContainer(BaseMeshContainer):
+class TriangleMesh(BaseMeshContainer):
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""
         return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
@@ -113,29 +113,27 @@ class SurfaceMeshContainer(BaseMeshContainer):
         return pv.PolyData(vertices, stacked_faces, n_faces=len(faces))
 
     @classmethod
-    def from_open3d(
-            cls,
-            mesh: 'open3d.geometry.TriangleMesh') -> 'SurfaceMeshContainer':
-        """Return instance of `SurfaceMeshContainer` from open3d."""
+    def from_open3d(cls,
+                    mesh: 'open3d.geometry.TriangleMesh') -> 'TriangleMesh':
+        """Return instance of `TriangleMesh` from open3d."""
         vertices = np.asarray(mesh.vertices)
         faces = np.asarray(mesh.triangles)
         return cls(vertices=vertices, faces=faces)
 
     @classmethod
-    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'SurfaceMeshContainer':
-        """Return instance of `SurfaceMeshContainer` from trimesh."""
+    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'TriangleMesh':
+        """Return instance of `TriangleMesh` from trimesh."""
         return cls(vertices=mesh.vertices, faces=mesh.faces)
 
     @classmethod
-    def from_triangle_dict(cls, dct: dict) -> 'SurfaceMeshContainer':
-        """Return instance of `SurfaceMeshContainer` from trimesh results
-        dict."""
+    def from_triangle_dict(cls, dct: dict) -> 'TriangleMesh':
+        """Return instance of `TriangleMesh` from trimesh results dict."""
         vertices = dct['vertices']
         faces = dct['triangles']
         labels = dct['vertex_markers'].reshape(-1)
         return cls(vertices=vertices, faces=faces, labels=labels)
 
-    def simplify(self, n_faces: int) -> 'SurfaceMeshContainer':
+    def simplify(self, n_faces: int) -> 'TriangleMesh':
         """Simplify triangular mesh using `open3d`.
 
         Parameters
@@ -145,15 +143,15 @@ class SurfaceMeshContainer(BaseMeshContainer):
 
         Returns
         -------
-        SurfaceMeshContainer
+        TriangleMesh
         """
         mesh_o3d = self.to_open3d()
         simplified_o3d = mesh_o3d.simplify_quadric_decimation(int(n_faces))
-        return SurfaceMeshContainer.from_open3d(simplified_o3d)
+        return TriangleMesh.from_open3d(simplified_o3d)
 
     def simplify_by_vertex_clustering(self,
                                       voxel_size: float = 1.0
-                                      ) -> 'SurfaceMeshContainer':
+                                      ) -> 'TriangleMesh':
         """Simplify mesh geometry using vertex clustering.
 
         Parameters
@@ -163,16 +161,16 @@ class SurfaceMeshContainer(BaseMeshContainer):
 
         Returns
         -------
-        SurfaceMeshContainer
+        TriangleMesh
         """
         mesh_in = self.to_open3d()
         mesh_smp = mesh_in.simplify_vertex_clustering(
             voxel_size=voxel_size,
             contraction=open3d.geometry.SimplificationContraction.Average)
 
-        return SurfaceMeshContainer.from_open3d(mesh_smp)
+        return TriangleMesh.from_open3d(mesh_smp)
 
-    def smooth(self, iterations: int = 50) -> 'SurfaceMeshContainer':
+    def smooth(self, iterations: int = 50) -> 'TriangleMesh':
         """Smooth mesh using the Taubin filter in `trimesh`.
 
         The advantage of the Taubin algorithm is that it avoids
@@ -185,19 +183,19 @@ class SurfaceMeshContainer(BaseMeshContainer):
 
         Returns
         -------
-        SurfaceMeshContainer
+        TriangleMesh
         """
         mesh_tri = self.to_trimesh()
         smoothed_tri = trimesh.smoothing.filter_taubin(mesh_tri,
                                                        iterations=iterations)
-        return SurfaceMeshContainer.from_trimesh(smoothed_tri)
+        return TriangleMesh.from_trimesh(smoothed_tri)
 
     def optimize(self,
                  *,
                  method='CVT (block-diagonal)',
                  tol: float = 1.0e-3,
                  max_num_steps: int = 10,
-                 **kwargs) -> 'SurfaceMeshContainer':
+                 **kwargs) -> 'TriangleMesh':
         """Optimize mesh using `optimesh`.
 
         Parameters
@@ -213,7 +211,7 @@ class SurfaceMeshContainer(BaseMeshContainer):
 
         Returns
         -------
-        SurfaceMeshContainer
+        TriangleMesh
         """
         import optimesh
         verts, faces = optimesh.optimize_points_cells(
@@ -224,11 +222,9 @@ class SurfaceMeshContainer(BaseMeshContainer):
             max_num_steps=max_num_steps,
             **kwargs,
         )
-        return SurfaceMeshContainer(vertices=verts, faces=faces)
+        return TriangleMesh(vertices=verts, faces=faces)
 
-    def subdivide(self,
-                  max_edge: int = 10,
-                  iters: int = 10) -> 'SurfaceMeshContainer':
+    def subdivide(self, max_edge: int = 10, iters: int = 10) -> 'TriangleMesh':
         """Subdivide triangles until the maximum edge size is reached.
 
         Parameters
@@ -242,9 +238,9 @@ class SurfaceMeshContainer(BaseMeshContainer):
                                                 self.faces,
                                                 max_edge=max_edge,
                                                 max_iter=10)
-        return SurfaceMeshContainer(vertices=verts, faces=faces)
+        return TriangleMesh(vertices=verts, faces=faces)
 
-    def tetrahedralize(self, **kwargs) -> 'VolumeMeshContainer':
+    def tetrahedralize(self, **kwargs) -> 'TetraMesh':
         """Tetrahedralize a contour.
 
         Parameters
@@ -256,7 +252,7 @@ class SurfaceMeshContainer(BaseMeshContainer):
 
         Returns
         -------
-        VolumeMeshContainer
+        TetraMesh
         """
         import tetgen
         kwargs.setdefault('order', 1)
@@ -264,10 +260,10 @@ class SurfaceMeshContainer(BaseMeshContainer):
         tet = tetgen.TetGen(polydata)
         tet.tetrahedralize(**kwargs)
         grid = tet.grid
-        return VolumeMeshContainer.from_pyvista_unstructured_grid(grid)
+        return TetraMesh.from_pyvista_unstructured_grid(grid)
 
 
-class VolumeMeshContainer(BaseMeshContainer):
+class TetraMesh(BaseMeshContainer):
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
         cells = [
@@ -286,15 +282,14 @@ class VolumeMeshContainer(BaseMeshContainer):
 
     @classmethod
     def from_open3d(cls, mesh):
-        """Return instance of `VolumeMeshContainer` from open3d."""
+        """Return instance of `TetraMesh` from open3d."""
         vertices = np.asarray(mesh.vertices)
         faces = np.asarray(mesh.tetras)
         return cls(vertices=vertices, faces=faces)
 
     @classmethod
     def from_pyvista_unstructured_grid(cls, grid: 'pv.UnstructuredGrid'):
-        """Return infance of `VolumeMeshContainer` from
-        `pyvista.UnstructuredGrid`."""
+        """Return infance of `TetraMesh` from `pyvista.UnstructuredGrid`."""
         assert grid.cells[0] == 4
         faces = grid.cells.reshape(grid.n_cells, 5)[:, 1:]
         vertices = np.array(grid.points)
@@ -363,5 +358,4 @@ class VolumeMeshContainer(BaseMeshContainer):
         plotter.show()
 
 
-MeshContainer = Union[SurfaceMeshContainer, SurfaceMeshContainer,
-                      VolumeMeshContainer, ]
+MeshContainer = Union[TriangleMesh, TetraMesh]

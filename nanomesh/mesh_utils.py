@@ -20,9 +20,40 @@ class BaseMeshContainer:
         """Return instance of `meshio.Mesh`."""
         ...
 
+    @classmethod
+    def from_meshio(cls, mesh: 'meshio.Mesh'):
+        """Return `MeshContainer` from meshio object."""
+        vertices = mesh.points
+        faces = mesh.cells[0].data
+        metadata = {}
+
+        for key, value in mesh.cell_data.items():
+            metadata[key] = value[0]
+
+        return BaseMeshContainer.create(vertices=vertices,
+                                        faces=faces,
+                                        **metadata)
+
+    @classmethod
+    def create(cls, vertices, faces, **metadata):
+        """Class dispatcher."""
+        n = faces.shape[1]
+        if n == 3:
+            item_class = SurfaceMeshContainer
+        elif n == 4:
+            item_class = VolumeMeshContainer
+        else:
+            item_class = cls
+        return item_class(vertices=vertices, faces=faces, **metadata)
+
     def write(self, *args, **kwargs):
         """Simple wrapper around `meshio.write`."""
         self.to_meshio().write(*args, **kwargs)
+
+    def read(self, filename, **kwargs):
+        """Simple wrapper around `meshio.read`."""
+        mesh = meshio.read(filename, **kwargs)
+        return self.from_meshio(mesh)
 
     def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
         """Return instance of `pyvista.UnstructuredGrid`.
@@ -48,52 +79,6 @@ class BaseMeshContainer:
         return self.metadata['labels']
 
 
-class TwoDMeshContainer(BaseMeshContainer):
-    def to_trimesh(self) -> 'trimesh.Trimesh':
-        """Return instance of `trimesh.Trimesh`."""
-        return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
-
-    def to_meshio(self) -> 'meshio.Mesh':
-        cells = [
-            ('triangle', self.faces),
-        ]
-
-        mesh = meshio.Mesh(self.vertices, cells)
-
-        if self.labels is not None:
-            mesh.cell_data['labels'] = [self.labels]
-
-        return mesh
-
-    def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
-        """Return instance of `open3d.geometry.TriangleMesh`."""
-        import open3d
-        return open3d.geometry.TriangleMesh(
-            vertices=open3d.utility.Vector3dVector(self.vertices),
-            triangles=open3d.utility.Vector3iVector(self.faces))
-
-    @classmethod
-    def from_open3d(
-            cls, mesh: 'open3d.geometry.TriangleMesh') -> 'TwoDMeshContainer':
-        """Return instance of `TwoDMeshContainer` from open3d."""
-        vertices = np.asarray(mesh.vertices)
-        faces = np.asarray(mesh.triangles)
-        return cls(vertices=vertices, faces=faces)
-
-    @classmethod
-    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'TwoDMeshContainer':
-        """Return instance of `TwoDMeshContainer` from open3d."""
-        return cls(vertices=mesh.vertices, faces=mesh.faces)
-
-    @classmethod
-    def from_triangle_dict(cls, dct: dict) -> 'TwoDMeshContainer':
-        """Return instance of `TwoDMeshContainer` from trimesh results dict."""
-        vertices = dct['vertices']
-        faces = dct['triangles']
-        labels = dct['vertex_markers'].reshape(-1)
-        return cls(vertices=vertices, faces=faces, labels=labels)
-
-
 class SurfaceMeshContainer(BaseMeshContainer):
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""
@@ -106,6 +91,10 @@ class SurfaceMeshContainer(BaseMeshContainer):
         ]
 
         mesh = meshio.Mesh(self.vertices, cells)
+
+        if self.labels is not None:
+            mesh.cell_data['labels'] = [self.labels]
+
         return mesh
 
     def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
@@ -134,8 +123,17 @@ class SurfaceMeshContainer(BaseMeshContainer):
 
     @classmethod
     def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'SurfaceMeshContainer':
-        """Return instance of `SurfaceMeshContainer` from open3d."""
+        """Return instance of `SurfaceMeshContainer` from trimesh."""
         return cls(vertices=mesh.vertices, faces=mesh.faces)
+
+    @classmethod
+    def from_triangle_dict(cls, dct: dict) -> 'SurfaceMeshContainer':
+        """Return instance of `SurfaceMeshContainer` from trimesh results
+        dict."""
+        vertices = dct['vertices']
+        faces = dct['triangles']
+        labels = dct['vertex_markers'].reshape(-1)
+        return cls(vertices=vertices, faces=faces, labels=labels)
 
     def simplify(self, n_faces: int) -> 'SurfaceMeshContainer':
         """Simplify triangular mesh using `open3d`.
@@ -365,5 +363,5 @@ class VolumeMeshContainer(BaseMeshContainer):
         plotter.show()
 
 
-MeshContainer = Union[TwoDMeshContainer, SurfaceMeshContainer,
+MeshContainer = Union[SurfaceMeshContainer, SurfaceMeshContainer,
                       VolumeMeshContainer, ]

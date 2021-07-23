@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-from .mesh_utils import TwoDMeshContainer
+from .mesh_utils import SurfaceMeshContainer
 from .utils import show_image
 
 logger = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ class Plane:
         """
         return show_image(self.image, dpi=dpi, title=title)
 
-    def generate_mesh(self, **kwargs) -> 'TwoDMeshContainer':
+    def generate_mesh(self, **kwargs) -> 'SurfaceMeshContainer':
         """Generate mesh from binary (segmented) image.
 
         Parameters
@@ -112,7 +112,7 @@ class Plane:
 
         Returns
         -------
-        mesh : TwoDMeshContainer
+        mesh : SurfaceMeshContainer
             Description of the mesh.
         """
         from .mesh2d import generate_2d_mesh

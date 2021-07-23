@@ -5,8 +5,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from nanomesh._mesh_shared import (add_points_gaussian_mixture,
-                                   add_points_kmeans)
 from nanomesh.mesh2d import generate_2d_mesh, subdivide_contour
 
 # There is a small disparity between the data generated on Windows / posix
@@ -57,36 +55,6 @@ def test_generate_2d_mesh(segmented):
     assert mesh.faces.shape == expected_mesh.faces.shape
     np.testing.assert_allclose(mesh.vertices, expected_mesh.vertices)
     np.testing.assert_allclose(mesh.faces, expected_mesh.faces)
-
-
-def test_add_points_kmeans():
-    """Test kmeans method for adding points."""
-    image = block_image((10, 10))
-
-    np.random.seed(9)
-    ret = add_points_kmeans(image, iters=5, n_points=10)
-
-    expected = np.array([[3.6, 1.8], [8., 6.], [0., 2.], [2., 3.5], [8., 8.5],
-                         [1.5, 1.5], [2., 0.], [4., 0.], [5.5, 8.], [5.2,
-                                                                     5.2]])
-
-    np.testing.assert_almost_equal(ret, expected)
-
-
-def test_add_points_gaussian_mixture():
-    """Test GMM method for adding points."""
-    image = block_image((10, 10))
-
-    np.random.seed(9)
-    ret = add_points_gaussian_mixture(image, iters=5, n_points=10)
-
-    expected = np.array([[5., 7.00002112], [2.55881426, 1.26971411],
-                         [6.52798169, 5.49043914], [8.48578877, 7.91372229],
-                         [4., 1.99999747], [2.4822088, 3.53034368],
-                         [6.51203175, 7.91383218], [0.50465566, 2.87061786],
-                         [8.49298029, 5.48930714], [0.83423033, 0.41400083]])
-
-    np.testing.assert_almost_equal(ret, expected)
 
 
 def test_subdivide_contour():

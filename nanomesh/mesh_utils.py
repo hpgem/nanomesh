@@ -1,6 +1,3 @@
-from abc import abstractmethod
-from typing import Union
-
 import meshio
 import numpy as np
 import open3d
@@ -9,16 +6,26 @@ import trimesh
 from trimesh import remesh
 
 
-class BaseMeshContainer:
+class MeshContainer:
+    _element_type: str = ''
+
     def __init__(self, vertices: np.array, faces: np.array, **metadata):
         self.vertices = vertices
         self.faces = faces
         self.metadata = metadata
 
-    @abstractmethod
-    def to_meshio(self) -> 'meshio.Meshio':
+    def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
-        ...
+        cells = [
+            (self._element_type, self.faces),
+        ]
+
+        mesh = meshio.Mesh(self.vertices, cells)
+
+        for key, value in self.metadata.items():
+            mesh.cell_data[key] = [value]
+
+        return mesh
 
     @classmethod
     def from_meshio(cls, mesh: 'meshio.Mesh'):
@@ -30,9 +37,7 @@ class BaseMeshContainer:
         for key, value in mesh.cell_data.items():
             metadata[key] = value[0]
 
-        return BaseMeshContainer.create(vertices=vertices,
-                                        faces=faces,
-                                        **metadata)
+        return MeshContainer.create(vertices=vertices, faces=faces, **metadata)
 
     @classmethod
     def create(cls, vertices, faces, **metadata):
@@ -79,23 +84,12 @@ class BaseMeshContainer:
         return self.metadata['labels']
 
 
-class TriangleMesh(BaseMeshContainer):
+class TriangleMesh(MeshContainer):
+    _element_type = 'triangle'
+
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""
         return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
-
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
-        cells = [
-            ('triangle', self.faces),
-        ]
-
-        mesh = meshio.Mesh(self.vertices, cells)
-
-        if self.labels is not None:
-            mesh.cell_data['labels'] = [self.labels]
-
-        return mesh
 
     def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
         """Return instance of `open3d.geometry.TriangleMesh`."""
@@ -263,15 +257,8 @@ class TriangleMesh(BaseMeshContainer):
         return TetraMesh.from_pyvista_unstructured_grid(grid)
 
 
-class TetraMesh(BaseMeshContainer):
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
-        cells = [
-            ('tetra', self.faces),
-        ]
-
-        mesh = meshio.Mesh(self.vertices, cells)
-        return mesh
+class TetraMesh(MeshContainer):
+    _element_type = 'tetra'
 
     def to_open3d(self):
         """Return instance of `open3d.geometry.TetraMesh`."""
@@ -356,6 +343,3 @@ class TetraMesh(BaseMeshContainer):
 
         plotter.add_mesh(subgrid, **kwargs)
         plotter.show()
-
-
-MeshContainer = Union[TriangleMesh, TetraMesh]

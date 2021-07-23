@@ -20,12 +20,17 @@ class BaseMeshContainer:
         """Return instance of `meshio.Mesh`."""
         ...
 
-    def write(self, **kwargs):
+    def write(self, *args, **kwargs):
         """Simple wrapper around `meshio.write`."""
-        self.to_meshio().write(**kwargs)
+        self.to_meshio().write(*args, **kwargs)
 
     def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
-        """Return instance of `pyvista.UnstructuredGrid`."""
+        """Return instance of `pyvista.UnstructuredGrid`.
+
+        References
+        ----------
+        https://docs.pyvista.org/core/point-grids.html#pv-unstructured-grid-class-methods
+        """
         return pv.from_meshio(self.to_meshio())
 
     def plot_itk(self):

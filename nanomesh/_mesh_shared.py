@@ -1,9 +1,11 @@
 import logging
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
 from sklearn import cluster, mixture
+
+from nanomesh import Plane, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +86,10 @@ def add_points_gaussian_mixture(image: np.ndarray,
 
 
 class BaseMesher:
-    def __init__(self, image: np.ndarray):
+    def __init__(self, image: Union[np.ndarray, Plane, Volume]):
+        if isinstance(image, (Plane, Volume)):
+            image = image.image
+
         self.image_orig = image
         self.image = image
         self.points: Dict[int, list] = defaultdict(list)

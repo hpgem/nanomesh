@@ -1,7 +1,6 @@
 import logging
 from collections import defaultdict
-from itertools import chain, tee
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, List
 
 import matplotlib.pyplot as plt
 import meshio
@@ -12,13 +11,6 @@ from ._mesh_shared import BaseMesher
 from .mesh_utils import TriangleMesh
 
 logger = logging.getLogger(__name__)
-
-
-def pairwise_circle(iterable: Iterable) -> Iterable:
-    """s -> (s0,s1), (s1,s2), ..., (sn,s0)"""
-    a, b = tee(iterable)
-    first = next(b, None)
-    return zip(a, chain(b, (first, )))
 
 
 def find_point_in_contour(contour: np.array) -> np.array:

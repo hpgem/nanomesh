@@ -5,7 +5,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from nanomesh.mesh2d import generate_2d_mesh, subdivide_contour
+from nanomesh.mesh2d import (close_corner_contour, generate_2d_mesh,
+                             subdivide_contour)
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux). Allow some deviation if the platforms do not match.
@@ -67,3 +68,26 @@ def test_subdivide_contour():
                          [2., 4.], [2., 2.], [2., 0.], [0., 0.]])
 
     assert np.all(ret == expected)
+
+
+@pytest.mark.parametrize('coords,is_corner', (
+    ([[0, 3], [5, 5], [0, 7]], False),
+    ([[0, 3], [5, 5], [3, 0]], True),
+    ([[3, 0], [5, 5], [0, 3]], True),
+    ([[9, 17], [5, 15], [17, 19]], True),
+    ([[9, 5], [7, 4], [4, 0]], True),
+    ([[0, 17], [5, 15], [3, 19]], True),
+    ([[5, 5], [5, 7], [6, 6]], False),
+))
+def test_close_contour(coords, is_corner):
+    image_chape = 10, 20
+    contour = np.array(coords)
+
+    n_rows = contour.shape[1]
+
+    ret = close_corner_contour(contour, image_chape)
+
+    if is_corner:
+        ret.shape[1] == n_rows + 1
+    else:
+        ret.shape[1] == n_rows

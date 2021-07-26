@@ -56,7 +56,10 @@ class Volume:
         np.save(filename, self.image)
 
     @classmethod
-    def load(cls, filename: os.PathLike, mmap: bool = False) -> 'Volume':
+    def load(cls,
+             filename: os.PathLike,
+             mmap: bool = False,
+             **kwargs) -> 'Volume':
         """Load the data. Supported filetypes: `.npy`, `.vol`.
 
         Parameters
@@ -72,6 +75,8 @@ class Volume:
 
             More info:
             https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
+        **kwargs : dict
+            Extra keyword arguments passed onto data readers.
 
         Returns
         -------
@@ -88,9 +93,9 @@ class Volume:
         suffix = filename.suffix.lower()
 
         if suffix == '.npy':
-            array = array = np.load(filename, mmap_mode=mmap_mode)
+            array = array = np.load(filename, mmap_mode=mmap_mode, **kwargs)
         elif suffix == '.vol':
-            array = load_vol(filename, mmap_mode=mmap_mode)
+            array = load_vol(filename, mmap_mode=mmap_mode, **kwargs)
         else:
             raise IOError(f'Unknown file extension: {suffix}')
         return cls(array)

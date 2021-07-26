@@ -35,7 +35,9 @@ class Mesher3D(BaseMesher):
             obj,
             allow_degenerate=False,
         )
-        verts -= np.array([2] * 3)
+
+        # correct for padding
+        verts -= np.array([2, 2, 2])
         mesh = TriangleMesh(vertices=verts, faces=faces)
 
         if smooth:

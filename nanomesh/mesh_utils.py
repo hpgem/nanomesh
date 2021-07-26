@@ -297,6 +297,7 @@ class TetraMesh(MeshContainer):
         index: int = None,
         along: str = 'x',
         invert: bool = False,
+        show: bool = True,
         **kwargs,
     ):
         """Show submesh using `pyvista`.
@@ -312,12 +313,15 @@ class TetraMesh(MeshContainer):
         invert : bool, optional
             Invert the cutting operation, and show all tetrahedra with
             cell center > index.
+        show : bool, optional
+            If true, show the plot
         **kwargs:
             Keyword arguments passed to `pyvista.Plotter().add_mesh`.
+
+        plotter : `pyvista.Plotter`
+            Return plotter instance.
         """
         kwargs.setdefault('color', 'lightgray')
-
-        plotter = pv.Plotter()
 
         grid = self.to_pyvista_unstructured_grid()
 
@@ -341,5 +345,10 @@ class TetraMesh(MeshContainer):
         cell_ind = mask.nonzero()[0]
         subgrid = grid.extract_cells(cell_ind)
 
+        plotter = pv.Plotter()
         plotter.add_mesh(subgrid, **kwargs)
-        plotter.show()
+
+        if show:
+            plotter.show()
+
+        return plotter

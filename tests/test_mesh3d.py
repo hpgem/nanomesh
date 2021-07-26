@@ -1,6 +1,5 @@
 import os
 import pickle
-import sys
 from contextlib import nullcontext as do_not_raise
 from pathlib import Path
 
@@ -28,9 +27,6 @@ def segmented():
     return image
 
 
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason=('No version of tetgen available: '
-                            'https://github.com/pyvista/tetgen/issues/25'))
 def test_generate_3d_mesh(segmented):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'

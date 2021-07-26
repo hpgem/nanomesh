@@ -61,6 +61,13 @@ class SliceViewer:
 
         self.last_update = 0.0
 
+        # Enable direct specification of slice, i.e. x=123
+        for along in 'xyz':
+            if along in kwargs:
+                kwargs['along'] = along
+                kwargs['index'] = kwargs[along]
+                break
+
         along = kwargs.get('along', 'x')
         init_max_val = self.max_vals[along]
         init_val = kwargs.get('index', int(init_max_val / 2))

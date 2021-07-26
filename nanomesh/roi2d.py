@@ -103,7 +103,7 @@ def extract_rectangle(image: np.ndarray, *, bbox: np.ndarray):
 
 
 class ROISelector:
-    ROTATE = False
+    ROTATE = True
     """Select a region of interest points in the figure by enclosing them
     within a polygon. A rectangle is fitted to the polygon.
 

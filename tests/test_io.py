@@ -23,3 +23,15 @@ def test_load_data():
 
     assert data.shape == (200, 200, 200)
     np.testing.assert_equal(data, expected_data)
+
+
+def test_load_data_shape():
+    """Test loading of vol files."""
+    fn = (Path(__file__).parents[1] / 'notebooks' / 'sample_data' /
+          'sample_data.vol')
+
+    shape = (800, 200, 50)
+
+    data = load_vol(fn, dtype=np.uint8, mmap_mode='r', shape=shape)
+
+    assert data.shape == shape

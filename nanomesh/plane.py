@@ -1,69 +1,37 @@
 import logging
+import os
+from typing import Callable
 
 import numpy as np
 
+from .base_image import BaseImage
 from .mesh_utils import TriangleMesh
 from .utils import show_image
 
 logger = logging.getLogger(__name__)
 
 
-class Plane:
-    def __init__(self, image):
-
-        self.image = image
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(shape={self.image.shape})'
-
-    def __eq__(self, other):
-        if isinstance(other, Plane):
-            return np.all(other.image == self.image)
-        elif isinstance(other, np.ndarray):
-            return np.all(other == self.image)
-        else:
-            return False
-
-    def to_sitk_image(self):
-        """Return instance of `SimpleITK.Image` from `.image`."""
-        import SimpleITK as sitk
-        return sitk.GetImageFromArray(self.image)
-
+class Plane(BaseImage):
     @classmethod
-    def from_sitk_image(cls, sitk_image) -> 'Plane':
-        """Return instance of `Volume` from `SimpleITK.Image`."""
-        import SimpleITK as sitk
-        image = sitk.GetArrayFromImage(sitk_image)
-        return cls(image)
-
-    @classmethod
-    def load(cls, filename: str) -> 'Plane':
+    def load(cls, filename: os.PathLike, **kwargs) -> 'Plane':
         """Load the data. Supported filetypes: `.npy`.
 
         Parameters
         ----------
-        filename : str
+        filename : Pathlike
             Name of the file to load.
+        **kwargs : dict
+            Extra keyword arguments passed to `np.load`.
 
         Returns
         -------
         Plane
             Instance of this class.
         """
-        array = np.load(filename)
+        array = np.load(filename, **kwargs)
         return cls(array)
 
-    def save(self, filename: str):
-        """Save the data. Supported filetypes: `.npy`.
-
-        Parameters
-        ----------
-        filename : str
-            Name of the file to save to.
-        """
-        np.save(filename, self.image)
-
-    def apply(self, function, **kwargs):
+    def apply(self, function: Callable, **kwargs):
         """Apply function to `.image` array. Return an instance of `Plane` if
         the result is a 2D image, otherwise return the result of the operation.
 
@@ -79,11 +47,7 @@ class Plane:
         Plane
             New instance of `Plane`.
         """
-        ret = function(self.image, **kwargs)
-        if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
-            return Plane(ret)
-
-        return ret
+        return super().apply(function, **kwargs)
 
     def show(self, *, dpi: int = 80, title: str = None):
         """Plot the image using matplotlib.
@@ -146,7 +110,7 @@ class Plane:
         """
         return Plane(self.image[top:bottom, left:right])
 
-    def crop_to_roi(self, bbox):
+    def crop_to_roi(self, bbox: np.ndarray) -> 'Plane':
         """Crop plane to rectangle defined by bounding box.
 
         Parameters

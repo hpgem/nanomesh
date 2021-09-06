@@ -1,10 +1,12 @@
 import logging
 import os
 from pathlib import Path
+from typing import Callable
 
 import meshio
 import numpy as np
 
+from .base_image import BaseImage
 from .io import load_vol
 from .plane import Plane
 from .utils import requires
@@ -17,64 +19,24 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class Volume:
-    def __init__(self, image):
-
-        self.image = image
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(shape={self.image.shape})'
-
-    def __eq__(self, other):
-        if isinstance(other, Volume):
-            return np.all(other.image == self.image)
-        elif isinstance(other, np.ndarray):
-            return np.all(other == self.image)
-        else:
-            return False
-
-    def to_sitk_image(self):
-        """Return instance of `SimpleITK.Image` from `.image`."""
-        import SimpleITK as sitk
-        return sitk.GetImageFromArray(self.image)
-
+class Volume(BaseImage):
     @classmethod
-    def from_sitk_image(cls, sitk_image) -> 'Volume':
-        """Return instance of `Volume` from `SimpleITK.Image`."""
-        import SimpleITK as sitk
-        image = sitk.GetArrayFromImage(sitk_image)
-        return cls(image)
-
-    def save(self, filename: str):
-        """Save the data. Supported filetypes: `.npy`.
-
-        Parameters
-        ----------
-        filename : str
-            Name of the file to save to.
-        """
-        np.save(filename, self.image)
-
-    @classmethod
-    def load(cls,
-             filename: os.PathLike,
-             mmap: bool = False,
-             **kwargs) -> 'Volume':
+    def load(cls, filename: os.PathLike, **kwargs) -> 'Volume':
         """Load the data. Supported filetypes: `.npy`, `.vol`.
+
+        For memory mapping, use `mmap_mode='r'`. Memory-mapped
+            files are used for accessing small segments of large files on
+            disk, without reading the entire file into memory. Note that this
+            can still result in some slow / unexpected behaviour with some
+            operations.
+
+            More info:
+            https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
 
         Parameters
         ----------
         filename : PathLike
             Name of the file to load.
-        mmap : bool, optional
-            If True, load the file using memory mapping. Memory-mapped
-            files are used for accessing small segments of large files on
-            disk, without reading the entire file into memory. Note that this
-            can still result in some slow / unexpected behaviour with some
-            operations. Memory-mapped files are read-only by default.
-
-            More info:
-            https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
         **kwargs : dict
             Extra keyword arguments passed onto data readers.
 
@@ -88,19 +50,18 @@ class Volume:
         IOError
             Raised if the file extension is unknown.
         """
-        mmap_mode = 'r' if mmap else None
         filename = Path(filename)
         suffix = filename.suffix.lower()
 
         if suffix == '.npy':
-            array = array = np.load(filename, mmap_mode=mmap_mode, **kwargs)
+            array = np.load(filename, **kwargs)
         elif suffix == '.vol':
-            array = load_vol(filename, mmap_mode=mmap_mode, **kwargs)
+            array = load_vol(filename, **kwargs)
         else:
             raise IOError(f'Unknown file extension: {suffix}')
         return cls(array)
 
-    def apply(self, function, **kwargs) -> 'Volume':
+    def apply(self, function: Callable, **kwargs) -> 'Volume':
         """Apply function to `.image` array. Return an instance of `Volume` if
         the result is a 3D image, otherwise return the result of the operation.
 
@@ -116,11 +77,7 @@ class Volume:
         Volume
             New instance of `Volume`.
         """
-        ret = function(self.image, **kwargs)
-        if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
-            return Volume(ret)
-
-        return ret
+        return super().apply(function, **kwargs)
 
     def show_slice(self, **kwargs):
         """Show slice using `nanomesh.utils.SliceViewer`.
@@ -132,7 +89,7 @@ class Volume:
         sv.interact()
         return sv
 
-    def show_volume(self, renderer='itkwidgets', **kwargs):
+    def show_volume(self, renderer: str = 'itkwidgets', **kwargs) -> None:
         """Show volume using `itkwidgets` or `ipyvolume`.
 
         Extra keyword arguments (`kwargs`) are passed to
@@ -164,7 +121,8 @@ class Volume:
         return generate_3d_mesh(image=self.image, **kwargs)
 
     @requires(condition=pygalmesh, message='requires pygalmesh')
-    def generate_mesh_cgal(self, h=(1.0, 1.0, 1.0), **kwargs) -> 'meshio.Mesh':
+    def generate_mesh_cgal(self, h: tuple = (1.0, 1.0, 1.0),
+                           **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary image.
 
         Parameters

@@ -1,10 +1,18 @@
 import os
+from typing import Callable
 
 import numpy as np
 
 
 class BaseImage:
-    def __init__(self, image):
+    """Data class for image data.
+
+    Parameters
+    ----------
+    image : np.array
+        N-dimensional numpy array containing image data.
+    """
+    def __init__(self, image: np.ndarray):
         self.image = image
 
     def __repr__(self):
@@ -54,7 +62,7 @@ class BaseImage:
         image = np.load(filename, **kwargs)
         return cls(image)
 
-    def apply(self, function, **kwargs):
+    def apply(self, function: Callable, **kwargs):
         """Apply function to `.image` array. Return an instance of `BaseImage`
         if the result is of the same dimensions, otherwise return the result of
         the operation.

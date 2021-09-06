@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Callable
 
 import numpy as np
 
@@ -30,7 +31,7 @@ class Plane(BaseImage):
         array = np.load(filename, **kwargs)
         return cls(array)
 
-    def apply(self, function, **kwargs):
+    def apply(self, function: Callable, **kwargs):
         """Apply function to `.image` array. Return an instance of `Plane` if
         the result is a 2D image, otherwise return the result of the operation.
 
@@ -109,7 +110,7 @@ class Plane(BaseImage):
         """
         return Plane(self.image[top:bottom, left:right])
 
-    def crop_to_roi(self, bbox):
+    def crop_to_roi(self, bbox: np.ndarray) -> 'Plane':
         """Crop plane to rectangle defined by bounding box.
 
         Parameters

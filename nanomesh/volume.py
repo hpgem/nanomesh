@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import Callable
 
 import meshio
 import numpy as np
@@ -60,7 +61,7 @@ class Volume(BaseImage):
             raise IOError(f'Unknown file extension: {suffix}')
         return cls(array)
 
-    def apply(self, function, **kwargs) -> 'Volume':
+    def apply(self, function: Callable, **kwargs) -> 'Volume':
         """Apply function to `.image` array. Return an instance of `Volume` if
         the result is a 3D image, otherwise return the result of the operation.
 
@@ -76,7 +77,7 @@ class Volume(BaseImage):
         Volume
             New instance of `Volume`.
         """
-        return BaseImage.apply(self, function, **kwargs)
+        return super().apply(function, **kwargs)
 
     def show_slice(self, **kwargs):
         """Show slice using `nanomesh.utils.SliceViewer`.
@@ -88,7 +89,7 @@ class Volume(BaseImage):
         sv.interact()
         return sv
 
-    def show_volume(self, renderer='itkwidgets', **kwargs):
+    def show_volume(self, renderer: str = 'itkwidgets', **kwargs) -> None:
         """Show volume using `itkwidgets` or `ipyvolume`.
 
         Extra keyword arguments (`kwargs`) are passed to
@@ -120,7 +121,8 @@ class Volume(BaseImage):
         return generate_3d_mesh(image=self.image, **kwargs)
 
     @requires(condition=pygalmesh, message='requires pygalmesh')
-    def generate_mesh_cgal(self, h=(1.0, 1.0, 1.0), **kwargs) -> 'meshio.Mesh':
+    def generate_mesh_cgal(self, h: tuple = (1.0, 1.0, 1.0),
+                           **kwargs) -> 'meshio.Mesh':
         """Generate mesh from binary image.
 
         Parameters

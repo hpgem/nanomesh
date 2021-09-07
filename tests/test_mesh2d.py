@@ -94,6 +94,11 @@ def test_close_contour(coords, is_corner):
         ret.shape[1] == n_rows
 
 
+@pytest.mark.xfail(
+    os.name != GENERATED_ON,
+    raises=AssertionError,
+    reason=('No way of currently ensuring contours on OSX / Linux / Windows '
+            'are exactly the same.'))
 @image_comparison(
     baseline_images=['contour_plot'],
     remove_text=True,

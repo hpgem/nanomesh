@@ -3,7 +3,7 @@ import pytest
 from matplotlib.testing.decorators import image_comparison
 
 from nanomesh import Plane
-from nanomesh.mesh_utils import TriangleMesh
+from nanomesh.mesh_container import TriangleMesh
 
 
 @pytest.fixture

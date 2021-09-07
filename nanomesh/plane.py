@@ -5,7 +5,7 @@ from typing import Callable
 import numpy as np
 
 from .base_image import BaseImage
-from .mesh_utils import TriangleMesh
+from .mesh_container import TriangleMesh
 from .utils import show_image
 
 logger = logging.getLogger(__name__)

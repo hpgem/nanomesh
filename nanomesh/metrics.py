@@ -4,7 +4,7 @@ from typing import Callable, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .mesh_utils import MeshContainer
+from .mesh_container import MeshContainer
 
 
 class Metric:

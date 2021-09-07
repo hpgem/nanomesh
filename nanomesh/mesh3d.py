@@ -6,7 +6,7 @@ import numpy as np
 from skimage import measure
 
 from ._mesh_shared import BaseMesher
-from .mesh_utils import TriangleMesh
+from .mesh_container import TriangleMesh
 
 logger = logging.getLogger(__name__)
 

@@ -34,7 +34,7 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
         ax.triplot(vert_y,
                    vert_x,
                    triangles=mesh.faces,
-                   mask=mesh.labels == label,
+                   mask=mesh.labels != label,
                    label=label)
 
     _legend_with_triplot_fix(ax)

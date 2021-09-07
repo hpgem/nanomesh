@@ -36,6 +36,7 @@ API Reference
    nanomesh.io.rst
    nanomesh.mesh2d.rst
    nanomesh.mesh3d.rst
+   nanomesh.mesh_container.rst
    nanomesh.mesh_utils.rst
    nanomesh.periodic_utils.rst
    nanomesh.plane.rst

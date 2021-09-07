@@ -4,8 +4,9 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from matplotlib.testing.decorators import image_comparison
 
-from nanomesh.mesh2d import (close_corner_contour, generate_2d_mesh,
+from nanomesh.mesh2d import (Mesher2D, close_corner_contour, generate_2d_mesh,
                              subdivide_contour)
 
 # There is a small disparity between the data generated on Windows / posix
@@ -91,3 +92,20 @@ def test_close_contour(coords, is_corner):
         ret.shape[1] == n_rows + 1
     else:
         ret.shape[1] == n_rows
+
+
+@pytest.mark.xfail(
+    os.name != GENERATED_ON,
+    raises=AssertionError,
+    reason=('No way of currently ensuring contours on OSX / Linux / Windows '
+            'are exactly the same.'))
+@image_comparison(
+    baseline_images=['contour_plot'],
+    remove_text=True,
+    extensions=['png'],
+    savefig_kwarg={'bbox_inches': 'tight'},
+)
+def test_contour_plot(segmented):
+    mesher = Mesher2D(segmented)
+    mesher.generate_contours(max_contour_dist=5, level=0.5)
+    mesher.plot_contour()

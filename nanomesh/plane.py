@@ -2,6 +2,7 @@ import logging
 import os
 from typing import Callable
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from .base_image import BaseImage
@@ -127,3 +128,18 @@ class Plane(BaseImage):
         from .roi2d import extract_rectangle
         cropped = extract_rectangle(self.image, bbox=bbox)
         return Plane(cropped)
+
+    def compare_with_mesh(self, mesh: TriangleMesh) -> 'plt.Axes':
+        """Make a plot comparing the image with the given mesh.
+
+        Parameters
+        ----------
+        mesh : TriangleMesh
+            Mesh to compare the image with.
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+        """
+        from .mesh_utils import compare_mesh_with_image
+        return compare_mesh_with_image(image=self.image, mesh=mesh)

@@ -13,7 +13,15 @@ from .mesh_container import TriangleMesh
 logger = logging.getLogger(__name__)
 
 
-def find_point_in_contour(contour: np.array) -> np.array:
+def _legend_with_triplot_fix(ax: plt.Axes):
+    """Add legend for triplot with fix that avoids duplicate labels."""
+    handles, labels = ax.get_legend_handles_labels()
+    # reverse to avoid blank line color
+    by_label = dict(zip(reversed(labels), reversed(handles)))
+    ax.legend(by_label.values(), by_label.keys())
+
+
+def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
     """Use rejection sampling to find point in contour.
 
     Parameters
@@ -37,7 +45,7 @@ def find_point_in_contour(contour: np.array) -> np.array:
     return point
 
 
-def close_corner_contour(contour: np.array, shape: tuple) -> np.array:
+def close_corner_contour(contour: np.ndarray, shape: tuple) -> np.ndarray:
     """Check if contours are in the corner, and close them if needed.
 
     Contours which cover a corner cannot be closed by joining the first
@@ -134,55 +142,10 @@ def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
     return new_contour
 
 
-def plot_mesh_steps(*, image: np.ndarray, contours: list, points: np.ndarray,
-                    triangles: np.ndarray, labels: np.ndarray):
-    """Plot meshing steps.
-
-    Parameters
-    ----------
-    image : 2D np.ndarray
-        Input image.
-    contours : list of (n,2) np.ndarrays
-        Each contour is an ndarray of shape `(n, 2)`,
-        consisting of n ``(row, column)`` coordinates along the contour.
-    points : (i,2) np.ndarray
-        Coordinates of input points
-    triangles : (j,3) np.ndarray
-        Indices of points forming a triangle.
-    labels : (j,) np.ndarray of int
-        Array of integers corresponding to triangle labels
-    """
-    import matplotlib.pyplot as plt
-
-    x, y = points.T[::-1]
-
-    fig, axes = plt.subplots(nrows=3, figsize=(8, 6), sharex=True, sharey=True)
-    ax = axes.ravel()
-
-    ax[0].set_title(f'Contours ({len(contours)})')
-    ax[0].imshow(image, cmap='gray')
-    for contour in contours:
-        contour_x, contour_y = contour.T[::-1]
-        ax[0].plot(contour_x, contour_y, color='red')
-
-    ax[1].set_title(f'Vertices ({len(points)} points)')
-    ax[1].imshow(image, cmap='gray')
-    ax[1].scatter(*points.T[::-1], s=2, color='red')
-
-    ax[2].set_title(f'Labeled mesh ({len(triangles)} triangles)')
-    ax[2].imshow(image, cmap='gray')
-    for label in (0, 1):
-        mask = (labels == label)
-        lines, *_ = ax[2].triplot(x, y, triangles=triangles, mask=mask)
-        lines.set_label(f'label = {label} ({np.count_nonzero(~mask)})')
-
-    ax[2].legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-
-
 class Mesher2D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
-        self.contours: Dict[int, List[list]] = defaultdict(list)
+        self.contours: Dict[int, List[np.ndarray]] = defaultdict(list)
 
     def generate_contours(
         self,
@@ -232,7 +195,7 @@ class Mesher2D(BaseMesher):
         return flat_list
 
     @property
-    def image_bbox(self) -> np.array:
+    def image_bbox(self) -> np.ndarray:
         """Return bbox from image shape.
 
         Returns
@@ -310,7 +273,7 @@ class Mesher2D(BaseMesher):
     def generate_domain_mask_from_contours(self,
                                            mesh: TriangleMesh,
                                            *,
-                                           label: int = 1) -> np.array:
+                                           label: int = 1) -> np.ndarray:
         """Generate domain mask from contour.
 
         Parameters
@@ -335,9 +298,33 @@ class Mesher2D(BaseMesher):
 
         return labels
 
-    def plot_steps(self):
-        """Plot meshing steps."""
-        raise NotImplementedError
+    def plot_contour(self, ax: plt.Axes = None):
+        """Plot contours on image.
+
+        Parameters
+        ----------
+        ax : matplotlib.Axes
+            Axes to use for plotting.
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+        """
+        if not ax:
+            fig, ax = plt.subplots()
+
+        ax.set_title('Contours')
+        for label, contours in self.contours.items():
+            for contour in contours:
+                cont_x, cont_y = contour.T
+                ax.plot(cont_y, cont_x)
+
+        ax.imshow(self.image)
+        ax.axis('image')
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        return ax
 
 
 def generate_2d_mesh(image: np.ndarray,

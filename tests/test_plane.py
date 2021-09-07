@@ -8,7 +8,7 @@ from nanomesh.mesh_container import TriangleMesh
 
 @pytest.fixture
 def plane():
-    data = np.arange(25).reshape(5, 5)
+    data = np.arange(625).reshape(25, 25)
     return Plane(data)
 
 
@@ -88,3 +88,25 @@ def test_equal(plane):
     assert plane == plane
     assert plane == plane.image
     assert plane != 123
+
+
+@image_comparison(
+    baseline_images=['compare_with_digitized'],
+    remove_text=True,
+    extensions=['png'],
+    savefig_kwarg={'bbox_inches': 'tight'},
+)
+def test_compare_with_digitized(plane):
+    segmented = Plane(plane.image > plane.image.mean())
+    plane.compare_with_digitized(segmented)
+
+
+@image_comparison(
+    baseline_images=['compare_with_other'],
+    remove_text=True,
+    extensions=['png'],
+    savefig_kwarg={'bbox_inches': 'tight'},
+)
+def test_compare_with_other(plane):
+    other = Plane(np.ones_like(plane.image))
+    plane.compare_with_other(other)

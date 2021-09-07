@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Callable
+from typing import Callable, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -143,3 +143,70 @@ class Plane(BaseImage):
         """
         from .mesh_utils import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
+
+    def compare_with_digitized(self, digitized: Union[np.ndarray, 'Plane'],
+                               **kwargs) -> 'plt.Axes':
+        """Compare image with digitized (segmented) image. Returns a plot with
+        the overlay of the digitized image.
+
+        Parameters
+        ----------
+        digitized : np.ndarray, Plane
+            Digitized image of the same dimensions to overlay
+        **kwargs : dict
+            Extra keyword arguments passed to `skimage.color.label2rgb`.
+
+        Returns
+        -------
+        ax : plt.Axes
+        """
+        from skimage.color import label2rgb
+
+        if isinstance(digitized, Plane):
+            digitized = digitized.image
+
+        image_overlay = label2rgb(digitized, image=self.image, **kwargs)
+
+        fig, ax = plt.subplots()
+
+        ax.imshow(image_overlay, interpolation='none')
+        ax.axis('image')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title('Image comparison')
+
+        return ax
+
+    def compare_with_other(self, other: Union[np.ndarray, 'Plane'],
+                           **kwargs) -> 'plt.Axes':
+        """Compare image with other image.
+
+        Parameters
+        ----------
+        other : np.ndarray, Plane
+            Other image of the same dimensions to overlay
+        **kwargs : dict
+            Extra keyword arguments passed to `skimage.util.compare_images`.
+
+        Returns
+        -------
+        ax : plt.Axes
+        """
+        from skimage.util import compare_images
+
+        if isinstance(other, Plane):
+            other = other.image
+
+        kwargs.setdefault('method', 'checkerboard')
+        kwargs.setdefault('n_tiles', (4, 4))
+        comp = compare_images(self.image, other, **kwargs)
+
+        fig, ax = plt.subplots()
+
+        ax.imshow(comp, interpolation='none')
+        ax.axis('image')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title(f'Image comparison ({kwargs["method"]})')
+
+        return ax

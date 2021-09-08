@@ -210,3 +210,44 @@ class Plane(BaseImage):
         ax.set_title(f'Image comparison ({kwargs["method"]})')
 
         return ax
+
+    def clear_border(self, *, object_label: int, fill_val: int,
+                     **kwargs) -> 'Plane':
+        """Remove objects at the border of the image.
+
+        Parameters
+        ----------
+        object_label : int
+            Label of the objects to remove.
+        fill_val : int
+            Cleared objects are set to this value.
+        **kwargs
+            Extra arguments passed to `skimage.segmentation.clear_border`.
+
+        Returns
+        -------
+        Plane
+            New instance of `Plane`.
+        """
+        from skimage import segmentation
+
+        objects = (self.image == object_label).astype(int)
+        border_cleared = segmentation.clear_border(objects, **kwargs)
+        mask = (border_cleared != objects)
+
+        out = self.image.copy()
+        out[mask] = fill_val
+        return self.__class__(out)
+
+    def try_all_threshold(self, **kwargs):
+        """Produce a plot trying all available thresholds from `scikit-image`.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Extra keyword arguments passed to
+            `skimage.filters.try_all_threshold`.
+        """
+        from skimage import filters
+        kwargs.setdefault('verbose', False)
+        self.apply(filters.try_all_threshold, **kwargs)

@@ -96,3 +96,21 @@ def test_select_subvolume(volume, kwargs, expected):
     ret = volume.select_subvolume(**kwargs)
     assert isinstance(ret, Volume)
     np.testing.assert_array_equal(ret.image, volume.image[expected])
+
+
+def test_gaussian(volume):
+    out = volume.gaussian()
+    assert isinstance(out, Volume)
+
+
+def test_digitize(volume):
+    out = volume.digitize(bins=[25, 50, 75, 100])
+    assert isinstance(out, Volume)
+    assert np.all(np.unique(out.image) == np.array([0, 1, 2, 3, 4]))
+
+
+@pytest.mark.parametrize('threshold', (None, 100, 'li'))
+def test_binary_digitize(volume, threshold):
+    out = volume.binary_digitize(threshold=threshold)
+    assert isinstance(out, Volume)
+    assert np.all(np.unique(out.image) == np.array([0, 1]))

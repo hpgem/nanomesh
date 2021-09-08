@@ -238,3 +238,16 @@ class Plane(BaseImage):
         out = self.image.copy()
         out[mask] = fill_val
         return self.__class__(out)
+
+    def try_all_threshold(self, **kwargs):
+        """Produce a plot trying all available thresholds from `scikit-image`.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Extra keyword arguments passed to
+            `skimage.filters.try_all_threshold`.
+        """
+        from skimage import filters
+        kwargs.setdefault('verbose', False)
+        self.apply(filters.try_all_threshold, **kwargs)

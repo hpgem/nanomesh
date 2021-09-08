@@ -123,8 +123,9 @@ def test_digitize(plane):
     assert np.all(np.unique(out.image) == np.array([0, 1, 2, 3, 4]))
 
 
-def test_binary_digitize(plane):
-    out = plane.binary_digitize()
+@pytest.mark.parametrize('threshold', (None, 100, 'li'))
+def test_binary_digitize(plane, threshold):
+    out = plane.binary_digitize(threshold=threshold)
     assert isinstance(out, Plane)
     assert np.all(np.unique(out.image) == np.array([0, 1]))
 

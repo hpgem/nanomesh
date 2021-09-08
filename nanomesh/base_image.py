@@ -122,13 +122,15 @@ class BaseImage:
         """
         return self.apply(np.digitize, bins=bins, **kwargs)
 
-    def binary_digitize(self, threshold: float = None):
+    def binary_digitize(self, threshold: Union[float, str] = None):
         """Convert into a binary image.
 
         Parameters
         ----------
         threshold : float, optional
-            Threshold used for segmentation. Defaults to median value.
+            Threshold used for segmentation. If given as a string,
+            apply corresponding theshold via `BaseImage.threshold`.
+            Defaults to median.
 
         Returns
         -------
@@ -137,4 +139,45 @@ class BaseImage:
         """
         if not threshold:
             threshold = np.median(self.image)
+        if isinstance(threshold, str):
+            threshold = self.threshold(threshold)
         return self.apply(np.digitize, bins=[threshold])
+
+    def threshold(self, method: str = 'otsu', **kwargs) -> float:
+        """Compute threshold value using given method.
+
+        For more info, see:
+            https://scikit-image.org/docs/dev/api/skimage.filters.html
+
+        Parameters
+        ----------
+        method : str
+            Thresholding method to use. Defaults to `otsu`.
+        **kwargs : dict
+            Extra keyword arguments passed to threshold method.
+
+        Returns
+        -------
+        threshold : float
+            Threshold value.
+        """
+        from skimage import filters
+        dispatch_table = {
+            'isodata': filters.threshold_isodata,
+            'li': filters.threshold_li,
+            'local': filters.threshold_local,
+            'mean': filters.threshold_mean,
+            'minimum': filters.threshold_minimum,
+            'multiotsu': filters.threshold_multiotsu,
+            'niblack': filters.threshold_niblack,
+            'otsu': filters.threshold_otsu,
+            'sauvola': filters.threshold_sauvola,
+            'triangle': filters.threshold_triangle,
+            'yen': filters.threshold_yen,
+        }
+        try:
+            func = dispatch_table[method]
+        except KeyError:
+            raise KeyError(f'`method` must be one of {dispatch_table.keys()}')
+
+        return self.apply(func, **kwargs)

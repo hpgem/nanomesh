@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from typing import Callable, Union
 
 import numpy as np
 
@@ -84,3 +84,57 @@ class BaseImage:
             return self.__class__(ret)
 
         return ret
+
+    def gaussian(self, sigma: int = 1, **kwargs):
+        """Apply Gaussian blur to image.
+
+        Parameters
+        ----------
+        sigma : int
+            Standard deviation for Gaussian kernel.
+        **kwargs : dict
+            Extra arguments passed to `skimage.filters.gaussian`.
+
+        Returns
+        -------
+        BaseImage
+            New instance of `BaseImage`.
+        """
+        from skimage import filters
+        return self.apply(filters.gaussian, sigma=sigma, **kwargs)
+
+    def digitize(self, bins: Union[list, tuple], **kwargs):
+        """Digitize image.
+
+        For more info see `numpy.digitize`.
+
+        Parameters
+        ----------
+        bins : list, tuple
+            List of bin values. Must be monotonic and one-dimensional.
+        **kwargs : dict
+            Extra arguments passed to `numpy.digitize`.
+
+        Returns
+        -------
+        BaseImage
+            New instance of `BaseImage`.
+        """
+        return self.apply(np.digitize, bins=bins, **kwargs)
+
+    def binary_digitize(self, threshold: float = None):
+        """Convert into a binary image.
+
+        Parameters
+        ----------
+        threshold : float, optional
+            Threshold used for segmentation. Defaults to median value.
+
+        Returns
+        -------
+        BaseImage
+            New instance of `BaseImage`.
+        """
+        if not threshold:
+            threshold = np.median(self.image)
+        return self.apply(np.digitize, bins=[threshold])

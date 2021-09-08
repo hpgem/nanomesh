@@ -110,3 +110,34 @@ def test_compare_with_digitized(plane):
 def test_compare_with_other(plane):
     other = Plane(np.ones_like(plane.image))
     plane.compare_with_other(other)
+
+
+def test_gaussian(plane):
+    out = plane.gaussian()
+    assert isinstance(out, Plane)
+
+
+def test_digitize(plane):
+    out = plane.digitize(bins=[125, 250, 375, 500])
+    assert isinstance(out, Plane)
+    assert np.all(np.unique(out.image) == np.array([0, 1, 2, 3, 4]))
+
+
+def test_binary_digitize(plane):
+    out = plane.binary_digitize()
+    assert isinstance(out, Plane)
+    assert np.all(np.unique(out.image) == np.array([0, 1]))
+
+
+def test_clear_border():
+    arr = np.array([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 2, 2, 0],
+        [0, 0, 0, 0],
+    ])
+    plane = Plane(arr)
+    out = plane.clear_border(object_label=2, fill_val=5)
+    assert isinstance(out, Plane)
+    assert np.all(out.image[0, 0:2] == [5, 5])
+    assert np.all(out.image[2, 1:3] == [2, 2])

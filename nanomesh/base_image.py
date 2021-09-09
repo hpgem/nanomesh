@@ -188,7 +188,8 @@ class BaseImage:
         Returns
         -------
         BaseImage
-            Real component of fourier transform.
+            Real component of fourier transform with the zero-frequency
+            component shifted to the center of the spectrum.
         """
         fourier = np.fft.fftn(self.image)
         shifted = np.abs(np.fft.fftshift(fourier))

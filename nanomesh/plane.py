@@ -50,7 +50,11 @@ class Plane(BaseImage):
         """
         return super().apply(function, **kwargs)
 
-    def show(self, *, dpi: int = 80, title: str = None):
+    def show(self,
+             *,
+             dpi: int = 80,
+             title: str = None,
+             **kwargs) -> 'plt.Axes':
         """Plot the image using matplotlib.
 
         Parameters
@@ -59,13 +63,15 @@ class Plane(BaseImage):
             DPI to render at.
         title : str, optional
             Set the title of the plot.
+        **kwargs : dict
+            Extra keyword arguments to pass to `plt.imshow`.
 
         Returns
         -------
         ax : `matplotlib.axes.Axes`
             Instance of `matplotlib.axes.Axes`
         """
-        return show_image(self.image, dpi=dpi, title=title)
+        return show_image(self.image, dpi=dpi, title=title, **kwargs)
 
     def generate_mesh(self, **kwargs) -> 'TriangleMesh':
         """Generate mesh from binary (segmented) image.

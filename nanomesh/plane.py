@@ -89,7 +89,7 @@ class Plane(BaseImage):
         from .mesh2d import generate_2d_mesh
         return generate_2d_mesh(image=self.image, **kwargs)
 
-    def select_roi(self):
+    def select_roi(self, from_points: np.ndarray = None):
         """Select region of interest in interactive matplotlib figure.
 
         Returns
@@ -99,7 +99,11 @@ class Plane(BaseImage):
         """
         from .roi2d import ROISelector
         ax = self.show(title='Select region of interest')
-        roi = ROISelector(ax)
+        if from_points is not None:
+            # reverse columns to match image
+            from_points = from_points[:, ::-1]
+            ax.scatter(*from_points.T)
+        roi = ROISelector(ax, snap_to=from_points)
         return roi
 
     def crop(self, left: int, top: int, right: int, bottom: int) -> 'Plane':

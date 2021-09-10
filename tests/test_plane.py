@@ -117,6 +117,11 @@ def test_gaussian(plane):
     assert isinstance(out, Plane)
 
 
+def test_fft(plane):
+    out = plane.fft()
+    assert isinstance(out, Plane)
+
+
 def test_digitize(plane):
     out = plane.digitize(bins=[125, 250, 375, 500])
     assert isinstance(out, Plane)

@@ -69,6 +69,14 @@ def test_select_roi(plane):
     assert hasattr(roi, 'bbox')
 
 
+@pytest.mark.parametrize('from_points',
+                         (None, (np.array([[0, 0], [0, 1], [1, 0], [1, 1]]))))
+def test_select_roi_with_points(plane, from_points):
+    """Property test for roi selector."""
+    roi = plane.select_roi(from_points=from_points)
+    assert hasattr(roi, 'bbox')
+
+
 def test_crop_to_roi(plane):
     """Test cropping method."""
     bbox = np.array([(1, 1), (1, 3), (3, 3), (3, 1)])

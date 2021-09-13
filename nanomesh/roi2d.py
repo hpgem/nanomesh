@@ -176,6 +176,9 @@ class ROISelector:
         np.ndarray
             Description
         """
+        if self.verts is None:
+            raise ValueError('No vertices have been selected!')
+
         if rotate:
             return minimum_bounding_rectangle(self.verts)
         else:

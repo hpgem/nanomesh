@@ -2,6 +2,7 @@ import meshio
 import numpy as np
 import open3d
 import pyvista as pv
+import scipy
 import trimesh
 from trimesh import remesh
 
@@ -120,6 +121,15 @@ class TriangleMesh(MeshContainer):
         return cls(vertices=vertices, faces=faces)
 
     @classmethod
+    def from_scipy(cls,
+                   mesh: 'scipy.spatial.qhull.Delaunay') -> 'TriangleMesh':
+        """Return instance of `TriangleMesh` from `scipy.spatial.Delaunay`
+        object."""
+        vertices = mesh.points
+        faces = mesh.simplices
+        return cls(vertices=vertices, faces=faces)
+
+    @classmethod
     def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'TriangleMesh':
         """Return instance of `TriangleMesh` from trimesh."""
         return cls(vertices=mesh.vertices, faces=mesh.faces)
@@ -224,19 +234,8 @@ class TriangleMesh(MeshContainer):
         return TriangleMesh(vertices=verts, faces=faces)
 
     def subdivide(self, max_edge: int = 10, iters: int = 10) -> 'TriangleMesh':
-        """Subdivide triangles until the maximum edge size is reached.
-
-        Parameters
-        ----------
-        max_edge : int, optional
-            Max triangle edge distance.
-        iters : int, optional
-            Maximum number of iterations of iterations.
-        """
-        verts, faces = remesh.subdivide_to_size(self.vertices,
-                                                self.faces,
-                                                max_edge=max_edge,
-                                                max_iter=10)
+        """Subdivide triangles."""
+        verts, faces = remesh.subdivide(self.vertices, self.faces)
         return TriangleMesh(vertices=verts, faces=faces)
 
     def tetrahedralize(self, **kwargs) -> 'TetraMesh':

@@ -122,7 +122,11 @@ class SliceViewer:
         interact(self.update, index=self.int_slider, along=self.radio_buttons)
 
 
-def show_image(image, *, dpi=80, title=None):
+def show_image(image,
+               *,
+               dpi: int = 80,
+               title: str = None,
+               **kwargs) -> 'plt.Axes':
     """Simple function to show an image using matplotlib.
 
     Parameters
@@ -131,14 +135,23 @@ def show_image(image, *, dpi=80, title=None):
         Image to display.
     dpi : int, optional
         DPI to render at.
-    title : None, optional
+    title : str, optional
         Title for the plot.
+    **kwargs : dict
+        Extra keyword arguments to pass to `plt.imshow`.
+
+    Returns
+    -------
+    plt.Axes
+        Description
     """
+    kwargs.setdefault('interpolation', None)
+
     fig = plt.figure(dpi=dpi)
     plt.set_cmap('gray')
 
     ax = fig.add_subplot()
-    ax.imshow(image, interpolation=None)
+    ax.imshow(image, **kwargs)
 
     if title:
         plt.title(title)

@@ -181,3 +181,16 @@ class BaseImage:
             raise KeyError(f'`method` must be one of {dispatch_table.keys()}')
 
         return self.apply(func, **kwargs)
+
+    def fft(self) -> 'BaseImage':
+        """Apply fourier transform to image.
+
+        Returns
+        -------
+        BaseImage
+            Real component of fourier transform with the zero-frequency
+            component shifted to the center of the spectrum.
+        """
+        fourier = np.fft.fftn(self.image)
+        shifted = np.abs(np.fft.fftshift(fourier))
+        return self.__class__(shifted)

@@ -50,7 +50,11 @@ class Plane(BaseImage):
         """
         return super().apply(function, **kwargs)
 
-    def show(self, *, dpi: int = 80, title: str = None):
+    def show(self,
+             *,
+             dpi: int = 80,
+             title: str = None,
+             **kwargs) -> 'plt.Axes':
         """Plot the image using matplotlib.
 
         Parameters
@@ -59,13 +63,15 @@ class Plane(BaseImage):
             DPI to render at.
         title : str, optional
             Set the title of the plot.
+        **kwargs : dict
+            Extra keyword arguments to pass to `plt.imshow`.
 
         Returns
         -------
         ax : `matplotlib.axes.Axes`
             Instance of `matplotlib.axes.Axes`
         """
-        return show_image(self.image, dpi=dpi, title=title)
+        return show_image(self.image, dpi=dpi, title=title, **kwargs)
 
     def generate_mesh(self, **kwargs) -> 'TriangleMesh':
         """Generate mesh from binary (segmented) image.
@@ -83,7 +89,7 @@ class Plane(BaseImage):
         from .mesh2d import generate_2d_mesh
         return generate_2d_mesh(image=self.image, **kwargs)
 
-    def select_roi(self):
+    def select_roi(self, from_points: np.ndarray = None):
         """Select region of interest in interactive matplotlib figure.
 
         Returns
@@ -93,7 +99,11 @@ class Plane(BaseImage):
         """
         from .roi2d import ROISelector
         ax = self.show(title='Select region of interest')
-        roi = ROISelector(ax)
+        if from_points is not None:
+            # reverse columns to match image
+            from_points = from_points[:, ::-1]
+            ax.scatter(*from_points.T)
+        roi = ROISelector(ax, snap_to=from_points)
         return roi
 
     def crop(self, left: int, top: int, right: int, bottom: int) -> 'Plane':

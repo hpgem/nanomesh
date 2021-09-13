@@ -3,6 +3,8 @@
 [![MacOS](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml)
 [![Windows](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml)
 
+![Nanomesh banner](./notebooks/banner/banner.png)
+
 # nanomesh
 
 Creates 3d meshes from microscopy experimental data.

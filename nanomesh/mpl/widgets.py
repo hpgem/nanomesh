@@ -20,12 +20,13 @@ class PolygonSelectorWithSnapping(PolygonSelector):
     def __init__(
         self,
         *args,
-        snap_to=None,
+        snap_to: np.ndarray = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.snapped = False
-        self._snap_to = snap_to
+        self._snap_to_points = snap_to
+        self.SNAPPING = (snap_to is not None)
 
     def _release(self, event):
         """Button release event handler."""
@@ -82,20 +83,22 @@ class PolygonSelectorWithSnapping(PolygonSelector):
                 (self._xs[0], self._ys[0]))
             v0_dist = np.hypot(x0 - event.x, y0 - event.y)
 
-            # Calculate nearest point to snap to.
-            self._tf_snap_to = self.line.get_transform().transform(
-                self._snap_to)
-            vn_dists = np.hypot(self._tf_snap_to[:, 0] - event.x,
-                                self._tf_snap_to[:, 1] - event.y)
-            vn_ind = np.argmin(vn_dists)
+            if self.SNAPPING:
+                # Calculate nearest point to snap to.
+                self._tf_snap_to = self.line.get_transform().transform(
+                    self._snap_to_points)
+                vn_dists = np.hypot(self._tf_snap_to[:, 0] - event.x,
+                                    self._tf_snap_to[:, 1] - event.y)
+                vn_ind = np.argmin(vn_dists)
 
             # Lock on to the start vertex if near it and ready to complete.
             if len(self._xs) > 3 and v0_dist < self.vertex_select_radius:
                 self._xs[-1], self._ys[-1] = self._xs[0], self._ys[0]
 
             # Lock on to pre-defined point if near it
-            elif vn_dists[vn_ind] < self.vertex_select_radius:
-                self._xs[-1], self._ys[-1] = self._snap_to[vn_ind]
+            elif self.SNAPPING and (vn_dists[vn_ind] <
+                                    self.vertex_select_radius):
+                self._xs[-1], self._ys[-1] = self._snap_to_points[vn_ind]
                 self._snapped = True
 
             else:

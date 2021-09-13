@@ -3,7 +3,6 @@
 import logging
 import sys
 
-from .__version__ import __version__
 from .plane import Plane
 from .volume import Volume
 
@@ -13,6 +12,7 @@ logging.basicConfig(format='%(message)s',
 
 __author__ = 'Nicolas Renaud'
 __email__ = 'n.renaud@esciencecenter.nl'
+__version__ = '0.1.0'
 
 __all__ = [
     '__author__',

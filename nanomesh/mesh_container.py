@@ -304,6 +304,17 @@ class TriangleMesh(MeshContainer):
         grid = tet.grid
         return TetraMesh.from_pyvista_unstructured_grid(grid)
 
+    def pad(self, **kwargs) -> 'TriangleMesh':
+        """Pad a mesh.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments passed to `nanomesh.mesh_utils.pad`
+        """
+        from nanomesh.mesh_utils import pad
+        return pad(self, **kwargs)
+
 
 class TetraMesh(MeshContainer):
     _element_type = 'tetra'

@@ -5,14 +5,15 @@ from nanomesh.roi2d import extract_rectangle, minimum_bounding_rectangle
 
 def test_minimum_bounding_rectangle():
     """Test for `minimum_bounding_rectangle`."""
-    verts = np.array([[85.91548322, 103.78165584], [52.0951369, 136.92559524],
-                      [92.67955248, 157.21780303], [149.4977343,
-                                                    140.30762987]])
+    verts = np.array([
+        [60, 60],
+        [110, 110],
+        [60, 145],  # <- should be 150
+        [10, 110],
+    ])
 
-    expected_bbox = np.array([[149.4977343, 140.30762987],
-                              [74.80265615, 97.39769136],
-                              [52.0951369, 136.92559524],
-                              [126.79021505, 179.83553375]])
+    expected_bbox = np.array([[110., 110.], [60., 60.], [10., 110.],
+                              [60., 160.]])
 
     bbox = minimum_bounding_rectangle(verts)
 

@@ -84,7 +84,10 @@ class MeshContainer:
     @property
     def labels(self):
         """Shortcut for face labels."""
-        return self.metadata['labels']
+        try:
+            return self.metadata['labels']
+        except KeyError:
+            return np.zeros(len(self.faces), dtype=int)
 
     @property
     def unique_labels(self):
@@ -178,8 +181,10 @@ class TriangleMesh(MeshContainer):
         """Return instance of `TriangleMesh` from trimesh results dict."""
         vertices = dct['vertices']
         faces = dct['triangles']
-        labels = dct['vertex_markers'].reshape(-1)
-        return cls(vertices=vertices, faces=faces, labels=labels)
+        vertex_markers = dct['vertex_markers'].reshape(-1)
+        return cls(vertices=vertices,
+                   faces=faces,
+                   vertex_markers=vertex_markers)
 
     def simplify(self, n_faces: int) -> 'TriangleMesh':
         """Simplify triangular mesh using `open3d`.

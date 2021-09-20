@@ -29,13 +29,8 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
     fig, ax = plt.subplots()
 
     ax.set_title('Mesh')
-    for label in mesh.unique_labels:
-        vert_x, vert_y = mesh.vertices.T
-        ax.triplot(vert_y,
-                   vert_x,
-                   triangles=mesh.faces,
-                   mask=mesh.labels != label,
-                   label=label)
+
+    mesh.plot(ax)
 
     _legend_with_triplot_fix(ax)
 

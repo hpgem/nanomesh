@@ -5,6 +5,7 @@ import pyvista as pv
 import scipy
 import trimesh
 from trimesh import remesh
+import matplotlib.pyplot as plt
 
 
 class MeshContainer:
@@ -93,6 +94,33 @@ class MeshContainer:
 
 class TriangleMesh(MeshContainer):
     _element_type = 'triangle'
+
+    def plot(self, ax: plt.Axes=None) -> plt.Axes:
+        """Simple mesh plot using `matplotlib`.
+        
+        Parameters
+        ----------
+        ax : matplotlib.Axes, optional
+            Axes to use for plotting.
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+        """
+        if not ax:
+            fig, ax = plt.subplots()
+
+        for label in self.unique_labels:
+            vert_x, vert_y = self.vertices.T
+            ax.triplot(vert_y,
+                       vert_x,
+                       triangles=self.faces,
+                       mask=self.labels != label,
+                       label=label)
+
+        ax.axis('equal')
+
+        return ax
 
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""

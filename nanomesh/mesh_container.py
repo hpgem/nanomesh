@@ -56,10 +56,11 @@ class MeshContainer:
         """Simple wrapper around `meshio.write`."""
         self.to_meshio().write(*args, **kwargs)
 
-    def read(self, filename, **kwargs):
+    @classmethod
+    def read(cls, filename, **kwargs):
         """Simple wrapper around `meshio.read`."""
         mesh = meshio.read(filename, **kwargs)
-        return self.from_meshio(mesh)
+        return cls.from_meshio(mesh)
 
     def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
         """Return instance of `pyvista.UnstructuredGrid`.

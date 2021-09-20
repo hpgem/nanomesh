@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 import open3d
@@ -5,7 +6,6 @@ import pyvista as pv
 import scipy
 import trimesh
 from trimesh import remesh
-import matplotlib.pyplot as plt
 
 
 class MeshContainer:
@@ -95,9 +95,19 @@ class MeshContainer:
 class TriangleMesh(MeshContainer):
     _element_type = 'triangle'
 
-    def plot(self, ax: plt.Axes=None) -> plt.Axes:
+    def drop_third_dimension(self):
+        """Drop third dimension coordinates if present.
+
+        For compatibility, sometimes a column with zeroes is added. This
+        method drops that column.
+        """
+        has_third_dimension = self.vertices.shape[1] == 3
+        if has_third_dimension:
+            self.vertices = self.vertices[:, 0:2]
+
+    def plot(self, ax: plt.Axes = None) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
-        
+
         Parameters
         ----------
         ax : matplotlib.Axes, optional

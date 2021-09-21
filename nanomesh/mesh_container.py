@@ -14,6 +14,7 @@ class MeshContainer:
     def __init__(self, vertices: np.ndarray, faces: np.ndarray, **metadata):
         self.vertices = vertices
         self.faces = faces
+        metadata.setdefault('labels', np.zeros(len(self.faces), dtype=int))
         self.metadata = metadata
 
     def to_meshio(self) -> 'meshio.Mesh':
@@ -84,10 +85,7 @@ class MeshContainer:
     @property
     def labels(self):
         """Shortcut for face labels."""
-        try:
-            return self.metadata['labels']
-        except KeyError:
-            return np.zeros(len(self.faces), dtype=int)
+        return self.metadata['labels']
 
     @property
     def unique_labels(self):

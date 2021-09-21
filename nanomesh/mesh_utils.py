@@ -78,25 +78,25 @@ def pad(mesh: TriangleMesh,
     if label is None:
         label = mesh.unique_labels.max() + 1
 
-    right_edge, top_edge = mesh.vertices.max(axis=0)
-    left_edge, bottom_edge = mesh.vertices.min(axis=0)
+    top_edge, right_edge = mesh.vertices.max(axis=0)
+    bottom_edge, left_edge = mesh.vertices.min(axis=0)
 
-    if side == 'left':
-        is_edge = mesh.vertices[:, 0] == left_edge
-        corners = np.array([[left_edge - width, top_edge],
-                            [left_edge - width, bottom_edge]])
-    elif side == 'bottom':
-        is_edge = mesh.vertices[:, 1] == bottom_edge
-        corners = np.array([[left_edge, bottom_edge - width],
-                            [right_edge, bottom_edge - width]])
-    elif side == 'right':
-        is_edge = mesh.vertices[:, 0] == right_edge
-        corners = np.array([[right_edge + width, top_edge],
-                            [right_edge + width, bottom_edge]])
+    if side == 'bottom':
+        is_edge = mesh.vertices[:, 0] == bottom_edge
+        corners = np.array([[bottom_edge - width, right_edge],
+                            [bottom_edge - width, left_edge]])
+    elif side == 'left':
+        is_edge = mesh.vertices[:, 1] == left_edge
+        corners = np.array([[bottom_edge, left_edge - width],
+                            [top_edge, left_edge - width]])
     elif side == 'top':
-        is_edge = mesh.vertices[:, 1] == top_edge
-        corners = np.array([[left_edge, top_edge + width],
-                            [right_edge, top_edge + width]])
+        is_edge = mesh.vertices[:, 0] == top_edge
+        corners = np.array([[top_edge + width, right_edge],
+                            [top_edge + width, left_edge]])
+    elif side == 'right':
+        is_edge = mesh.vertices[:, 1] == right_edge
+        corners = np.array([[bottom_edge, right_edge + width],
+                            [top_edge, right_edge + width]])
     else:
         raise ValueError('Side must be one of `right`, `left`, `bottom`'
                          f'`top`. Got {side=}')

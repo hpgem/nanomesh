@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 import open3d
@@ -13,6 +14,7 @@ class MeshContainer:
     def __init__(self, vertices: np.ndarray, faces: np.ndarray, **metadata):
         self.vertices = vertices
         self.faces = faces
+        metadata.setdefault('labels', np.zeros(len(self.faces), dtype=int))
         self.metadata = metadata
 
     def to_meshio(self) -> 'meshio.Mesh':
@@ -56,10 +58,11 @@ class MeshContainer:
         """Simple wrapper around `meshio.write`."""
         self.to_meshio().write(*args, **kwargs)
 
-    def read(self, filename, **kwargs):
+    @classmethod
+    def read(cls, filename, **kwargs):
         """Simple wrapper around `meshio.read`."""
         mesh = meshio.read(filename, **kwargs)
-        return self.from_meshio(mesh)
+        return cls.from_meshio(mesh)
 
     def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
         """Return instance of `pyvista.UnstructuredGrid`.
@@ -92,6 +95,43 @@ class MeshContainer:
 
 class TriangleMesh(MeshContainer):
     _element_type = 'triangle'
+
+    def drop_third_dimension(self):
+        """Drop third dimension coordinates if present.
+
+        For compatibility, sometimes a column with zeroes is added. This
+        method drops that column.
+        """
+        has_third_dimension = self.vertices.shape[1] == 3
+        if has_third_dimension:
+            self.vertices = self.vertices[:, 0:2]
+
+    def plot(self, ax: plt.Axes = None) -> plt.Axes:
+        """Simple mesh plot using `matplotlib`.
+
+        Parameters
+        ----------
+        ax : matplotlib.Axes, optional
+            Axes to use for plotting.
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+        """
+        if not ax:
+            fig, ax = plt.subplots()
+
+        for label in self.unique_labels:
+            vert_x, vert_y = self.vertices.T
+            ax.triplot(vert_y,
+                       vert_x,
+                       triangles=self.faces,
+                       mask=self.labels != label,
+                       label=label)
+
+        ax.axis('equal')
+
+        return ax
 
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""
@@ -139,8 +179,10 @@ class TriangleMesh(MeshContainer):
         """Return instance of `TriangleMesh` from trimesh results dict."""
         vertices = dct['vertices']
         faces = dct['triangles']
-        labels = dct['vertex_markers'].reshape(-1)
-        return cls(vertices=vertices, faces=faces, labels=labels)
+        vertex_markers = dct['vertex_markers'].reshape(-1)
+        return cls(vertices=vertices,
+                   faces=faces,
+                   vertex_markers=vertex_markers)
 
     def simplify(self, n_faces: int) -> 'TriangleMesh':
         """Simplify triangular mesh using `open3d`.
@@ -259,6 +301,17 @@ class TriangleMesh(MeshContainer):
         tet.tetrahedralize(**kwargs)
         grid = tet.grid
         return TetraMesh.from_pyvista_unstructured_grid(grid)
+
+    def pad(self, **kwargs) -> 'TriangleMesh':
+        """Pad a mesh.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments passed to `nanomesh.mesh_utils.pad`
+        """
+        from nanomesh.mesh_utils import pad
+        return pad(self, **kwargs)
 
 
 class TetraMesh(MeshContainer):

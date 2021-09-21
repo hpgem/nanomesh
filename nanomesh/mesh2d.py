@@ -7,6 +7,8 @@ import meshio
 import numpy as np
 from skimage import measure
 
+from nanomesh.mesh_utils import simple_triangulate
+
 from ._mesh_shared import BaseMesher
 from .mesh_container import TriangleMesh
 
@@ -228,7 +230,6 @@ class Mesher2D(BaseMesher):
         mesh : TriangleMesh
             Output 2D mesh with domain labels
         """
-        import triangle as tr
         bbox = self.image_bbox
 
         regions = []
@@ -254,18 +255,11 @@ class Mesher2D(BaseMesher):
         regions = np.array(regions)
         vertices = np.vstack(vertices)
 
-        triangle_dict_in = {
-            'vertices': vertices,
-            'segments': segments,
-            'regions': regions,
-        }
+        mesh = simple_triangulate(vertices=vertices,
+                                  segments=segments,
+                                  regions=regions,
+                                  **kwargs)
 
-        triangle_dict_out = tr.triangulate(triangle_dict_in, **kwargs)
-
-        if plot:
-            tr.compare(plt, triangle_dict_in, triangle_dict_out)
-
-        mesh = TriangleMesh.from_triangle_dict(triangle_dict_out)
         labels = self.generate_domain_mask_from_contours(mesh, label=label)
         mesh.metadata['labels'] = labels
         return mesh

@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
+from nanomesh.mesh_container import TriangleMesh
 from nanomesh.utils import SliceViewer, requires, show_image
 
 
@@ -58,3 +59,64 @@ def test_show_image():
     """Test `utils.show_image`"""
     data = np.arange(25).reshape(5, 5)
     show_image(data, dpi=80, title='TESTING')
+
+
+@pytest.fixture
+def simple_mesh():
+    return TriangleMesh(vertices=np.array([
+        [0., 0.],
+        [0., 1.],
+        [1., 1.],
+        [1., 0.],
+    ]),
+                        faces=np.array([[1, 0, 3], [3, 2, 1]]))
+
+
+@pytest.mark.parametrize('side,shape', (
+    ('left', (0, -1, 1, 1)),
+    ('right', (0, 0, 1, 2)),
+    ('top', (0, 0, 2, 1)),
+    ('bottom', (-1, 0, 1, 1)),
+))
+def test_pad_side(simple_mesh, side, shape):
+    """Test `side` parameter for `pad`."""
+    res = simple_mesh.pad(side=side, width=1, opts='q30a1')
+
+    assert isinstance(res, TriangleMesh)
+
+    res_shape = np.hstack([
+        res.vertices.min(axis=0),
+        res.vertices.max(axis=0),
+    ])
+
+    np.testing.assert_equal(res_shape, shape)
+
+
+@pytest.mark.parametrize('width', (0.0, 0.5, 1, np.pi, 100))
+def test_pad_width(simple_mesh, width):
+    """Test `width` parameter for `pad`."""
+    res = simple_mesh.pad(side='left', width=width, opts='q30a1')
+
+    assert isinstance(res, TriangleMesh)
+
+    res_shape = np.hstack([
+        res.vertices.min(axis=0),
+        res.vertices.max(axis=0),
+    ])
+
+    np.testing.assert_equal(res_shape, (0, -width, 1, 1))
+
+
+@pytest.mark.parametrize('label,expected_labels', (
+    (None, (0, 0, 1, 1)),
+    (0, (0, 0, 0, 0)),
+    (2, (0, 0, 2, 2)),
+    (np.pi, (0, 0, np.pi, np.pi)),
+))
+def test_pad_label(simple_mesh, label, expected_labels):
+    """Test `label` parameter for `pad`."""
+    res = simple_mesh.pad(side='left', width=1, opts='q30a1', label=label)
+
+    assert isinstance(res, TriangleMesh)
+
+    np.testing.assert_equal(res.labels, expected_labels)

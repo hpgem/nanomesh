@@ -78,6 +78,9 @@ def pad(mesh: TriangleMesh,
     if label is None:
         label = mesh.unique_labels.max() + 1
 
+    if width == 0:
+        return mesh
+
     top_edge, right_edge = mesh.vertices.max(axis=0)
     bottom_edge, left_edge = mesh.vertices.min(axis=0)
 

@@ -43,13 +43,56 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
     return ax
 
 
+def simple_triangulate(vertices: np.ndarray,
+                       *,
+                       segments: np.ndarray = None,
+                       regions: np.ndarray = None,
+                       opts: str = '') -> TriangleMesh:
+    """Simple triangulation using `triangle`.
+
+    Parameters
+    ----------
+    vertices : i,2 np.ndarray
+        Vertex coordinates.
+    segments : j,2 np.ndarray, optional
+        Index array describing segments.
+        Segments are edges whose presence in the triangulation
+        is enforced (although each segment may be subdivided into smaller
+        edges). Each segment is specified by listing the indices of its
+        two endpoints. A closed set of segments describes a contour.
+    regions : k,2 np.ndarray, optional
+        Coordinates describing regions. A region is a coordinate inside
+        (e.g. at the center) of a region/contour (i.e. enclosed by segments).
+    opts : str, optional
+        Additional options passed to `triangle.triangulate` documented here:
+        https://rufat.be/triangle/API.html#triangle.triangulate
+
+    Returns
+    -------
+    mesh : TriangleMesh
+        Triangle mesh
+    """
+    triangle_dict_in = {'vertices': vertices}
+
+    if segments is not None:
+        triangle_dict_in['segments'] = segments
+
+    if regions is not None:
+        triangle_dict_in['regions'] = regions
+
+    triangle_dict_out = tr.triangulate(triangle_dict_in, opts=opts)
+    mesh = TriangleMesh.from_triangle_dict(triangle_dict_out)
+
+    return mesh
+
+
 def pad(mesh: TriangleMesh,
         *,
         side: str,
         width: int,
         opts: str = '',
         label: int = None) -> TriangleMesh:
-    """Pad a mesh.
+    """Pad a triangle mesh.
 
     Parameters
     ----------
@@ -68,7 +111,7 @@ def pad(mesh: TriangleMesh,
     Returns
     -------
     new_mesh : TriangleMesh
-        Description
+        Padded triangle mesh.
 
     Raises
     ------
@@ -108,40 +151,38 @@ def pad(mesh: TriangleMesh,
 
     coords = np.vstack([edge_coords, corners])
 
-    triangle_dict_in = {'vertices': coords}
-    triangle_dict_out = tr.triangulate(triangle_dict_in, opts)
+    pad_mesh = simple_triangulate(vertices=coords, opts=opts)
 
-    buffer_mesh = TriangleMesh.from_triangle_dict(triangle_dict_out)
+    mesh_edge_index = np.argwhere(is_edge).flatten()
+    pad_edge_index = np.arange(len(mesh_edge_index))
+    edge_mapping = np.vstack([pad_edge_index, mesh_edge_index])
 
-    mesh_edge_index = np.argwhere(is_edge)
-    buffer_edge_index = np.arange(len(mesh_edge_index)).reshape(-1, 1)
-    edge_mapping = np.hstack([buffer_edge_index, mesh_edge_index]).T
+    n_verts = len(mesh.vertices)
+    n_edge_verts = len(edge_coords)
+    n_pad_verts = len(pad_mesh.vertices) - n_edge_verts
 
-    n_vertices = len(mesh.vertices)
-    n_duplicate = len(edge_coords)
-    n_new = len(buffer_mesh.vertices) - n_duplicate
+    mesh_index = np.arange(n_verts, n_verts + n_pad_verts)
+    pad_index = np.arange(n_edge_verts, n_edge_verts + n_pad_verts)
+    pad_mapping = np.vstack([pad_index, mesh_index])
 
-    mesh_index = np.arange(n_vertices, n_vertices + n_new)
-    buffer_index = np.arange(n_duplicate, n_duplicate + n_new)
-    buffer_mapping = np.vstack([buffer_index, mesh_index])
+    # mapping for the face indices faces in `pad_mesh` to the source mesh.
+    mapping = np.hstack([edge_mapping, pad_mapping])
 
-    mapping = np.hstack([edge_mapping, buffer_mapping])
+    shape = pad_mesh.faces.shape
+    pad_faces = pad_mesh.faces.copy().ravel()
 
-    shape = buffer_mesh.faces.shape
-    buffer_faces = buffer_mesh.faces.copy().ravel()
+    mask = np.in1d(pad_faces, mapping[0, :])
+    pad_faces[mask] = mapping[1,
+                              np.searchsorted(mapping[0, :], pad_faces[mask])]
+    pad_faces = pad_faces.reshape(shape)
 
-    mask = np.in1d(buffer_faces, mapping[0, :])
-    buffer_faces[mask] = mapping[1,
-                                 np.searchsorted(mapping[
-                                     0, :], buffer_faces[mask])]
-    buffer_faces = buffer_faces.reshape(shape)
+    pad_verts = pad_mesh.vertices[n_edge_verts:]
+    pad_labels = np.ones(len(pad_faces)) * label
 
-    buffer_vertices = buffer_mesh.vertices[n_duplicate:]
-    buffer_labels = np.ones(len(buffer_faces)) * label
-
-    vertices = np.vstack([mesh.vertices, buffer_vertices])
-    faces = np.vstack([mesh.faces, buffer_faces])
-    labels = np.hstack([mesh.metadata['labels'], buffer_labels])
+    # append values to source mesh
+    vertices = np.vstack([mesh.vertices, pad_verts])
+    faces = np.vstack([mesh.faces, pad_faces])
+    labels = np.hstack([mesh.labels, pad_labels])
 
     new_mesh = TriangleMesh(vertices=vertices, faces=faces, labels=labels)
 

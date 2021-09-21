@@ -4,6 +4,7 @@ import pytest
 from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh_container import TriangleMesh
+from nanomesh.mesh_utils import simple_triangulate
 from nanomesh.utils import SliceViewer, requires, show_image
 
 
@@ -70,6 +71,16 @@ def simple_mesh():
         [1., 0.],
     ]),
                         faces=np.array([[1, 0, 3], [3, 2, 1]]))
+
+
+def test_simple_triangulate(simple_mesh):
+    """Test simple mesh creation."""
+    vertices = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
+    mesh = simple_triangulate(vertices, opts='q30a1')
+
+    np.testing.assert_equal(mesh.vertices, simple_mesh.vertices)
+    np.testing.assert_equal(mesh.faces, simple_mesh.faces)
+    np.testing.assert_equal(mesh.labels, simple_mesh.labels)
 
 
 @pytest.mark.parametrize('side,shape', (

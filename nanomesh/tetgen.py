@@ -68,3 +68,25 @@ def write_smesh(filename: os.PathLike,
 
         for i, (label, coord) in enumerate(region_markers.items()):
             print(region_fmt.format(i + 1, *coord, label=label), file=f)
+
+
+def tetrahedralize(fname: os.PathLike, opts='-pAq1.2 -a0.1'):
+    """Summary.
+
+    Parameters
+    ----------
+    fname : os.PathLike
+        Description
+    opts : str
+        Command-line options passed to `tetgen`.
+
+        More info:
+        http://wias-berlin.de/software/tetgen/1.5/doc/manual/manual005.html
+    """
+    # -A: Assigns attributes to tetrahedra in different regions.
+    # -p: Tetrahedralizes a piecewise linear complex (PLC).
+    # -q: Refines mesh (to improve mesh quality).
+    # -a: Applies a maximum tetrahedron volume constraint.
+
+    import subprocess as sp
+    sp.run(f'tetgen {opts} {fname}')

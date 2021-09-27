@@ -94,8 +94,5 @@ def generate_3d_mesh(
     mesher.generate_contour(label=0)
     mesher.generate_contour(label=1)
 
-    volume_mesh = mesher.tetrahedralize(label=1,
-                                        order=1,
-                                        mindihedral=30,
-                                        minratio=1.1)
+    volume_mesh = mesher.tetrahedralize()
     return volume_mesh

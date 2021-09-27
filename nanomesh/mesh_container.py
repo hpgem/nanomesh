@@ -299,12 +299,15 @@ class TriangleMesh(MeshContainer):
         -------
         TetraMesh
         """
+        import tempfile
+
         from nanomesh import tetgen
-        path = Path('nanomesh.smesh')
-        tetgen.write_smesh(path, self, region_markers=region_markers)
-        tetgen.tetrahedralize(path, **kwargs)
-        ele_path = path.with_suffix('.1.ele')
-        return TetraMesh.read(ele_path)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp, 'nanomesh.smesh')
+            tetgen.write_smesh(path, self, region_markers=region_markers)
+            tetgen.tetrahedralize(path, **kwargs)
+            ele_path = path.with_suffix('.1.ele')
+            return TetraMesh.read(ele_path)
 
     def pad(self, **kwargs) -> 'TriangleMesh':
         """Pad a mesh.

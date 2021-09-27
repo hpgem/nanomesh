@@ -14,6 +14,7 @@ def triangle_mesh():
     This mesh is a cube with a rectangular 'pore' through the middle.
     """
     vertices = np.array([
+        # cube
         [0.0, 0.0, 0.0],  # A
         [4.0, 0.0, 0.0],  # B
         [4.0, 4.0, 0.0],  # C
@@ -22,6 +23,7 @@ def triangle_mesh():
         [4.0, 0.0, 4.0],  # F
         [4.0, 4.0, 4.0],  # G
         [0.0, 4.0, 4.0],  # H
+        # inside rectangle ('pore')
         [1.0, 1.0, 0.0],  # a
         [3.0, 1.0, 0.0],  # b
         [3.0, 3.0, 0.0],  # c
@@ -33,6 +35,7 @@ def triangle_mesh():
     ])
 
     faces = np.array([
+        # top face
         [0, 11, 8],
         [1, 8, 9],
         [2, 9, 10],
@@ -41,6 +44,7 @@ def triangle_mesh():
         [1, 9, 2],
         [2, 10, 3],
         [3, 11, 0],
+        # side faces
         [0, 1, 5],
         [5, 4, 0],
         [1, 2, 6],
@@ -49,6 +53,7 @@ def triangle_mesh():
         [6, 7, 3],
         [0, 3, 7],
         [7, 4, 0],
+        # bottom face
         [4, 15, 12],
         [5, 12, 13],
         [6, 13, 14],
@@ -57,6 +62,7 @@ def triangle_mesh():
         [5, 13, 6],
         [6, 14, 7],
         [7, 15, 4],
+        # inside rectangle ('pore')
         [8, 9, 10],
         [10, 11, 8],
         [8, 9, 13],

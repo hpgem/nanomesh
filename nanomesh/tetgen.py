@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Any, Tuple
 
 from nanomesh.mesh_container import TriangleMesh
 
@@ -50,7 +51,7 @@ def write_smesh(filename: os.PathLike,
         hole_dim = 3
 
         print(f'{n_holes}', file=f)
-        holes = ()
+        holes: Tuple[Any, ...] = ()
 
         hole_fmt = '{:4d}' + ' {:8.2f}' * hole_dim
 
@@ -70,7 +71,7 @@ def write_smesh(filename: os.PathLike,
             print(region_fmt.format(i + 1, *coord, label=label), file=f)
 
 
-def tetrahedralize(fname: os.PathLike, opts='-pAq1.2 -a0.1'):
+def tetrahedralize(fname: os.PathLike, opts: str = '-pAq1.2 -a0.1'):
     """Tetrahedralize a surface mesh.
 
     Parameters

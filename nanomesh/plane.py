@@ -175,6 +175,8 @@ class Plane(BaseImage):
         if isinstance(digitized, Plane):
             digitized = digitized.image
 
+        # bg_label=0 is default for scikit-image from 0.19 onwards
+        kwargs.setdefault('bg_label', 0)
         image_overlay = label2rgb(digitized, image=self.image, **kwargs)
 
         fig, ax = plt.subplots()

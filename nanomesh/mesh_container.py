@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
@@ -26,6 +28,7 @@ class MeshContainer:
         mesh = meshio.Mesh(self.vertices, cells)
 
         for key, value in self.metadata.items():
+            key = key.replace('.ref', ':ref')
             mesh.cell_data[key] = [value]
 
         return mesh
@@ -38,6 +41,8 @@ class MeshContainer:
         metadata = {}
 
         for key, value in mesh.cell_data.items():
+            # PyVista chokes on ':-_ ' in metadata
+            key = key.replace(':', '.')
             metadata[key] = value[0]
 
         return MeshContainer.create(vertices=vertices, faces=faces, **metadata)
@@ -280,27 +285,29 @@ class TriangleMesh(MeshContainer):
         verts, faces = remesh.subdivide(self.vertices, self.faces)
         return TriangleMesh(vertices=verts, faces=faces)
 
-    def tetrahedralize(self, **kwargs) -> 'TetraMesh':
+    def tetrahedralize(self, region_markers: dict, **kwargs) -> 'TetraMesh':
         """Tetrahedralize a contour.
 
         Parameters
         ----------
-        label : int
-            Label of the contour
+        region_markers : dict
+            Dictionary of region markers.
         **kwargs
-            Keyword arguments passed to `tetgen.TetGen`
+            Keyword arguments passed to `nanomesh.tetgen.tetrahedralize`.
 
         Returns
         -------
         TetraMesh
         """
-        import tetgen
-        kwargs.setdefault('order', 1)
-        polydata = self.to_polydata()
-        tet = tetgen.TetGen(polydata)
-        tet.tetrahedralize(**kwargs)
-        grid = tet.grid
-        return TetraMesh.from_pyvista_unstructured_grid(grid)
+        import tempfile
+
+        from nanomesh import tetgen
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp, 'nanomesh.smesh')
+            tetgen.write_smesh(path, self, region_markers=region_markers)
+            tetgen.tetrahedralize(path, **kwargs)
+            ele_path = path.with_suffix('.1.ele')
+            return TetraMesh.read(ele_path)
 
     def pad(self, **kwargs) -> 'TriangleMesh':
         """Pad a mesh.

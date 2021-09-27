@@ -50,23 +50,22 @@ class Mesher3D(BaseMesher):
 
         self.contours[label] = mesh
 
-    def tetrahedralize(self, label: int = 1, **kwargs):
+    def tetrahedralize(self, **kwargs):
         """Tetrahedralize a surface contour mesh.
 
         Parameters
         ----------
-        label : int
-            Label of the contour
         **kwargs
-            Keyword arguments passed to `tetgen.TetGen`
+            Keyword arguments passed to
+            `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
 
         Returns
         -------
         TetraMesh
         """
-        kwargs.setdefault('steinerleft', (self.image == label).sum())
-        mesh = self.contours[label]
-        assert mesh.to_trimesh().is_watertight
+        raise NotImplementedError
+
+        mesh = ...
         volume_mesh = mesh.tetrahedralize(**kwargs)
         return volume_mesh
 
@@ -95,8 +94,5 @@ def generate_3d_mesh(
     mesher.generate_contour(label=0)
     mesher.generate_contour(label=1)
 
-    volume_mesh = mesher.tetrahedralize(label=1,
-                                        order=1,
-                                        mindihedral=30,
-                                        minratio=1.1)
+    volume_mesh = mesher.tetrahedralize()
     return volume_mesh

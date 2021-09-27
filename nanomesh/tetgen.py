@@ -71,7 +71,7 @@ def write_smesh(filename: os.PathLike,
 
 
 def tetrahedralize(fname: os.PathLike, opts='-pAq1.2 -a0.1'):
-    """Summary.
+    """Tetrahedralize a surface mesh.
 
     Parameters
     ----------

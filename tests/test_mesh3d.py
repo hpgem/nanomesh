@@ -27,6 +27,7 @@ def segmented():
     return image
 
 
+@pytest.mark.xfail(reason='https://github.com/hpgem/nanomesh/pull/105')
 def test_generate_3d_mesh(segmented):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'

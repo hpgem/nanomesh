@@ -285,13 +285,16 @@ class TriangleMesh(MeshContainer):
         verts, faces = remesh.subdivide(self.vertices, self.faces)
         return TriangleMesh(vertices=verts, faces=faces)
 
-    def tetrahedralize(self, region_markers: dict, **kwargs) -> 'TetraMesh':
+    def tetrahedralize(self,
+                       region_markers: dict = None,
+                       **kwargs) -> 'TetraMesh':
         """Tetrahedralize a contour.
 
         Parameters
         ----------
-        region_markers : dict
-            Dictionary of region markers.
+        region_markers : dict, optional
+            Dictionary of region markers. If not defined, automatically
+            generate regions.
         **kwargs
             Keyword arguments passed to `nanomesh.tetgen.tetrahedralize`.
 
@@ -300,6 +303,9 @@ class TriangleMesh(MeshContainer):
         TetraMesh
         """
         import tempfile
+
+        if region_markers is None:
+            region_markers = {}
 
         from nanomesh import tetgen
         with tempfile.TemporaryDirectory() as tmp:

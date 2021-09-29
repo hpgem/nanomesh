@@ -163,6 +163,10 @@ class Mesher2D(BaseMesher):
 
         Parameters
         ----------
+        level : float, optional
+            Contour value to search for isosurfaces (i.e. the threshold value).
+            By default takes the average of the min and max value. Can be 
+            ignored if a binary image is passed to `Mesher2D`.
         contour_precision : int, optional
             Maximum distance from original points in polygon approximation
             routine.

@@ -28,7 +28,6 @@ class MeshContainer:
         mesh = meshio.Mesh(self.vertices, cells)
 
         for key, value in self.metadata.items():
-            key = key.replace('.ref', ':ref')
             mesh.cell_data[key] = [value]
 
         return mesh
@@ -41,8 +40,8 @@ class MeshContainer:
         metadata = {}
 
         for key, value in mesh.cell_data.items():
-            # PyVista chokes on ':-_ ' in metadata
-            key = key.replace(':', '.')
+            # PyVista chokes on 'tetgen:ref' in metadata
+            key = key.replace('tetgen:ref', 'regions')
             metadata[key] = value[0]
 
         return MeshContainer.create(vertices=vertices, faces=faces, **metadata)
@@ -285,13 +284,16 @@ class TriangleMesh(MeshContainer):
         verts, faces = remesh.subdivide(self.vertices, self.faces)
         return TriangleMesh(vertices=verts, faces=faces)
 
-    def tetrahedralize(self, region_markers: dict, **kwargs) -> 'TetraMesh':
+    def tetrahedralize(self,
+                       region_markers: dict = None,
+                       **kwargs) -> 'TetraMesh':
         """Tetrahedralize a contour.
 
         Parameters
         ----------
-        region_markers : dict
-            Dictionary of region markers.
+        region_markers : dict, optional
+            Dictionary of region markers. If not defined, automatically
+            generate regions.
         **kwargs
             Keyword arguments passed to `nanomesh.tetgen.tetrahedralize`.
 
@@ -300,6 +302,9 @@ class TriangleMesh(MeshContainer):
         TetraMesh
         """
         import tempfile
+
+        if region_markers is None:
+            region_markers = {}
 
         from nanomesh import tetgen
         with tempfile.TemporaryDirectory() as tmp:

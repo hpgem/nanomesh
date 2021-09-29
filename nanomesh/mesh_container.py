@@ -28,7 +28,7 @@ class MeshContainer:
         mesh = meshio.Mesh(self.vertices, cells)
 
         for key, value in self.metadata.items():
-            key = key.replace('.ref', ':ref')
+            key = key.replace('_ref', ':ref')
             mesh.cell_data[key] = [value]
 
         return mesh
@@ -41,8 +41,8 @@ class MeshContainer:
         metadata = {}
 
         for key, value in mesh.cell_data.items():
-            # PyVista chokes on ':-_ ' in metadata
-            key = key.replace(':', '.')
+            # PyVista chokes on ':' in metadata if this key is first
+            key = key.replace(':', '_')
             metadata[key] = value[0]
 
         return MeshContainer.create(vertices=vertices, faces=faces, **metadata)

@@ -109,5 +109,5 @@ def test_generate_3d_mesh(triangle_mesh):
     np.testing.assert_allclose(tetra_mesh.vertices, expected_mesh.vertices)
     np.testing.assert_allclose(tetra_mesh.faces, expected_mesh.faces)
 
-    np.testing.assert_allclose(tetra_mesh.metadata['tetgen.ref'],
-                               expected_mesh.metadata['tetgen.ref'])
+    np.testing.assert_allclose(tetra_mesh.metadata['tetgen_ref'],
+                               expected_mesh.metadata['tetgen_ref'])

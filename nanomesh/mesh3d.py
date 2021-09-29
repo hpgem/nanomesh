@@ -204,6 +204,7 @@ class Mesher3D(BaseMesher):
         """
         verts, faces, *_ = measure.marching_cubes(
             self.image,
+            level=level,
             allow_degenerate=False,
         )
 
@@ -252,10 +253,8 @@ class Mesher3D(BaseMesher):
 def generate_3d_mesh(
     image: np.ndarray,
     *,
-    step_size: int = 2,
-    pad_width: int = 2,
-    point_density: float = 1 / 10000,
-    n_faces: int = 1000,
+    level: float = None,
+    **kwargs,
 ) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
@@ -263,6 +262,13 @@ def generate_3d_mesh(
     ----------
     image : 3D np.ndarray
         Input image to mesh.
+    level : float, optional
+        Contour value to search for isosurfaces (i.e. the threshold value).
+        By default takes the average of the min and max value. Can be
+        ignored if a binary image is passed as `image`.
+    **kwargs
+        Optional keyword arguments passed to
+        `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
 
     Returns
     -------
@@ -270,8 +276,8 @@ def generate_3d_mesh(
         Description of the mesh.
     """
     mesher = Mesher3D(image)
-    mesher.generate_contour(label=0)
-    mesher.generate_contour(label=1)
+    mesher.generate_contour(level=level)
+    mesher.generate_envelope()
 
-    volume_mesh = mesher.tetrahedralize()
+    volume_mesh = mesher.tetrahedralize(**kwargs)
     return volume_mesh

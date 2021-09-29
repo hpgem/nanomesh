@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import Dict
 
+import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 from skimage import measure
@@ -66,7 +67,7 @@ def add_corner_points(mesh, bbox) -> None:
     mesh.vertices = np.vstack([mesh.vertices, corners])
 
 
-def close_side(mesh, *, side: str, bbox: BoundingBox):
+def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
     """Fill a side of the bounding box with triangles.
 
     Parameters
@@ -78,6 +79,8 @@ def close_side(mesh, *, side: str, bbox: BoundingBox):
         `left`, `right`, `top`, `bottom`, `front`, `back`.
     bbox : BoundingBox
         Coordinates of the bounding box.
+    ax : plt.Axes, optional
+        Plot the generated side on a matplotlib axis.
 
     Returns
     -------
@@ -119,7 +122,6 @@ def close_side(mesh, *, side: str, bbox: BoundingBox):
     coords = all_verts[is_edge][:, keep_cols]
 
     edge_mesh = simple_triangulate(vertices=coords, opts='')
-    edge_mesh.plot()
 
     mesh_edge_index = np.argwhere(is_edge).flatten()
     new_edge_index = np.arange(len(mesh_edge_index))
@@ -140,10 +142,18 @@ def close_side(mesh, *, side: str, bbox: BoundingBox):
     labels = np.hstack([mesh.labels, new_labels])
 
     mesh = TriangleMesh(vertices=vertices, faces=faces, labels=labels)
+
+    if ax:
+        edge_mesh.plot(ax=ax)
+        ax.set_title(side)
+
     return mesh
 
 
-def wrap(mesh, *, bbox):
+def wrap(mesh: TriangleMesh,
+         *,
+         bbox: BoundingBox,
+         plot: bool = False) -> TriangleMesh:
     """Wrap the surface mesh and close any open contours along the bounding
     box.
 
@@ -163,7 +173,7 @@ def wrap(mesh, *, bbox):
 
     sides = 'top', 'bottom', 'left', 'right', 'front', 'back'
 
-    for side in sides:
+    for i, side in enumerate(sides):
         mesh = close_side(mesh, side=side, bbox=bbox)
 
     return mesh
@@ -173,6 +183,7 @@ class Mesher3D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
         self.contours: Dict[int, TriangleMesh] = {}
+        self.wrapped_contours: Dict[int, TriangleMesh] = {}
         self.pad_width = 0
 
     def generate_contour(
@@ -186,7 +197,7 @@ class Mesher3D(BaseMesher):
         ----------
         level : float, optional
             Contour value to search for isosurfaces (i.e. the threshold value).
-            By default takes the average of the min and max value. Can be 
+            By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher3D`.
         label : int, optional
             Label to assign to contour.
@@ -198,13 +209,25 @@ class Mesher3D(BaseMesher):
 
         mesh = TriangleMesh(vertices=verts, faces=faces)
 
-        bbox = BoundingBox.from_shape(self.image.shape)
-        mesh = wrap(mesh, bbox=bbox)
-
         logger.info(f'Generated contour with {len(mesh.faces)} '
                     f' faces ({label=})')
 
         self.contours[label] = mesh
+
+    def generate_envelope(self, label: int = 1):
+        """Generate envelope around contour corresponding to the bounding box.
+        The bounding box equals the dimensions of the data volume.
+
+        Parameters
+        ----------
+        label : int, optional
+            Label of the contour to use.
+        """
+        bbox = BoundingBox.from_shape(self.image.shape)
+
+        mesh = self.contours[label]
+        mesh = wrap(mesh, bbox=bbox)
+        self.wrapped_contours[label] = mesh
 
     def tetrahedralize(self, label: int = 1, **kwargs):
         """Tetrahedralize a surface contour mesh.
@@ -221,7 +244,7 @@ class Mesher3D(BaseMesher):
         -------
         TetraMesh
         """
-        contour = self.contours[label]
+        contour = self.wrapped_contours[label]
         volume_mesh = contour.tetrahedralize(**kwargs)
         return volume_mesh
 

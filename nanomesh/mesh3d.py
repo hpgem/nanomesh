@@ -1,12 +1,13 @@
 import logging
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
-from skimage import measure
+from skimage import measure, morphology
 
+from nanomesh import Volume
 from nanomesh.mesh_utils import simple_triangulate
 
 from ._mesh_shared import BaseMesher
@@ -35,6 +36,64 @@ class BoundingBox:
                    xmax=xmax,
                    ymax=ymax,
                    zmax=zmax)
+
+
+def get_point_in_prop(prop: measure._regionprops.RegionProperties) -> list:
+    """Uses `skeletonize` to find a point in the center of the regionprop.
+
+    Parameters
+    ----------
+    prop : RegionProperties
+        RegionProp from skimage.measure.regionproperties.
+
+    Returns
+    -------
+    point : list
+        Returns 3 indices describing a pixel in the labeled region.
+    """
+    skeleton = morphology.skeletonize(prop.image)
+    coords = np.argwhere(skeleton)
+    middle = len(coords) // 2
+    point = coords[middle]
+    point += np.array(prop.bbox[0:3])  # Add prop offset
+    return point
+
+
+def get_region_markers(vol: Volume) -> List[tuple]:
+    """Get region markers describing the featuers in the volume.
+
+    The array will be labeled, and points inside the labeled region
+    will be obtained using the `skeletonize` function. The region
+    markers can be used to flood the connected regions in the
+    tetrahedralization step.
+
+    Parameters
+    ----------
+    vol : Volume
+        Segmented integer volume.
+
+    Returns
+    -------
+    region_markers : List[tuple]
+        List of tuples. The first element is the label in the source image,
+        and the second the pixel coordinates somewhere in the center of the
+        corresponding region.
+    """
+    region_markers = []
+
+    image = vol.image
+
+    labels = measure.label(image, background=-1, connectivity=1)
+
+    props = measure.regionprops(labels, intensity_image=image)
+
+    for prop in props:
+        point = get_point_in_prop(prop)
+        i, j, k = point
+        label = image[i, j, k]
+        region_markers.append((label, point))
+
+    return region_markers
 
 
 def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:

@@ -165,7 +165,7 @@ class Mesher2D(BaseMesher):
         ----------
         level : float, optional
             Contour value to search for isosurfaces (i.e. the threshold value).
-            By default takes the average of the min and max value. Can be 
+            By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher2D`.
         contour_precision : int, optional
             Maximum distance from original points in polygon approximation
@@ -265,7 +265,7 @@ class Mesher2D(BaseMesher):
                                   **kwargs)
 
         labels = self.generate_domain_mask_from_contours(mesh, label=label)
-        mesh.metadata['labels'] = labels
+        mesh.labels = labels
         return mesh
 
     def generate_domain_mask_from_contours(self,

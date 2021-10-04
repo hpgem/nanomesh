@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class BoundingBox:
+    """Container for bounding box coordinates."""
     xmin: float
     xmax: float
     ymin: float
@@ -36,22 +37,15 @@ class BoundingBox:
                    zmax=zmax)
 
 
-def add_corner_points(mesh, bbox) -> None:
-    """Summary.
+def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
+    """Add corner points from bounding box to mesh vertices.
 
     Parameters
     ----------
-    mesh : TYPE
+    mesh : TriangleMesh
         Mesh to add corner points to.
-    bbox : TYPE
-        Description
-
-    Deleted Parameters
-    ------------------
-    min_vals : TYPE
-        Description
-    max_vals : TYPE
-        Description
+    bbox : BoundingBox
+        Container for the bounding box coordinates.
     """
     corners = np.array([
         [bbox.xmin, bbox.ymin, bbox.zmin],

@@ -399,8 +399,6 @@ class TetraMesh(MeshContainer):
         plotter : `pyvista.Plotter`
             Return plotter instance.
         """
-        kwargs.setdefault('color', 'lightgray')
-
         grid = self.to_pyvista_unstructured_grid()
 
         # get cell centroids

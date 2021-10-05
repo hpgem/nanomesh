@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import meshio
@@ -38,7 +38,8 @@ class BoundingBox:
                    zmax=zmax)
 
 
-def get_point_in_prop(prop: measure._regionprops.RegionProperties) -> list:
+def get_point_in_prop(
+        prop: measure._regionprops.RegionProperties) -> np.ndarray:
     """Uses `skeletonize` to find a point in the center of the regionprop.
 
     Parameters
@@ -48,18 +49,22 @@ def get_point_in_prop(prop: measure._regionprops.RegionProperties) -> list:
 
     Returns
     -------
-    point : list
+    point : (3,) np.array
         Returns 3 indices describing a pixel in the labeled region.
     """
     skeleton = morphology.skeletonize(prop.image)
     coords = np.argwhere(skeleton)
     middle = len(coords) // 2
-    point = coords[middle]
-    point += np.array(prop.bbox[0:3])  # Add prop offset
+    try:
+        point = coords[middle]
+        point += np.array(prop.bbox[0:3])  # Add prop offset
+    except IndexError:
+        point = np.array(prop.centroid)
     return point
 
 
-def get_region_markers(vol: Volume) -> List[tuple]:
+def get_region_markers(
+        vol: Union[Volume, np.ndarray]) -> List[Tuple[int, np.ndarray]]:
     """Get region markers describing the featuers in the volume.
 
     The array will be labeled, and points inside the labeled region
@@ -69,7 +74,7 @@ def get_region_markers(vol: Volume) -> List[tuple]:
 
     Parameters
     ----------
-    vol : Volume
+    vol : Union[Volume, np.array]
         Segmented integer volume.
 
     Returns
@@ -81,7 +86,10 @@ def get_region_markers(vol: Volume) -> List[tuple]:
     """
     region_markers = []
 
-    image = vol.image
+    if isinstance(vol, Volume):
+        image = vol.image
+    else:
+        image = vol
 
     labels = measure.label(image, background=-1, connectivity=1)
 
@@ -89,7 +97,7 @@ def get_region_markers(vol: Volume) -> List[tuple]:
 
     for prop in props:
         point = get_point_in_prop(prop)
-        i, j, k = point
+        i, j, k = point.astype(int)
         label = image[i, j, k]
         region_markers.append((label, point))
 

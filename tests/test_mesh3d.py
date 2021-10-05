@@ -1,54 +1,63 @@
-import os
 import pickle
-from contextlib import nullcontext as do_not_raise
+import shutil
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from nanomesh.mesh3d import generate_3d_mesh
+from nanomesh.mesh3d import generate_3d_mesh, get_region_markers
 
-# There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux) using tetgen and the randomizer cannot be controlled.
-# This will cause the comparison to raise.
-# windows: nt, linux/mac: posix
-generated_on = 'nt'
-if os.name == generated_on:
-    expected_raises = do_not_raise()
-else:
-    expected_raises = pytest.raises(AssertionError)
+TETGEN_NOT_AVAILABLE = shutil.which('tetgen') is None
 
 
 @pytest.fixture
 def segmented_image():
     """Generate segmented binary numpy array."""
     image = np.ones((20, 20, 20))
-    image[5:15, 5:15] = 0
+    image[5:12, 5:12, 0:10] = 0
+    image[8:15, 8:15, 10:20] = 0
     return image
 
 
-@pytest.mark.xfail(reason='https://github.com/hpgem/nanomesh/issues/106')
-def test_generate_3d_mesh(segmented_image):
-    """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
-
-    np.random.seed(1234)  # set seed for reproducible clustering
-    tetra_mesh = generate_3d_mesh(segmented_image)
-
+def compare_mesh_results(result_mesh, expected_fn):
+    """`result_mesh` is an instance of TetraMesh, and `expected_fn` the
+    filename of the mesh to compare to."""
     if expected_fn.exists():
         with open(expected_fn, 'rb') as f:
             expected_mesh = pickle.load(f)
     else:
         with open(expected_fn, 'wb') as f:
-            pickle.dump(tetra_mesh, f)
+            pickle.dump(result_mesh, f)
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    with expected_raises:
-        assert tetra_mesh.vertices.shape == expected_mesh.vertices.shape
-        assert tetra_mesh.faces.shape == expected_mesh.faces.shape
-        np.testing.assert_allclose(tetra_mesh.vertices, expected_mesh.vertices)
-        np.testing.assert_allclose(tetra_mesh.faces, expected_mesh.faces)
+    assert result_mesh.vertices.shape == expected_mesh.vertices.shape
+    assert result_mesh.faces.shape == expected_mesh.faces.shape
+    np.testing.assert_allclose(result_mesh.vertices, expected_mesh.vertices)
+    np.testing.assert_allclose(result_mesh.faces, expected_mesh.faces)
 
-        np.testing.assert_allclose(tetra_mesh.metadata['regions'],
-                                   expected_mesh.metadata['regions'])
+    np.testing.assert_allclose(result_mesh.metadata['tetgenRef'],
+                               expected_mesh.metadata['tetgenRef'])
+
+
+@pytest.mark.xfail(TETGEN_NOT_AVAILABLE,
+                   reason='https://github.com/hpgem/nanomesh/issues/106')
+def test_generate_3d_mesh(segmented_image):
+    """Test 3D mesh generation."""
+    expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
+
+    tetra_mesh = generate_3d_mesh(segmented_image)
+    compare_mesh_results(tetra_mesh, expected_fn)
+
+
+@pytest.mark.xfail(TETGEN_NOT_AVAILABLE,
+                   reason='https://github.com/hpgem/nanomesh/issues/106')
+def test_generate_3d_mesh_region_markers(segmented_image):
+    """Test 3D mesh generation."""
+    expected_fn = Path(__file__).parent / 'segmented_mesh_3d_markers.pickle'
+
+    region_markers = get_region_markers(segmented_image)
+
+    tetra_mesh = generate_3d_mesh(segmented_image,
+                                  region_markers=region_markers)
+    compare_mesh_results(tetra_mesh, expected_fn)

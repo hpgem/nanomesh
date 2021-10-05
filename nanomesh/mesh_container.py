@@ -14,9 +14,13 @@ class MeshContainer:
     _element_type: str = ''
 
     def __init__(self, vertices: np.ndarray, faces: np.ndarray, **metadata):
+        self._label_key = 'labels'
+
         self.vertices = vertices
         self.faces = faces
-        metadata.setdefault('labels', np.zeros(len(self.faces), dtype=int))
+
+        metadata.setdefault(self._label_key,
+                            np.zeros(len(self.faces), dtype=int))
         self.metadata = metadata
 
     def to_meshio(self) -> 'meshio.Mesh':
@@ -40,8 +44,8 @@ class MeshContainer:
         metadata = {}
 
         for key, value in mesh.cell_data.items():
-            # PyVista chokes on 'tetgen:ref' in metadata
-            key = key.replace('tetgen:ref', 'regions')
+            # PyVista chokes on ':ref' in metadata
+            key = key.replace(':ref', 'Ref')
             metadata[key] = value[0]
 
         return MeshContainer.create(vertices=vertices, faces=faces, **metadata)
@@ -89,7 +93,12 @@ class MeshContainer:
     @property
     def labels(self):
         """Shortcut for face labels."""
-        return self.metadata['labels']
+        return self.metadata[self._label_key]
+
+    @labels.setter
+    def labels(self, data: np.array):
+        """Shortcut for setting face labels."""
+        self.metadata[self._label_key] = data
 
     @property
     def unique_labels(self):

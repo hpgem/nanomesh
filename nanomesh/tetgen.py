@@ -67,7 +67,7 @@ def write_smesh(filename: os.PathLike,
         region_fmt = '{:4d}' + ' {:8.2f}' * region_dim + ' {label:8}'
         # Define region numer, region attributes
 
-        for i, (label, coord) in enumerate(region_markers.items()):
+        for i, (label, coord) in enumerate(region_markers):
             print(region_fmt.format(i + 1, *coord, label=label), file=f)
 
 

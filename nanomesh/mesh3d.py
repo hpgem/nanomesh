@@ -292,11 +292,11 @@ class Mesher3D(BaseMesher):
         -------
         TetraMesh
         """
-        if not self.mesh:
-            raise ValueError('Contour has no envelope.'
-                             'Run `Mesher3D.generate_envelope()` first.')
+        if not self.contour:
+            raise ValueError('No contour mesh available.'
+                             'Run `Mesher3D.generate_contour()` first.')
 
-        contour = self.wrapped_contour
+        contour = self.contour
         volume_mesh = contour.tetrahedralize(**kwargs)
         return volume_mesh
 

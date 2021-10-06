@@ -192,10 +192,7 @@ class TriangleMesh(MeshContainer):
         """Return instance of `TriangleMesh` from trimesh results dict."""
         vertices = dct['vertices']
         faces = dct['triangles']
-        vertex_markers = dct['vertex_markers'].reshape(-1)
-        return cls(vertices=vertices,
-                   faces=faces,
-                   vertex_markers=vertex_markers)
+        return cls(vertices=vertices, faces=faces)
 
     def simplify(self, n_faces: int) -> 'TriangleMesh':
         """Simplify triangular mesh using `open3d`.

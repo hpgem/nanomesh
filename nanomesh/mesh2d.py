@@ -1,6 +1,5 @@
 import logging
-from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any, List
 
 import matplotlib.pyplot as plt
 import meshio
@@ -147,14 +146,13 @@ def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
 class Mesher2D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
-        self.contours: Dict[int, List[np.ndarray]] = defaultdict(list)
+        self.contours: List[np.ndarray] = []
 
     def generate_contours(
         self,
         level: float = None,
         contour_precision: int = 1,
         max_contour_dist: int = 5,
-        label: int = 1,
     ):
         """Generate contours using marching cubes algorithm.
 
@@ -173,8 +171,6 @@ class Mesher2D(BaseMesher):
         max_contour_dist : int, optional
             Divide long edges so that maximum distance between points does not
             exceed this value.
-        label : int, optional
-            Label to assign to contour.
         """
         contours = measure.find_contours(self.image, level=level)
         contours = [
@@ -189,16 +185,7 @@ class Mesher2D(BaseMesher):
             close_corner_contour(contour, self.image.shape)
             for contour in contours
         ]
-        self.contours[label] = contours
-
-    @property
-    def flattened_contours(self) -> list:
-        """Return flattened list of contours."""
-        flat_list = [
-            contour for contour_subset in self.contours.values()
-            for contour in contour_subset
-        ]
-        return flat_list
+        self.contours = contours
 
     @property
     def image_bbox(self) -> np.ndarray:
@@ -217,13 +204,11 @@ class Mesher2D(BaseMesher):
             (0, y - 1),
         ))
 
-    def triangulate(self, label: int = 1, plot: bool = False, **kwargs):
+    def triangulate(self, plot: bool = False, **kwargs):
         """Triangulate contours.
 
         Parameters
         ----------
-        label : int, optional
-            Label of the contour set
         plot : bool, optional
             If True, plot a comparison of the input/output
         **kwargs
@@ -237,7 +222,7 @@ class Mesher2D(BaseMesher):
         bbox = self.image_bbox
 
         regions = []
-        vertices = [bbox, *self.contours[label]]
+        vertices = [bbox, *self.contours]
         segments = []
         i = 0
 
@@ -264,22 +249,20 @@ class Mesher2D(BaseMesher):
                                   regions=regions,
                                   **kwargs)
 
-        labels = self.generate_domain_mask_from_contours(mesh, label=label)
+        labels = self.generate_domain_mask_from_contours(mesh)
         mesh.labels = labels
         return mesh
 
-    def generate_domain_mask_from_contours(self,
-                                           mesh: TriangleMesh,
-                                           *,
-                                           label: int = 1) -> np.ndarray:
+    def generate_domain_mask_from_contours(
+        self,
+        mesh: TriangleMesh,
+    ) -> np.ndarray:
         """Generate domain mask from contour.
 
         Parameters
         ----------
         mesh : TriangleMesh
             Input mesh
-        label : int, optional
-            Label of the contour set
 
         Returns
         -------
@@ -290,9 +273,9 @@ class Mesher2D(BaseMesher):
 
         labels = np.zeros(len(centers), dtype=int)
 
-        for contour in self.contours[label]:
+        for contour in self.contours:
             mask = measure.points_in_poly(centers, contour)
-            labels[mask] = label
+            labels[mask] = 1
 
         return labels
 
@@ -312,10 +295,9 @@ class Mesher2D(BaseMesher):
             fig, ax = plt.subplots()
 
         ax.set_title('Contours')
-        for label, contours in self.contours.items():
-            for contour in contours:
-                cont_x, cont_y = contour.T
-                ax.plot(cont_y, cont_x)
+        for contour in self.contours:
+            cont_x, cont_y = contour.T
+            ax.plot(cont_y, cont_x)
 
         ax.imshow(self.image)
         ax.axis('image')
@@ -350,5 +332,5 @@ def generate_2d_mesh(image: np.ndarray,
         Description of the mesh.
     """
     mesher = Mesher2D(image)
-    mesher.generate_contours(label=1, max_contour_dist=5, level=level)
-    return mesher.triangulate(label=1, opts=opts)
+    mesher.generate_contours(max_contour_dist=5, level=level)
+    return mesher.triangulate(opts=opts)

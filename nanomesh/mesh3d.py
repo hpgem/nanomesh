@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import meshio
@@ -211,10 +211,10 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
     return mesh
 
 
-def wrap(mesh: TriangleMesh,
-         *,
-         bbox: BoundingBox,
-         plot: bool = False) -> TriangleMesh:
+def generate_envelope(mesh: TriangleMesh,
+                      *,
+                      bbox: BoundingBox,
+                      plot: bool = False) -> TriangleMesh:
     """Wrap the surface mesh and close any open contours along the bounding
     box.
 
@@ -243,16 +243,19 @@ def wrap(mesh: TriangleMesh,
 class Mesher3D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
-        self.contours: Dict[int, TriangleMesh] = {}
-        self.wrapped_contours: Dict[int, TriangleMesh] = {}
+        self.contour: TriangleMesh
         self.pad_width = 0
 
     def generate_contour(
         self,
         level: float = None,
-        label: int = 1,
     ):
         """Generate contours using marching cubes algorithm.
+
+        Also generates an envelope around the entire data volume
+        corresponding to the bounding box.
+
+        The bounding box equals the dimensions of the data volume.
 
         Parameters
         ----------
@@ -260,8 +263,6 @@ class Mesher3D(BaseMesher):
             Contour value to search for isosurfaces (i.e. the threshold value).
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher3D`.
-        label : int, optional
-            Label to assign to contour.
         """
         verts, faces, *_ = measure.marching_cubes(
             self.image,
@@ -271,33 +272,18 @@ class Mesher3D(BaseMesher):
 
         mesh = TriangleMesh(vertices=verts, faces=faces)
 
-        logger.info(f'Generated contour with {len(mesh.faces)} '
-                    f' faces ({label=})')
-
-        self.contours[label] = mesh
-
-    def generate_envelope(self, label: int = 1):
-        """Generate envelope around contour corresponding to the bounding box.
-        The bounding box equals the dimensions of the data volume.
-
-        Parameters
-        ----------
-        label : int, optional
-            Label of the contour to use.
-        """
         bbox = BoundingBox.from_shape(self.image.shape)
+        mesh = generate_envelope(mesh, bbox=bbox)
 
-        mesh = self.contours[label]
-        mesh = wrap(mesh, bbox=bbox)
-        self.wrapped_contours[label] = mesh
+        logger.info(f'Generated contour with {len(mesh.faces)} faces')
 
-    def tetrahedralize(self, label: int = 1, **kwargs):
+        self.contour = mesh
+
+    def tetrahedralize(self, **kwargs):
         """Tetrahedralize a surface contour mesh.
 
         Parameters
         ----------
-        label : int
-            Label of the contour to tetrahedralize.
         **kwargs
             Keyword arguments passed to
             `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
@@ -306,7 +292,11 @@ class Mesher3D(BaseMesher):
         -------
         TetraMesh
         """
-        contour = self.wrapped_contours[label]
+        if not self.mesh:
+            raise ValueError('Contour has no envelope.'
+                             'Run `Mesher3D.generate_envelope()` first.')
+
+        contour = self.wrapped_contour
         volume_mesh = contour.tetrahedralize(**kwargs)
         return volume_mesh
 
@@ -338,7 +328,6 @@ def generate_3d_mesh(
     """
     mesher = Mesher3D(image)
     mesher.generate_contour(level=level)
-    mesher.generate_envelope()
 
     volume_mesh = mesher.tetrahedralize(**kwargs)
     return volume_mesh

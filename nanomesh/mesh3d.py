@@ -279,11 +279,13 @@ class Mesher3D(BaseMesher):
 
         self.contour = mesh
 
-    def tetrahedralize(self, **kwargs):
+    def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
         """Tetrahedralize a surface contour mesh.
 
         Parameters
         ----------
+        generate_region_markers : bool, optional
+            Attempt to automatically generate region markers.
         **kwargs
             Keyword arguments passed to
             `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
@@ -291,10 +293,18 @@ class Mesher3D(BaseMesher):
         Returns
         -------
         TetraMesh
+
+        Raises
+        ------
+        ValueError
+            Description
         """
         if not self.contour:
             raise ValueError('No contour mesh available.'
                              'Run `Mesher3D.generate_contour()` first.')
+
+        region_markers = get_region_markers(self.image)
+        kwargs['region_markers'] = region_markers
 
         contour = self.contour
         volume_mesh = contour.tetrahedralize(**kwargs)

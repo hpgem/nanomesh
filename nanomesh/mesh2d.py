@@ -46,6 +46,59 @@ def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
     return point
 
 
+def generate_regions(contours: List[np.ndarray]) -> np.ndarray:
+    """Generate regions for triangle.
+
+    Parameters
+    ----------
+    contours : List[np.ndarray]
+        List of contours.
+
+    Returns
+    -------
+    regions : (n,5) np.ndarray
+        Array with regions with each row: (x, y, z, index, 0)
+    """
+    regions = []
+
+    for j, contour in enumerate(contours):
+        point = find_point_in_contour(contour)
+
+        # in triangle format
+        regions.append([*point, j, 0])
+
+    return np.array(regions)
+
+
+def generate_segments(contours: List[np.ndarray]) -> np.ndarray:
+    """Generate segments for triangle.
+
+    Parameters
+    ----------
+    contours : List[np.ndarray]
+        List of contours
+
+    Returns
+    -------
+    segments : np.ndarray
+        Segment connectivity array
+    """
+    i = 0
+    segments = []
+
+    for contour in contours:
+        n_points = len(contour)
+        rng = np.arange(i, i + n_points)
+
+        # generate segment connectivity matrix
+        segment = np.vstack([rng, np.roll(rng, shift=-1)]).T
+        segments.append(segment)
+
+        i += n_points
+
+    return np.vstack(segments)
+
+
 def close_corner_contour(contour: np.ndarray, shape: tuple) -> np.ndarray:
     """Check if contours are in the corner, and close them if needed.
 
@@ -204,13 +257,11 @@ class Mesher2D(BaseMesher):
             (0, y - 1),
         ))
 
-    def triangulate(self, plot: bool = False, **kwargs):
+    def triangulate(self, **kwargs):
         """Triangulate contours.
 
         Parameters
         ----------
-        plot : bool, optional
-            If True, plot a comparison of the input/output
         **kwargs
             Keyword arguments passed to `triangle.triangulate`
 
@@ -221,28 +272,11 @@ class Mesher2D(BaseMesher):
         """
         bbox = self.image_bbox
 
-        regions = []
-        vertices = [bbox, *self.contours]
-        segments = []
-        i = 0
+        contours = [bbox, *self.contours]
 
-        for j, contour in enumerate(vertices):
-            point = find_point_in_contour(contour)
-
-            # in triangle
-            regions.append([*point, j, 0])
-            n_points = len(contour)
-            rng = np.arange(i, i + n_points)
-
-            # generate segment connectivity matrix
-            segment = np.vstack([rng, np.roll(rng, shift=-1)]).T
-            segments.append(segment)
-
-            i += n_points
-
-        segments = np.vstack(segments)
-        regions = np.array(regions)
-        vertices = np.vstack(vertices)
+        regions = generate_regions(contours)
+        segments = generate_segments(contours)
+        vertices = np.vstack(contours)
 
         mesh = simple_triangulate(vertices=vertices,
                                   segments=segments,

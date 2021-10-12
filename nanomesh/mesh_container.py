@@ -85,6 +85,16 @@ class MeshContainer:
         """Wrapper for `pyvista.plot_itk`."""
         pv.plot_itk(self.to_meshio())
 
+    def plot_pyvista(self, **kwargs):
+        """Wrapper for `pyvista.plot`.
+
+        Parameters
+        ----------
+        **kwargs
+            Extra keyword arguments passed to `pyvista.plot`
+        """
+        pv.plot(self.to_meshio(), **kwargs)
+
     @property
     def face_centers(self):
         """Return centers of faces (mean of vertices)."""
@@ -373,6 +383,7 @@ class TetraMesh(MeshContainer):
         along: str = 'x',
         invert: bool = False,
         show: bool = True,
+        backend: str = None,
         **kwargs,
     ):
         """Show submesh using `pyvista`.
@@ -422,6 +433,6 @@ class TetraMesh(MeshContainer):
         plotter.add_mesh(subgrid, **kwargs)
 
         if show:
-            plotter.show()
+            plotter.show(jupyter_backend=backend)
 
         return plotter

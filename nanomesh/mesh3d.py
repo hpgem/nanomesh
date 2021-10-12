@@ -303,8 +303,9 @@ class Mesher3D(BaseMesher):
             raise ValueError('No contour mesh available.'
                              'Run `Mesher3D.generate_contour()` first.')
 
-        region_markers = get_region_markers(self.image)
-        kwargs['region_markers'] = region_markers
+        if generate_region_markers:
+            region_markers = get_region_markers(self.image)
+            kwargs['region_markers'] = region_markers
 
         contour = self.contour
         volume_mesh = contour.tetrahedralize(**kwargs)

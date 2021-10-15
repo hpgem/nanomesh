@@ -1,10 +1,4 @@
 pytest --no-cov --nbmake \
-   "./full_periodic/1domain/generator.ipynb" \
-   "./full_periodic/2domain/generator.ipynb" \
-   "./non_periodic/1domain/generator_conform_to_boundaries.ipynb" \
-   "./non_periodic/2domain/generator_conform_to_boundaries.ipynb" \
-   "./semi_periodic/1domain/generator.ipynb" \
-   "./semi_periodic/2domain/generator.ipynb" \
    "./banner/Make banner.ipynb" \
    "./sample_data/How to calculate cell quality metrics (triangle mesh).ipynb" \
    "./sample_data/How to do 3D multi-domain meshing from simulated data volume.ipynb" \

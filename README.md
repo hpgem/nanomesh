@@ -3,6 +3,8 @@
 [![MacOS](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml)
 [![Windows](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml)
 
+![Nanomesh banner](./notebooks/banner/banner.png)
+
 # nanomesh
 
 Creates 3d meshes from microscopy experimental data.
@@ -38,28 +40,11 @@ Note, [if you are using Jupyter lab](https://github.com/InsightSoftwareConsortiu
 jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib jupyterlab-datawidgets itkwidgets
 ```
 
-### With pygalmesh (linux only)
-
-To use some of the additional functionality depending on pygalmesh,
-first install the dependencies for pygalmesh (CGAL and EIGEN3)
-
-```
-sudo apt-get install libcgal-dev libeigen3-dev
-```
-
-The instructions are the same as above, except specify `with_pygalmesh` as option
-to trigger the installation of pygalmesh. Currently this installs
-[our fork](https://github.com/hpgem/pygalmesh).
-
-```
-pip install .[with_pygalmesh]
-```
-
 ### Development
 
 Install `nanomesh` using the development dependencies:
 
-`pip install -e .[develop]`
+`pip install -e .[develop] -c constraints.txt`
 
 Running the tests:
 
@@ -75,10 +60,9 @@ Building the docs:
 make html --directory docs
 ```
 
-
 ### License
 
-Copyright (c) 2020,
+Copyright (c) 2020, 2021
 
 Licensed under the Apache License, Version 2.0 (the \"License\"); you
 may not use this file except in compliance with the License. You may

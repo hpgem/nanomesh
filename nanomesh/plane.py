@@ -1,69 +1,38 @@
 import logging
+import os
+from typing import Callable, Union
 
-import meshio
+import matplotlib.pyplot as plt
 import numpy as np
 
+from .base_image import BaseImage
+from .mesh_container import TriangleMesh
 from .utils import show_image
 
 logger = logging.getLogger(__name__)
 
 
-class Plane:
-    def __init__(self, image):
-
-        self.image = image
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(shape={self.image.shape})'
-
-    def __eq__(self, other):
-        if isinstance(other, Plane):
-            return np.all(other.image == self.image)
-        elif isinstance(other, np.ndarray):
-            return np.all(other == self.image)
-        else:
-            return False
-
-    def to_sitk_image(self):
-        """Return instance of `SimpleITK.Image` from `.image`."""
-        import SimpleITK as sitk
-        return sitk.GetImageFromArray(self.image)
-
+class Plane(BaseImage):
     @classmethod
-    def from_sitk_image(cls, sitk_image) -> 'Plane':
-        """Return instance of `Volume` from `SimpleITK.Image`."""
-        import SimpleITK as sitk
-        image = sitk.GetArrayFromImage(sitk_image)
-        return cls(image)
-
-    @classmethod
-    def load(cls, filename: str) -> 'Plane':
+    def load(cls, filename: os.PathLike, **kwargs) -> 'Plane':
         """Load the data. Supported filetypes: `.npy`.
 
         Parameters
         ----------
-        filename : str
+        filename : Pathlike
             Name of the file to load.
+        **kwargs : dict
+            Extra keyword arguments passed to `np.load`.
 
         Returns
         -------
         Plane
             Instance of this class.
         """
-        array = np.load(filename)
+        array = np.load(filename, **kwargs)
         return cls(array)
 
-    def save(self, filename: str):
-        """Save the data. Supported filetypes: `.npy`.
-
-        Parameters
-        ----------
-        filename : str
-            Name of the file to save to.
-        """
-        np.save(filename, self.image)
-
-    def apply(self, function, **kwargs):
+    def apply(self, function: Callable, **kwargs):
         """Apply function to `.image` array. Return an instance of `Plane` if
         the result is a 2D image, otherwise return the result of the operation.
 
@@ -79,13 +48,13 @@ class Plane:
         Plane
             New instance of `Plane`.
         """
-        ret = function(self.image, **kwargs)
-        if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
-            return Plane(ret)
+        return super().apply(function, **kwargs)
 
-        return ret
-
-    def show(self, *, dpi: int = 80, title: str = None):
+    def show(self,
+             *,
+             dpi: int = 80,
+             title: str = None,
+             **kwargs) -> 'plt.Axes':
         """Plot the image using matplotlib.
 
         Parameters
@@ -94,15 +63,17 @@ class Plane:
             DPI to render at.
         title : str, optional
             Set the title of the plot.
+        **kwargs : dict
+            Extra keyword arguments to pass to `plt.imshow`.
 
         Returns
         -------
         ax : `matplotlib.axes.Axes`
             Instance of `matplotlib.axes.Axes`
         """
-        return show_image(self.image, dpi=dpi, title=title)
+        return show_image(self.image, dpi=dpi, title=title, **kwargs)
 
-    def generate_mesh(self, **kwargs) -> 'meshio.Mesh':
+    def generate_mesh(self, **kwargs) -> 'TriangleMesh':
         """Generate mesh from binary (segmented) image.
 
         Parameters
@@ -112,13 +83,13 @@ class Plane:
 
         Returns
         -------
-        meshio.Mesh
+        mesh : TriangleMesh
             Description of the mesh.
         """
         from .mesh2d import generate_2d_mesh
         return generate_2d_mesh(image=self.image, **kwargs)
 
-    def select_roi(self):
+    def select_roi(self, from_points: np.ndarray = None):
         """Select region of interest in interactive matplotlib figure.
 
         Returns
@@ -128,7 +99,11 @@ class Plane:
         """
         from .roi2d import ROISelector
         ax = self.show(title='Select region of interest')
-        roi = ROISelector(ax)
+        if from_points is not None:
+            # reverse columns to match image
+            from_points = from_points[:, ::-1]
+            ax.scatter(*from_points.T)
+        roi = ROISelector(ax, snap_to=from_points)
         return roi
 
     def crop(self, left: int, top: int, right: int, bottom: int) -> 'Plane':
@@ -146,7 +121,7 @@ class Plane:
         """
         return Plane(self.image[top:bottom, left:right])
 
-    def crop_to_roi(self, bbox):
+    def crop_to_roi(self, bbox: np.ndarray) -> 'Plane':
         """Crop plane to rectangle defined by bounding box.
 
         Parameters
@@ -163,3 +138,128 @@ class Plane:
         from .roi2d import extract_rectangle
         cropped = extract_rectangle(self.image, bbox=bbox)
         return Plane(cropped)
+
+    def compare_with_mesh(self, mesh: TriangleMesh) -> 'plt.Axes':
+        """Make a plot comparing the image with the given mesh.
+
+        Parameters
+        ----------
+        mesh : TriangleMesh
+            Mesh to compare the image with.
+
+        Returns
+        -------
+        ax : matplotlib.Axes
+        """
+        from .mesh_utils import compare_mesh_with_image
+        return compare_mesh_with_image(image=self.image, mesh=mesh)
+
+    def compare_with_digitized(self, digitized: Union[np.ndarray, 'Plane'],
+                               **kwargs) -> 'plt.Axes':
+        """Compare image with digitized (segmented) image. Returns a plot with
+        the overlay of the digitized image.
+
+        Parameters
+        ----------
+        digitized : np.ndarray, Plane
+            Digitized image of the same dimensions to overlay
+        **kwargs : dict
+            Extra keyword arguments passed to `skimage.color.label2rgb`.
+
+        Returns
+        -------
+        ax : plt.Axes
+        """
+        from skimage.color import label2rgb
+
+        if isinstance(digitized, Plane):
+            digitized = digitized.image
+
+        # bg_label=0 is default for scikit-image from 0.19 onwards
+        kwargs.setdefault('bg_label', 0)
+        image_overlay = label2rgb(digitized, image=self.image, **kwargs)
+
+        fig, ax = plt.subplots()
+
+        ax.imshow(image_overlay, interpolation='none')
+        ax.axis('image')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title('Image comparison')
+
+        return ax
+
+    def compare_with_other(self, other: Union[np.ndarray, 'Plane'],
+                           **kwargs) -> 'plt.Axes':
+        """Compare image with other image.
+
+        Parameters
+        ----------
+        other : np.ndarray, Plane
+            Other image of the same dimensions to overlay
+        **kwargs : dict
+            Extra keyword arguments passed to `skimage.util.compare_images`.
+
+        Returns
+        -------
+        ax : plt.Axes
+        """
+        from skimage.util import compare_images
+
+        if isinstance(other, Plane):
+            other = other.image
+
+        kwargs.setdefault('method', 'checkerboard')
+        kwargs.setdefault('n_tiles', (4, 4))
+        comp = compare_images(self.image, other, **kwargs)
+
+        fig, ax = plt.subplots()
+
+        ax.imshow(comp, interpolation='none')
+        ax.axis('image')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title(f'Image comparison ({kwargs["method"]})')
+
+        return ax
+
+    def clear_border(self, *, object_label: int, fill_val: int,
+                     **kwargs) -> 'Plane':
+        """Remove objects at the border of the image.
+
+        Parameters
+        ----------
+        object_label : int
+            Label of the objects to remove.
+        fill_val : int
+            Cleared objects are set to this value.
+        **kwargs
+            Extra arguments passed to `skimage.segmentation.clear_border`.
+
+        Returns
+        -------
+        Plane
+            New instance of `Plane`.
+        """
+        from skimage import segmentation
+
+        objects = (self.image == object_label).astype(int)
+        border_cleared = segmentation.clear_border(objects, **kwargs)
+        mask = (border_cleared != objects)
+
+        out = self.image.copy()
+        out[mask] = fill_val
+        return self.__class__(out)
+
+    def try_all_threshold(self, **kwargs):
+        """Produce a plot trying all available thresholds from `scikit-image`.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Extra keyword arguments passed to
+            `skimage.filters.try_all_threshold`.
+        """
+        from skimage import filters
+        kwargs.setdefault('verbose', False)
+        self.apply(filters.try_all_threshold, **kwargs)

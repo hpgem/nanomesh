@@ -44,12 +44,14 @@ def read_info(filename: os.PathLike) -> dict:
     return dct
 
 
-def load_vol(
-    filename: os.PathLike,
-    dtype=np.float32,
-    mmap_mode=None,
-) -> np.ndarray:
-    """Summary.
+def load_vol(filename: os.PathLike,
+             dtype=np.float32,
+             mmap_mode: str = None,
+             shape: tuple = None) -> np.ndarray:
+    """Load data from `.vol` file.
+
+    The image shape is deduced from the `.vol.info` file. If this file is
+    not present, the shape can be specified using the `shape` keyword.
 
     Parameters
     ----------
@@ -61,6 +63,8 @@ def load_vol(
         If not None, open the file using memory mapping. For more info on
         the modes, see:
         https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
+    shape : tuple, optional
+        Tuple of three ints specifying the shape of the data (order: z, y, x).
 
     Returns
     -------
@@ -68,11 +72,19 @@ def load_vol(
         Data stored in the file.
     """
     filename = Path(filename)
-    filename_info = filename.with_suffix(filename.suffix + '.info')
 
-    info = read_info(filename_info)
+    if not filename.exists():
+        raise IOError(f'No such file: {filename}')
 
-    shape = info['NUM_Z'], info['NUM_Y'], info['NUM_X']
+    try:
+        filename_info = filename.with_suffix(filename.suffix + '.info')
+        if not shape:
+            info = read_info(filename_info)
+            shape = info['NUM_Z'], info['NUM_Y'], info['NUM_X']
+    except FileNotFoundError:
+        raise ValueError(
+            f'Info file not found: {filename_info.name}, specify '
+            'the volume shape using the `shape` parameter.') from None
 
     if mmap_mode:
         result = np.memmap(filename, dtype=dtype, shape=shape, mode=mmap_mode)

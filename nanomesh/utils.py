@@ -1,32 +1,8 @@
 import time
-import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
 from ipywidgets import IntSlider, RadioButtons, interact
-
-try:
-    import pygalmesh
-except ImportError:
-    pygalmesh = None
-
-
-class requires:
-    """Decorate functions to mark them as unavailable based if `condition` does
-    not evaluate to `True`."""
-    def __init__(self, *, condition, message='requires optional dependencies'):
-        self.condition = condition
-        self.message = message
-
-    def __call__(self, func):
-        if not self.condition:
-
-            def dummy(*args, **kwargs):
-                warnings.warn(f'`{func.__qualname__}` {self.message}.')
-
-            return dummy
-        else:
-            return func
 
 
 class SliceViewer:
@@ -60,6 +36,13 @@ class SliceViewer:
         }
 
         self.last_update = 0.0
+
+        # Enable direct specification of slice, i.e. x=123
+        for along in 'xyz':
+            if along in kwargs:
+                kwargs['along'] = along
+                kwargs['index'] = kwargs[along]
+                break
 
         along = kwargs.get('along', 'x')
         init_max_val = self.max_vals[along]
@@ -115,7 +98,11 @@ class SliceViewer:
         interact(self.update, index=self.int_slider, along=self.radio_buttons)
 
 
-def show_image(image, *, dpi=80, title=None):
+def show_image(image,
+               *,
+               dpi: int = 80,
+               title: str = None,
+               **kwargs) -> 'plt.Axes':
     """Simple function to show an image using matplotlib.
 
     Parameters
@@ -124,14 +111,23 @@ def show_image(image, *, dpi=80, title=None):
         Image to display.
     dpi : int, optional
         DPI to render at.
-    title : None, optional
+    title : str, optional
         Title for the plot.
+    **kwargs : dict
+        Extra keyword arguments to pass to `plt.imshow`.
+
+    Returns
+    -------
+    plt.Axes
+        Description
     """
+    kwargs.setdefault('interpolation', None)
+
     fig = plt.figure(dpi=dpi)
     plt.set_cmap('gray')
 
     ax = fig.add_subplot()
-    ax.imshow(image, interpolation=None)
+    ax.imshow(image, **kwargs)
 
     if title:
         plt.title(title)
@@ -140,27 +136,3 @@ def show_image(image, *, dpi=80, title=None):
     ax.set_ylabel('y')
 
     return ax
-
-
-@requires(condition=pygalmesh, message='requires pygalmesh')
-def generate_mesh_from_binary_image(image: np.ndarray,
-                                    h=(1.0, 1.0, 1.0),
-                                    **kwargs):
-    """Generate mesh from binary image using pygalmesh.
-
-    Parameters
-    ----------
-    image : 2D np.ndarray
-        Input image.
-    h : tuple, optional
-        Voxel size in x, y, z.
-    **kwargs
-        Keyword arguments passed to `pygalmesh.generate_from_array`.
-
-    Returns
-    -------
-    meshio.Mesh
-        Output mesh.
-    """
-    mesh = pygalmesh.generate_from_array(image, h, **kwargs)
-    return mesh

@@ -2,9 +2,10 @@ from types import SimpleNamespace
 
 import numpy as np
 from matplotlib.patches import Polygon
-from matplotlib.widgets import PolygonSelector
 from scipy.spatial import ConvexHull
 from skimage import transform
+
+from nanomesh.mpl.widgets import PolygonSelectorWithSnapping
 
 
 def minimum_bounding_rectangle(coords: np.ndarray) -> np.ndarray:
@@ -103,7 +104,7 @@ def extract_rectangle(image: np.ndarray, *, bbox: np.ndarray):
 
 
 class ROISelector:
-    ROTATE = False
+    ROTATE = True
     """Select a region of interest points in the figure by enclosing them
     within a polygon. A rectangle is fitted to the polygon.
 
@@ -116,13 +117,15 @@ class ROISelector:
     bbox : (4,2) np.ndarray
         Coordinates describing the corners of the polygon
     """
-    def __init__(self, ax):
+    def __init__(self, ax, snap_to: np.ndarray = None):
         self.ax = ax
         self.canvas = ax.figure.canvas
         self.bbox = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
         self.verts = None
 
-        self.poly = PolygonSelector(ax, self.onselect)
+        self.poly = PolygonSelectorWithSnapping(ax,
+                                                self.onselect,
+                                                snap_to=snap_to)
 
     def onselect(self, verts):
         """Trigger this function when a polygon is closed."""
@@ -173,6 +176,9 @@ class ROISelector:
         np.ndarray
             Description
         """
+        if self.verts is None:
+            raise ValueError('No vertices have been selected!')
+
         if rotate:
             return minimum_bounding_rectangle(self.verts)
         else:

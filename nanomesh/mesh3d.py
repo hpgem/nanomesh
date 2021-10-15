@@ -1,361 +1,322 @@
 import logging
-from typing import List
+from dataclasses import dataclass
+from typing import List, Tuple, Union
 
+import matplotlib.pyplot as plt
 import meshio
 import numpy as np
-import pyvista as pv
-import trimesh
-from scipy.spatial import Delaunay
-from skimage import measure, transform
-from sklearn import cluster
+from skimage import measure, morphology
 
-from .mesh_utils import (SurfaceMeshContainer, VolumeMeshContainer,
-                         meshio_to_polydata)
+from nanomesh import Volume
+from nanomesh.mesh_utils import simple_triangulate
+
+from ._mesh_shared import BaseMesher
+from .mesh_container import TriangleMesh
 
 logger = logging.getLogger(__name__)
 
 
-def show_submesh(*meshes: List[meshio.Mesh],
-                 index: int = 100,
-                 along: str = 'x',
-                 plotter=pv.PlotterITK):
-    """Slow a slice of the mesh.
+@dataclass
+class BoundingBox:
+    """Container for bounding box coordinates."""
+    xmin: float
+    xmax: float
+    ymin: float
+    ymax: float
+    zmin: float
+    zmax: float
+
+    @classmethod
+    def from_shape(cls, shape):
+        xmin, ymin, zmin = 0, 0, 0
+        xmax, ymax, zmax = np.array(shape) - 1
+        return cls(xmin=xmin,
+                   ymin=ymin,
+                   zmin=zmin,
+                   xmax=xmax,
+                   ymax=ymax,
+                   zmax=zmax)
+
+
+def get_point_in_prop(
+        prop: measure._regionprops.RegionProperties) -> np.ndarray:
+    """Uses `skeletonize` to find a point in the center of the regionprop.
 
     Parameters
     ----------
-    *meshes : List[meshio.Mesh]
-        List of meshes to show
-    index : int, optional
-        Index of where to cut the mesh.
-    along : str, optional
-        Direction along which to cut.
-    plotter : pyvista.Plotter, optional
-        Plotting instance (`pv.PlotterITK` or `pv.Plotter`)
+    prop : RegionProperties
+        RegionProp from skimage.measure.regionproperties.
 
     Returns
     -------
-    plotter : `pyvista.Plotter`
-        Instance of the plotter
+    point : (3,) np.array
+        Returns 3 indices describing a pixel in the labeled region.
     """
-    plotter = plotter()
-
-    for mesh in meshes:
-        grid = meshio_to_polydata(mesh)
-
-        # get cell centroids
-        cells = grid.cells.reshape(-1, 5)[:, 1:]
-        cell_center = grid.points[cells].mean(1)
-
-        # extract cells below index
-        axis = 'zyx'.index(along)
-
-        mask = cell_center[:, axis] < index
-        cell_ind = mask.nonzero()[0]
-        subgrid = grid.extract_cells(cell_ind)
-
-        plotter.add_mesh(subgrid)
-
-    plotter.show()
-
-    return plotter
+    skeleton = morphology.skeletonize(prop.image)
+    coords = np.argwhere(skeleton)
+    middle = len(coords) // 2
+    try:
+        point = coords[middle]
+        point += np.array(prop.bbox[0:3])  # Add prop offset
+    except IndexError:
+        point = np.array(prop.centroid)
+    return point
 
 
-def simplify_mesh_trimesh(vertices: np.ndarray, faces: np.ndarray,
-                          n_faces: int):
-    """Simplify mesh using trimesh."""
-    mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
-    decimated = mesh.simplify_quadratic_decimation(n_faces)
-    return decimated
+def get_region_markers(
+        vol: Union[Volume, np.ndarray]) -> List[Tuple[int, np.ndarray]]:
+    """Get region markers describing the featuers in the volume.
 
-
-def add_points_kmeans_sklearn(
-    image: np.ndarray,
-    iters: int = 10,
-    n_points: int = 100,
-    scale=1.0,
-):
-    """Add evenly distributed points to the image.
+    The array will be labeled, and points inside the labeled region
+    will be obtained using the `skeletonize` function. The region
+    markers can be used to flood the connected regions in the
+    tetrahedralization step.
 
     Parameters
     ----------
-    image : 3D np.ndarray
-        Input image
-    iters : int, optional
-        Number of iterations for the kmeans algorithm.
-    scale : float
-        Reduce resolution of image to improve performance.
-    n_points : int, optional
-        Total number of points to add
+    vol : Union[Volume, np.array]
+        Segmented integer volume.
 
     Returns
     -------
-    (n,3) np.ndarray
-        Array with the generated points.
+    region_markers : List[tuple]
+        List of tuples. The first element is the label in the source image,
+        and the second the pixel coordinates somewhere in the center of the
+        corresponding region.
     """
-    if scale != 1.0:
-        image = transform.rescale(image.astype(float), scale) > 0.5
+    region_markers = []
 
-    coordinates = np.argwhere(image)
+    if isinstance(vol, Volume):
+        image = vol.image
+    else:
+        image = vol
 
-    kmeans = cluster.KMeans(n_clusters=n_points,
-                            n_init=1,
-                            init='random',
-                            max_iter=iters,
-                            algorithm='full')
-    ret = kmeans.fit(coordinates)
+    labels = measure.label(image, background=-1, connectivity=1)
 
-    return ret.cluster_centers_ / scale
+    props = measure.regionprops(labels, intensity_image=image)
+
+    for prop in props:
+        point = get_point_in_prop(prop)
+        i, j, k = point.astype(int)
+        label = image[i, j, k]
+        region_markers.append((label, point))
+
+    return region_markers
 
 
-class Mesher3D:
-    def __init__(self, image: np.ndarray):
-        self.image = image
-        self.points: List[np.ndarray] = []
-        self.pad_width = 0
-        self.mask = None
+def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
+    """Add corner points from bounding box to mesh points.
 
-    def pad(self, pad_width: int, mode: str = 'constant', **kwargs):
-        """Pad the image so that the tetrahedra will extend beyond the
-        boundary. Uses `np.pad`.
+    Parameters
+    ----------
+    mesh : TriangleMesh
+        Mesh to add corner points to.
+    bbox : BoundingBox
+        Container for the bounding box coordinates.
+    """
+    corners = np.array([
+        [bbox.xmin, bbox.ymin, bbox.zmin],
+        [bbox.xmin, bbox.ymin, bbox.zmax],
+        [bbox.xmin, bbox.ymax, bbox.zmin],
+        [bbox.xmin, bbox.ymax, bbox.zmax],
+        [bbox.xmax, bbox.ymin, bbox.zmin],
+        [bbox.xmax, bbox.ymin, bbox.zmax],
+        [bbox.xmax, bbox.ymax, bbox.zmin],
+        [bbox.xmax, bbox.ymax, bbox.zmax],
+    ])
 
-        Parameters
-        ----------
-        pad_width : int
-            Number of voxels to pad the image with on each side.
-        mode : str, optional
-            Set the padding mode. For more info see `np.pad`.
-        **kwargs :
-            Keyword arguments passed to `np.pad`
-        """
-        logger.info(f'padding image, {pad_width=}')
-        self.image = np.pad(self.image, pad_width, mode=mode, **kwargs)
-        self.pad_width = pad_width
+    mesh.points = np.vstack([mesh.points, corners])
 
-    def add_points(self,
-                   point_density: float = 1 / 10000,
-                   label: int = 1,
-                   step_size=1):
-        """Generate evenly distributed points using K-Means in the domain body
-        for generating tetrahedra.
 
-        Parameters
-        ----------
-        point_density : float, optional
-            Density of points (points per pixels) to distribute over the
-            domain for triangle generation.
-        label : int, optional
-            Label of the domain to add points to.
-        step_size : int, optional
-            If specified, downsample the image for point generation. This
-            speeds up the kmeans algorithm at the cost of lowered precision.
-        """
-        scale = 1 / step_size
-        logger.info(f'adding points, {step_size=}->{scale=}')
+def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
+    """Fill a side of the bounding box with triangles.
 
-        n_points = int(np.sum(self.image == label) * point_density)
-        grid_points = add_points_kmeans_sklearn(self.image,
-                                                iters=10,
-                                                n_points=n_points,
-                                                scale=scale)
-        self.points.append(grid_points)
-        logger.info(f'added {len(grid_points)} points ({label=})')
+    Parameters
+    ----------
+    mesh : TriangleMesh
+        Input contour mesh.
+    side : str
+        Side of the volume to close. Must be one of
+        `left`, `right`, `top`, `bottom`, `front`, `back`.
+    bbox : BoundingBox
+        Coordinates of the bounding box.
+    ax : plt.Axes, optional
+        Plot the generated side on a matplotlib axis.
 
-    def generate_surface_mesh(self, step_size: int = 1):
-        """Generate surface mesh using marching cubes algorithm.
+    Returns
+    -------
+    mesh : TriangleMesh
+        Triangle mesh with the given side closed.
 
-        Parameters
-        ----------
-        step_size : int, optional
-            Step size in voxels. Larger number means better performance at
-            the cost of lowered precision. Equivalent to
-            `self.image[::2,::2,::2]` for `step_size==2`.
-        """
-        logger.info(f'generating vertices, {step_size=}')
-        verts, faces, *_ = measure.marching_cubes(
-            self.image,
-            allow_degenerate=False,
-            step_size=step_size,
-        )
-        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
+    Raises
+    ------
+    ValueError
+        When the value of `side` is invalid.
+    """
+    all_points = mesh.points
 
-        logger.info(f'generated {len(verts)} verts and {len(faces)} faces')
+    if side == 'top':
+        edge_col = 2
+        edge_value = bbox.zmin
+    elif side == 'bottom':
+        edge_col = 2
+        edge_value = bbox.zmax
+    elif side == 'left':
+        edge_col = 1
+        edge_value = bbox.ymin
+    elif side == 'right':
+        edge_col = 1
+        edge_value = bbox.ymax
+    elif side == 'front':
+        edge_col = 0
+        edge_value = bbox.xmin
+    elif side == 'back':
+        edge_col = 0
+        edge_value = bbox.xmax
+    else:
+        raise ValueError('Side must be one of `right`, `left`, `bottom`'
+                         f'`top`, `front`, `back`. Got {side=}')
 
-        self.surface_mesh = mesh
+    keep_cols = [col for col in (0, 1, 2) if col != edge_col]
+    is_edge = all_points[:, edge_col] == edge_value
 
-    def simplify_mesh(self, n_faces: int):
-        """Reduce number of faces in surface mesh to `n_faces`.
+    coords = all_points[is_edge][:, keep_cols]
 
-        Parameters
-        ----------
-        n_faces : int
-            The mesh is simplified until this number of faces is reached.
-        """
-        logger.info(f'simplifying mesh, {n_faces=}')
+    edge_mesh = simple_triangulate(points=coords, opts='')
 
-        mesh = self.surface_mesh.to_open3d()
-        mesh.simplify_quadric_decimation(int(n_faces))
-        self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh)
+    mesh_edge_index = np.argwhere(is_edge).flatten()
+    new_edge_index = np.arange(len(mesh_edge_index))
+    mapping = np.vstack([new_edge_index, mesh_edge_index])
 
-        logger.info(f'reduced to {len(self.surface_mesh.vertices)} verts '
-                    f'and {len(self.surface_mesh.faces)} faces')
+    shape = edge_mesh.cells.shape
+    new_cells = edge_mesh.cells.copy().ravel()
 
-    def simplify_mesh_by_vertex_clustering(self, voxel_size: float = 1.0):
-        """Simplify mesh geometry using vertex clustering.
+    mask = np.in1d(new_cells, mapping[0, :])
+    new_cells[mask] = mapping[1,
+                              np.searchsorted(mapping[0, :], new_cells[mask])]
+    new_cells = new_cells.reshape(shape)
 
-        Parameters
-        ----------
-        voxel_size : float, optional
-            Size of the target voxel within which vertices are grouped.
-        """
-        import open3d as o3d
-        mesh_in = self.surface_mesh.to_open3d()
-        mesh_smp = mesh_in.simplify_vertex_clustering(
-            voxel_size=voxel_size,
-            contraction=o3d.geometry.SimplificationContraction.Average)
+    new_labels = np.ones(len(new_cells)) * 123
 
-        self.surface_mesh = SurfaceMeshContainer.from_open3d(mesh_smp)
+    points = all_points
+    cells = np.vstack([mesh.cells, new_cells])
+    labels = np.hstack([mesh.labels, new_labels])
 
-    def smooth_mesh(self):
-        """Smooth surface mesh using 'Taubin' algorithm.
+    mesh = TriangleMesh(points=points, cells=cells, labels=labels)
 
-        The advantage of the Taubin algorithm is that it avoids
-        shrinkage of the object.
-        """
-        logger.info('smoothing mesh')
+    if ax:
+        edge_mesh.plot(ax=ax)
+        ax.set_title(side)
 
-        mesh = trimesh.smoothing.filter_taubin(
-            self.surface_mesh.to_trimesh(),
-            iterations=50,
-        )
-        self.surface_mesh = SurfaceMeshContainer.from_trimesh(
-            mesh)  # trimesh.Trimesh
+    return mesh
 
-    def optimize_mesh(self,
+
+def generate_envelope(mesh: TriangleMesh,
                       *,
-                      method='CVT (block-diagonal)',
-                      tol: float = 1.0e-3,
-                      max_num_steps: int = 10,
-                      **kwargs):
-        """Optimize mesh using `optimesh`.
+                      bbox: BoundingBox,
+                      plot: bool = False) -> TriangleMesh:
+    """Wrap the surface mesh and close any open contours along the bounding
+    box.
+
+    Parameters
+    ----------
+    mesh : TriangleMesh
+        Input mesh.
+    bbox : BoundingBox
+        Coordinates of the bounding box.
+
+    Returns
+    -------
+    TriangleMesh
+        Ouput mesh.
+    """
+    add_corner_points(mesh, bbox=bbox)
+
+    sides = 'top', 'bottom', 'left', 'right', 'front', 'back'
+
+    for i, side in enumerate(sides):
+        mesh = close_side(mesh, side=side, bbox=bbox)
+
+    return mesh
+
+
+class Mesher3D(BaseMesher):
+    def __init__(self, image: np.ndarray):
+        super().__init__(image)
+        self.contour: TriangleMesh
+        self.pad_width = 0
+
+    def generate_contour(
+        self,
+        level: float = None,
+    ):
+        """Generate contours using marching cubes algorithm.
+
+        Also generates an envelope around the entire data volume
+        corresponding to the bounding box.
+
+        The bounding box equals the dimensions of the data volume.
 
         Parameters
         ----------
-        method : str, optional
-            Method name
-        tol : float, optional
-            Tolerance
-        max_num_steps : int, optional
-            Maximum number of optimization steps.
-        **kwargs
-            Description
+        level : float, optional
+            Contour value to search for isosurfaces (i.e. the threshold value).
+            By default takes the average of the min and max value. Can be
+            ignored if a binary image is passed to `Mesher3D`.
         """
-        logger.info('optimizing mesh')
-        import optimesh
-        verts, faces = optimesh.optimize_points_cells(
-            points=self.surface_mesh.vertices,
-            cells=self.surface_mesh.faces,
-            method=method,
-            tol=tol,
-            max_num_steps=max_num_steps,
-            **kwargs,
+        points, cells, *_ = measure.marching_cubes(
+            self.image,
+            level=level,
+            allow_degenerate=False,
         )
-        self.surface_mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
 
-    def subdivide_mesh(self, max_edge: int = 10, iter: int = 10):
-        """Subdivide triangles until the maximum edge size is reached.
+        mesh = TriangleMesh(points=points, cells=cells)
 
-        Parameters
-        ----------
-        max_edge : int, optional
-            Max triangle edge distance.
-        iter : int, optional
-            Maximum number of iterations of iterations.
-        """
-        from trimesh import remesh
-        verts, faces = remesh.subdivide_to_size(self.surface_mesh.vertices,
-                                                self.surface_mesh.faces,
-                                                max_edge=max_edge,
-                                                max_iter=10)
-        mesh = SurfaceMeshContainer(vertices=verts, faces=faces)
-        self.surface_mesh = mesh.to_trimesh()
+        bbox = BoundingBox.from_shape(self.image.shape)
+        mesh = generate_envelope(mesh, bbox=bbox)
 
-    def generate_volume_mesh(self):
-        """Generate volume mesh using Delauny triangulation with vertices from
-        surface mesh and k-means point generation."""
-        logger.info('triangulating')
-        verts = np.vstack([*self.points, self.surface_mesh.vertices])
-        tetrahedra = Delaunay(verts, incremental=False).simplices
-        logger.info(f'generated {len(tetrahedra)} tetrahedra')
+        logger.info(f'Generated contour with {len(mesh.cells)} cells')
 
-        self.volume_mesh = VolumeMeshContainer(vertices=verts,
-                                               faces=tetrahedra)
+        self.contour = mesh
 
-    def generate_domain_mask(self, label: int = 1):
-        """Generate domain mask.
+    def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
+        """Tetrahedralize a surface contour mesh.
 
         Parameters
         ----------
-        label : int, optional
-            Domain to generate mask for. Not implemented yet.
-        """
-        logger.info('generating mask')
-        vertices = self.volume_mesh.vertices
-
-        centers = vertices[self.volume_mesh.faces].mean(1)
-
-        mesh = self.surface_mesh.to_trimesh()
-
-        if mesh.is_watertight:
-            mask = mesh.contains(centers)
-        else:
-            mask = self.generate_domain_mask_from_image(centers, label=label)
-
-        self.mask = mask
-
-    def generate_domain_mask_from_image(self, centers, *, label):
-        """Alternative implementation to generate a domain mask for surface
-        meshes that are not closed, i.e. not watertight.
+        generate_region_markers : bool, optional
+            Attempt to automatically generate region markers.
+        **kwargs
+            Keyword arguments passed to
+            `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
 
         Returns
         -------
-        mask : (n,1) np.ndarray
-            1-dimensional mask for the faces
+        TetraMesh
+
+        Raises
+        ------
+        ValueError
+            Description
         """
+        if not self.contour:
+            raise ValueError('No contour mesh available.'
+                             'Run `Mesher3D.generate_contour()` first.')
 
-        pore_mask_center = self.image[tuple(
-            np.round(centers).astype(int).T)] == label
+        if generate_region_markers:
+            region_markers = get_region_markers(self.image)
+            kwargs['region_markers'] = region_markers
 
-        masks = [pore_mask_center]
-
-        if self.pad_width:
-            for i, dim in enumerate(reversed(self.image.shape)):
-                bound_min = self.pad_width
-                bound_max = dim - self.pad_width
-                mask = (centers[:, i] > bound_min) & (centers[:, i] <
-                                                      bound_max)
-                masks.append(mask)
-
-        mask = np.product(masks, axis=0).astype(bool)
-
-        return mask
-
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Retrieve volume mesh as meshio object."""
-        verts = self.volume_mesh.vertices - self.pad_width
-        faces = self.volume_mesh.faces[self.mask]
-        mesh = VolumeMeshContainer(vertices=verts, faces=faces).to_meshio()
-        mesh.remove_orphaned_nodes()
-        return mesh
+        contour = self.contour
+        volume_mesh = contour.tetrahedralize(**kwargs)
+        return volume_mesh
 
 
 def generate_3d_mesh(
     image: np.ndarray,
     *,
-    step_size: int = 2,
-    pad_width: int = 2,
-    point_density: float = 1 / 10000,
-    res_kmeans: float = 1.0,
-    n_faces: int = 1000,
+    level: float = None,
+    **kwargs,
 ) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
@@ -363,38 +324,21 @@ def generate_3d_mesh(
     ----------
     image : 3D np.ndarray
         Input image to mesh.
-    pad_width : int, optional
-        Number of voxels to pad the images with on each side. Tetrahedra will
-        extend beyond the boundary. The image is padded with the edge values
-        of the array `mode='edge'` in `np.pad`).
-    point_density : float, optional
-        Density of points to distribute over the domains for triangle
-        generation. Expressed as a fraction of the number of voxels.
-    step_size : int
-        Step size in voxels for the marching cubes algorithms. Larger steps
-        yield faster but coarser results.
-    res_kmeans : float
-        Resolution for the point generation using k-means. Lower resolution of
-        the image by this factor. Larger number yiels faster but coarser
-        results.
-    n_faces : int
-        Target number of faces for the mesh decimation step.
+    level : float, optional
+        Contour value to search for isosurfaces (i.e. the threshold value).
+        By default takes the average of the min and max value. Can be
+        ignored if a binary image is passed as `image`.
+    **kwargs
+        Optional keyword arguments passed to
+        `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
 
     Returns
     -------
-    meshio.Mesh
+    volume_mesh : TetraMesh
         Description of the mesh.
     """
     mesher = Mesher3D(image)
-    mesher.pad(pad_width=pad_width)
-    mesher.add_points(point_density=point_density,
-                      step_size=res_kmeans,
-                      label=1)
-    mesher.generate_surface_mesh(step_size=step_size)
-    mesher.simplify_mesh(n_faces=n_faces)
-    mesher.smooth_mesh()
-    mesher.generate_volume_mesh()
-    mesher.generate_domain_mask()
-    mesh = mesher.to_meshio()
+    mesher.generate_contour(level=level)
 
-    return mesh
+    volume_mesh = mesher.tetrahedralize(**kwargs)
+    return volume_mesh

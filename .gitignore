@@ -31,9 +31,5 @@ playground/
 *.msh*
 *.gmsh*
 
-# pygalmesh
-dummies_post_treatement.xyz
-dummies_pre_treatement.xyz
-
 # matplotlib
 result_images/

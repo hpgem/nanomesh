@@ -276,9 +276,9 @@ class Mesher2D(BaseMesher):
 
         regions = generate_regions(contours)
         segments = generate_segments(contours)
-        vertices = np.vstack(contours)
+        points = np.vstack(contours)
 
-        mesh = simple_triangulate(vertices=vertices,
+        mesh = simple_triangulate(points=points,
                                   segments=segments,
                                   regions=regions,
                                   **kwargs)
@@ -301,9 +301,9 @@ class Mesher2D(BaseMesher):
         Returns
         -------
         labels : (n,) np.array
-            Array face labels.
+            Array cell labels.
         """
-        centers = mesh.face_centers
+        centers = mesh.cell_centers
 
         labels = np.zeros(len(centers), dtype=int)
 

@@ -25,7 +25,7 @@ def write_smesh(filename: os.PathLike,
 
     path = Path(filename)
     with path.open('w') as f:
-        n_nodes, n_dim = mesh.vertices.shape
+        n_nodes, n_dim = mesh.points.shape
         n_attrs = 0
         node_markers = 0
 
@@ -33,17 +33,17 @@ def write_smesh(filename: os.PathLike,
 
         node_fmt = '{:4d}' + ' {:8.2f}' * n_dim
 
-        for i, node in enumerate(mesh.vertices):
+        for i, node in enumerate(mesh.points):
             print(node_fmt.format(i + 1, *node), file=f)
 
-        n_facets, n_corners = mesh.faces.shape
+        n_facets, n_corners = mesh.cells.shape
         facet_markers = 0
 
         print(f'{n_facets} {facet_markers}', file=f)
 
         facet_fmt = '{:4d}' + ' {:8d}' * n_corners
 
-        for facet in mesh.faces + 1:  # tetgen uses 1-indexing
+        for facet in mesh.cells + 1:  # tetgen uses 1-indexing
             print(facet_fmt.format(n_corners, *facet), file=f)
 
         # TODO, store holes in TriangleMesh?

@@ -43,7 +43,7 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
     return ax
 
 
-def simple_triangulate(vertices: np.ndarray,
+def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
                        regions: np.ndarray = None,
@@ -52,7 +52,7 @@ def simple_triangulate(vertices: np.ndarray,
 
     Parameters
     ----------
-    vertices : i,2 np.ndarray
+    points : i,2 np.ndarray
         Vertex coordinates.
     segments : j,2 np.ndarray, optional
         Index array describing segments.
@@ -72,7 +72,7 @@ def simple_triangulate(vertices: np.ndarray,
     mesh : TriangleMesh
         Triangle mesh
     """
-    triangle_dict_in = {'vertices': vertices}
+    triangle_dict_in = {'vertices': points}
 
     if segments is not None:
         triangle_dict_in['segments'] = segments
@@ -124,66 +124,66 @@ def pad(mesh: TriangleMesh,
     if width == 0:
         return mesh
 
-    top_edge, right_edge = mesh.vertices.max(axis=0)
-    bottom_edge, left_edge = mesh.vertices.min(axis=0)
+    top_edge, right_edge = mesh.points.max(axis=0)
+    bottom_edge, left_edge = mesh.points.min(axis=0)
 
     if side == 'bottom':
-        is_edge = mesh.vertices[:, 0] == bottom_edge
+        is_edge = mesh.points[:, 0] == bottom_edge
         corners = np.array([[bottom_edge - width, right_edge],
                             [bottom_edge - width, left_edge]])
     elif side == 'left':
-        is_edge = mesh.vertices[:, 1] == left_edge
+        is_edge = mesh.points[:, 1] == left_edge
         corners = np.array([[bottom_edge, left_edge - width],
                             [top_edge, left_edge - width]])
     elif side == 'top':
-        is_edge = mesh.vertices[:, 0] == top_edge
+        is_edge = mesh.points[:, 0] == top_edge
         corners = np.array([[top_edge + width, right_edge],
                             [top_edge + width, left_edge]])
     elif side == 'right':
-        is_edge = mesh.vertices[:, 1] == right_edge
+        is_edge = mesh.points[:, 1] == right_edge
         corners = np.array([[bottom_edge, right_edge + width],
                             [top_edge, right_edge + width]])
     else:
         raise ValueError('Side must be one of `right`, `left`, `bottom`'
                          f'`top`. Got {side=}')
 
-    edge_coords = mesh.vertices[is_edge]
+    edge_coords = mesh.points[is_edge]
 
     coords = np.vstack([edge_coords, corners])
 
-    pad_mesh = simple_triangulate(vertices=coords, opts=opts)
+    pad_mesh = simple_triangulate(points=coords, opts=opts)
 
     mesh_edge_index = np.argwhere(is_edge).flatten()
     pad_edge_index = np.arange(len(mesh_edge_index))
     edge_mapping = np.vstack([pad_edge_index, mesh_edge_index])
 
-    n_verts = len(mesh.vertices)
+    n_verts = len(mesh.points)
     n_edge_verts = len(edge_coords)
-    n_pad_verts = len(pad_mesh.vertices) - n_edge_verts
+    n_pad_verts = len(pad_mesh.points) - n_edge_verts
 
     mesh_index = np.arange(n_verts, n_verts + n_pad_verts)
     pad_index = np.arange(n_edge_verts, n_edge_verts + n_pad_verts)
     pad_mapping = np.vstack([pad_index, mesh_index])
 
-    # mapping for the face indices faces in `pad_mesh` to the source mesh.
+    # mapping for the cell indices cells in `pad_mesh` to the source mesh.
     mapping = np.hstack([edge_mapping, pad_mapping])
 
-    shape = pad_mesh.faces.shape
-    pad_faces = pad_mesh.faces.copy().ravel()
+    shape = pad_mesh.cells.shape
+    pad_cells = pad_mesh.cells.copy().ravel()
 
-    mask = np.in1d(pad_faces, mapping[0, :])
-    pad_faces[mask] = mapping[1,
-                              np.searchsorted(mapping[0, :], pad_faces[mask])]
-    pad_faces = pad_faces.reshape(shape)
+    mask = np.in1d(pad_cells, mapping[0, :])
+    pad_cells[mask] = mapping[1,
+                              np.searchsorted(mapping[0, :], pad_cells[mask])]
+    pad_cells = pad_cells.reshape(shape)
 
-    pad_verts = pad_mesh.vertices[n_edge_verts:]
-    pad_labels = np.ones(len(pad_faces)) * label
+    pad_verts = pad_mesh.points[n_edge_verts:]
+    pad_labels = np.ones(len(pad_cells)) * label
 
     # append values to source mesh
-    vertices = np.vstack([mesh.vertices, pad_verts])
-    faces = np.vstack([mesh.faces, pad_faces])
+    points = np.vstack([mesh.points, pad_verts])
+    cells = np.vstack([mesh.cells, pad_cells])
     labels = np.hstack([mesh.labels, pad_labels])
 
-    new_mesh = TriangleMesh(vertices=vertices, faces=faces, labels=labels)
+    new_mesh = TriangleMesh(points=points, cells=cells, labels=labels)
 
     return new_mesh

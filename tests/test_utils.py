@@ -5,17 +5,7 @@ from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh_container import TriangleMesh
 from nanomesh.mesh_utils import simple_triangulate
-from nanomesh.utils import SliceViewer, requires, show_image
-
-
-@pytest.mark.parametrize('condition,expected', ((True, True), (False, None)))
-def test_requires(condition, expected):
-    """Test `requires` functionality."""
-    @requires(condition=condition, message=f'condition: {condition}')
-    def func():
-        return True
-
-    assert func() == expected
+from nanomesh.utils import SliceViewer, show_image
 
 
 def test_SliceViewer_fails():

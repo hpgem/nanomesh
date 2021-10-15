@@ -9,12 +9,6 @@ import numpy as np
 from .base_image import BaseImage
 from .io import load_vol
 from .plane import Plane
-from .utils import requires
-
-try:
-    import pygalmesh
-except ImportError:
-    pygalmesh = None
 
 logger = logging.getLogger(__name__)
 
@@ -119,26 +113,6 @@ class Volume(BaseImage):
         """
         from .mesh3d import generate_3d_mesh
         return generate_3d_mesh(image=self.image, **kwargs)
-
-    @requires(condition=pygalmesh, message='requires pygalmesh')
-    def generate_mesh_cgal(self, h: tuple = (1.0, 1.0, 1.0),
-                           **kwargs) -> 'meshio.Mesh':
-        """Generate mesh from binary image.
-
-        Parameters
-        ----------
-        h : tuple, optional
-            ?
-        **kwargs
-            Description?
-
-        Returns
-        -------
-        meshio.Mesh
-            Mesh representation of volume.
-        """
-        mesh = pygalmesh.generate_from_array(self.image, h, **kwargs)
-        return mesh
 
     def select_plane(self,
                      x: int = None,

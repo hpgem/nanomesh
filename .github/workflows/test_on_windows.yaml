@@ -31,17 +31,6 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('constraints.txt') }}
 
-      # Disabled -> https://github.com/hpgem/nanomesh/issues/36
-      # - name: Install yasm-tool
-      #   # Work-around for bug with gmp in windows
-      #   # more info: https://doc.cgal.org/latest/Manual/windows.html)
-      #   run: |
-      #     vcpkg.exe install yasm-tool:x86-windows
-
-      # - name: Install libraries with vcpkg
-      #   run: |
-      #     vcpkg install eigen3 cgal
-
       - name: Python info
         shell: pwsh
         run: |

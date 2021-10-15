@@ -123,7 +123,6 @@ nbsphinx_execute = 'never'
 autodoc_mock_imports = [
     'ipywidgets',
     'itkwidgets',
-    'pygalmesh',
     'open3d',
     'pyvista',
     'trimesh',

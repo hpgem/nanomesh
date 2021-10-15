@@ -85,8 +85,8 @@ def test_simplify(triangle_mesh_3d):
     assert isinstance(new, TriangleMesh)
 
 
-def test_simplify_by_vertex_clustering(triangle_mesh_3d):
-    new = triangle_mesh_3d.simplify_by_vertex_clustering(voxel_size=1.0)
+def test_simplify_by_point_clustering(triangle_mesh_3d):
+    new = triangle_mesh_3d.simplify_by_point_clustering(voxel_size=1.0)
     assert isinstance(new, TriangleMesh)
 
 

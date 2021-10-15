@@ -235,7 +235,7 @@ class TriangleMesh(MeshContainer):
         TriangleMesh
         """
         mesh_in = self.to_open3d()
-        mesh_smp = mesh_in.simplify_point_clustering(
+        mesh_smp = mesh_in.simplify_vertex_clustering(
             voxel_size=voxel_size,
             contraction=open3d.geometry.SimplificationContraction.Average)
 

@@ -105,7 +105,7 @@ def get_region_markers(
 
 
 def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
-    """Add corner points from bounding box to mesh vertices.
+    """Add corner points from bounding box to mesh points.
 
     Parameters
     ----------
@@ -125,7 +125,7 @@ def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
         [bbox.xmax, bbox.ymax, bbox.zmax],
     ])
 
-    mesh.vertices = np.vstack([mesh.vertices, corners])
+    mesh.points = np.vstack([mesh.points, corners])
 
 
 def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
@@ -153,7 +153,7 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
     ValueError
         When the value of `side` is invalid.
     """
-    all_verts = mesh.vertices
+    all_points = mesh.points
 
     if side == 'top':
         edge_col = 2
@@ -178,31 +178,31 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
                          f'`top`, `front`, `back`. Got {side=}')
 
     keep_cols = [col for col in (0, 1, 2) if col != edge_col]
-    is_edge = all_verts[:, edge_col] == edge_value
+    is_edge = all_points[:, edge_col] == edge_value
 
-    coords = all_verts[is_edge][:, keep_cols]
+    coords = all_points[is_edge][:, keep_cols]
 
-    edge_mesh = simple_triangulate(vertices=coords, opts='')
+    edge_mesh = simple_triangulate(points=coords, opts='')
 
     mesh_edge_index = np.argwhere(is_edge).flatten()
     new_edge_index = np.arange(len(mesh_edge_index))
     mapping = np.vstack([new_edge_index, mesh_edge_index])
 
-    shape = edge_mesh.faces.shape
-    new_faces = edge_mesh.faces.copy().ravel()
+    shape = edge_mesh.cells.shape
+    new_cells = edge_mesh.cells.copy().ravel()
 
-    mask = np.in1d(new_faces, mapping[0, :])
-    new_faces[mask] = mapping[1,
-                              np.searchsorted(mapping[0, :], new_faces[mask])]
-    new_faces = new_faces.reshape(shape)
+    mask = np.in1d(new_cells, mapping[0, :])
+    new_cells[mask] = mapping[1,
+                              np.searchsorted(mapping[0, :], new_cells[mask])]
+    new_cells = new_cells.reshape(shape)
 
-    new_labels = np.ones(len(new_faces)) * 123
+    new_labels = np.ones(len(new_cells)) * 123
 
-    vertices = all_verts
-    faces = np.vstack([mesh.faces, new_faces])
+    points = all_points
+    cells = np.vstack([mesh.cells, new_cells])
     labels = np.hstack([mesh.labels, new_labels])
 
-    mesh = TriangleMesh(vertices=vertices, faces=faces, labels=labels)
+    mesh = TriangleMesh(points=points, cells=cells, labels=labels)
 
     if ax:
         edge_mesh.plot(ax=ax)
@@ -264,18 +264,18 @@ class Mesher3D(BaseMesher):
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher3D`.
         """
-        verts, faces, *_ = measure.marching_cubes(
+        points, cells, *_ = measure.marching_cubes(
             self.image,
             level=level,
             allow_degenerate=False,
         )
 
-        mesh = TriangleMesh(vertices=verts, faces=faces)
+        mesh = TriangleMesh(points=points, cells=cells)
 
         bbox = BoundingBox.from_shape(self.image.shape)
         mesh = generate_envelope(mesh, bbox=bbox)
 
-        logger.info(f'Generated contour with {len(mesh.faces)} faces')
+        logger.info(f'Generated contour with {len(mesh.cells)} cells')
 
         self.contour = mesh
 

@@ -63,7 +63,7 @@ shape_and_size = Metric('shape_and_size')
 
 def max_min_edge_ratio(mesh: MeshContainer) -> np.ndarray:
     """Place holder, updated dynamically."""
-    cell_points = mesh.vertices[mesh.faces]
+    cell_points = mesh.points[mesh.cells]
     diff = cell_points - np.roll(cell_points, shift=1, axis=1)
     lengths = np.linalg.norm(diff, axis=2)
     return lengths.max(axis=1) / lengths.min(axis=1)
@@ -232,7 +232,7 @@ mesh : MeshContainer
 Returns
 -------
 quality : np.ndarray
-    Array with face qualities.
+    Array with cell qualities.
     """
 
 
@@ -269,7 +269,7 @@ def histogram(
     ax: plt.Axes = None,
     **kwargs,
 ) -> plt.Axes:
-    """Create a mesh plot with the faces are colored by the face quality.
+    """Create a mesh plot with the cells are colored by the cell quality.
 
     Parameters
     ----------
@@ -319,7 +319,7 @@ def plot2d(
     ax: plt.Axes = None,
     **kwargs,
 ) -> plt.Axes:
-    """Create a mesh plot with the faces are colored by the face quality.
+    """Create a mesh plot with the cells are colored by the cell quality.
 
     Parameters
     ----------
@@ -349,12 +349,12 @@ def plot2d(
 
     fig, ax = plt.subplots()
 
-    x = mesh.vertices[:, 0]
-    y = mesh.vertices[:, 1]
+    x = mesh.points[:, 0]
+    y = mesh.points[:, 1]
 
-    faces = mesh.faces
+    cells = mesh.cells
 
-    tpc = ax.tripcolor(x, y, quality, triangles=faces, **kwargs)
+    tpc = ax.tripcolor(x, y, quality, triangles=cells, **kwargs)
     ax.figure.colorbar(tpc)
     ax.axis('scaled')
 

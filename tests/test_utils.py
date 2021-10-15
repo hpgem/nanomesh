@@ -64,22 +64,22 @@ def test_show_image():
 
 @pytest.fixture
 def simple_mesh():
-    return TriangleMesh(vertices=np.array([
+    return TriangleMesh(points=np.array([
         [0., 0.],
         [0., 1.],
         [1., 1.],
         [1., 0.],
     ]),
-                        faces=np.array([[1, 0, 3], [3, 2, 1]]))
+                        cells=np.array([[1, 0, 3], [3, 2, 1]]))
 
 
 def test_simple_triangulate(simple_mesh):
     """Test simple mesh creation."""
-    vertices = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
-    mesh = simple_triangulate(vertices, opts='q30a1')
+    points = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
+    mesh = simple_triangulate(points, opts='q30a1')
 
-    np.testing.assert_equal(mesh.vertices, simple_mesh.vertices)
-    np.testing.assert_equal(mesh.faces, simple_mesh.faces)
+    np.testing.assert_equal(mesh.points, simple_mesh.points)
+    np.testing.assert_equal(mesh.cells, simple_mesh.cells)
     np.testing.assert_equal(mesh.labels, simple_mesh.labels)
 
 
@@ -96,8 +96,8 @@ def test_pad_side(simple_mesh, side, shape):
     assert isinstance(res, TriangleMesh)
 
     res_shape = np.hstack([
-        res.vertices.min(axis=0),
-        res.vertices.max(axis=0),
+        res.points.min(axis=0),
+        res.points.max(axis=0),
     ])
 
     np.testing.assert_equal(res_shape, shape)
@@ -111,8 +111,8 @@ def test_pad_width(simple_mesh, width):
     assert isinstance(res, TriangleMesh)
 
     res_shape = np.hstack([
-        res.vertices.min(axis=0),
-        res.vertices.max(axis=0),
+        res.points.min(axis=0),
+        res.points.max(axis=0),
     ])
 
     np.testing.assert_equal(res_shape, (0, -width, 1, 1))

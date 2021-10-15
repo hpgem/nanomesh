@@ -53,10 +53,10 @@ def test_generate_2d_mesh(segmented):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    assert mesh.vertices.shape == expected_mesh.vertices.shape
-    assert mesh.faces.shape == expected_mesh.faces.shape
-    np.testing.assert_allclose(mesh.vertices, expected_mesh.vertices)
-    np.testing.assert_allclose(mesh.faces, expected_mesh.faces)
+    assert mesh.points.shape == expected_mesh.points.shape
+    assert mesh.cells.shape == expected_mesh.cells.shape
+    np.testing.assert_allclose(mesh.points, expected_mesh.points)
+    np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
 
 
 def test_subdivide_contour():

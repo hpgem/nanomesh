@@ -29,7 +29,7 @@ def test_metrics(sample_mesh, inplace):
             assert metric in sample_mesh.metadata
 
         assert isinstance(output, np.ndarray)
-        assert len(output) == len(sample_mesh.faces)
+        assert len(output) == len(sample_mesh.cells)
 
     sample_mesh.metadata.clear()
 

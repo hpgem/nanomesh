@@ -13,23 +13,23 @@ from trimesh import remesh
 class MeshContainer:
     _element_type: str = ''
 
-    def __init__(self, vertices: np.ndarray, faces: np.ndarray, **metadata):
+    def __init__(self, points: np.ndarray, cells: np.ndarray, **metadata):
         self._label_key = 'labels'
 
-        self.vertices = vertices
-        self.faces = faces
+        self.points = points
+        self.cells = cells
 
         metadata.setdefault(self._label_key,
-                            np.zeros(len(self.faces), dtype=int))
+                            np.zeros(len(self.cells), dtype=int))
         self.metadata = metadata
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
         cells = [
-            (self._element_type, self.faces),
+            (self._element_type, self.cells),
         ]
 
-        mesh = meshio.Mesh(self.vertices, cells)
+        mesh = meshio.Mesh(self.points, cells)
 
         for key, value in self.metadata.items():
             mesh.cell_data[key] = [value]
@@ -39,8 +39,8 @@ class MeshContainer:
     @classmethod
     def from_meshio(cls, mesh: 'meshio.Mesh'):
         """Return `MeshContainer` from meshio object."""
-        vertices = mesh.points
-        faces = mesh.cells[0].data
+        points = mesh.points
+        cells = mesh.cells[0].data
         metadata = {}
 
         for key, value in mesh.cell_data.items():
@@ -48,19 +48,19 @@ class MeshContainer:
             key = key.replace(':ref', 'Ref')
             metadata[key] = value[0]
 
-        return MeshContainer.create(vertices=vertices, faces=faces, **metadata)
+        return MeshContainer.create(points=points, cells=cells, **metadata)
 
     @classmethod
-    def create(cls, vertices, faces, **metadata):
+    def create(cls, points, cells, **metadata):
         """Class dispatcher."""
-        n = faces.shape[1]
+        n = cells.shape[1]
         if n == 3:
             item_class = TriangleMesh
         elif n == 4:
             item_class = TetraMesh
         else:
             item_class = cls
-        return item_class(vertices=vertices, faces=faces, **metadata)
+        return item_class(points=points, cells=cells, **metadata)
 
     def write(self, *args, **kwargs):
         """Simple wrapper around `meshio.write`."""
@@ -96,18 +96,18 @@ class MeshContainer:
         pv.plot(self.to_meshio(), **kwargs)
 
     @property
-    def face_centers(self):
-        """Return centers of faces (mean of vertices)."""
-        return self.vertices[self.faces].mean(axis=1)
+    def cell_centers(self):
+        """Return centers of cells (mean of corner points)."""
+        return self.points[self.cells].mean(axis=1)
 
     @property
     def labels(self):
-        """Shortcut for face labels."""
+        """Shortcut for cell labels."""
         return self.metadata[self._label_key]
 
     @labels.setter
     def labels(self, data: np.array):
-        """Shortcut for setting face labels."""
+        """Shortcut for setting cell labels."""
         self.metadata[self._label_key] = data
 
     @property
@@ -125,9 +125,9 @@ class TriangleMesh(MeshContainer):
         For compatibility, sometimes a column with zeroes is added. This
         method drops that column.
         """
-        has_third_dimension = self.vertices.shape[1] == 3
+        has_third_dimension = self.points.shape[1] == 3
         if has_third_dimension:
-            self.vertices = self.vertices[:, 0:2]
+            self.points = self.points[:, 0:2]
 
     def plot(self, ax: plt.Axes = None) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
@@ -145,10 +145,10 @@ class TriangleMesh(MeshContainer):
             fig, ax = plt.subplots()
 
         for label in self.unique_labels:
-            vert_x, vert_y = self.vertices.T
+            vert_x, vert_y = self.points.T
             ax.triplot(vert_y,
                        vert_x,
-                       triangles=self.faces,
+                       triangles=self.cells,
                        mask=self.labels != label,
                        label=label)
 
@@ -158,77 +158,77 @@ class TriangleMesh(MeshContainer):
 
     def to_trimesh(self) -> 'trimesh.Trimesh':
         """Return instance of `trimesh.Trimesh`."""
-        return trimesh.Trimesh(vertices=self.vertices, faces=self.faces)
+        return trimesh.Trimesh(vertices=self.points, faces=self.cells)
 
     def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
         """Return instance of `open3d.geometry.TriangleMesh`."""
         import open3d
         return open3d.geometry.TriangleMesh(
-            vertices=open3d.utility.Vector3dVector(self.vertices),
-            triangles=open3d.utility.Vector3iVector(self.faces))
+            vertices=open3d.utility.Vector3dVector(self.points),
+            triangles=open3d.utility.Vector3iVector(self.cells))
 
     def to_polydata(self) -> 'pv.PolyData':
         """Return instance of `pyvista.Polydata`."""
-        vertices = self.vertices
-        faces = self.faces
-        # preprend 3 to indicate number of points per face
-        stacked_faces = np.hstack(np.insert(faces, 0, values=3, axis=1))
-        return pv.PolyData(vertices, stacked_faces, n_faces=len(faces))
+        points = self.points
+        cells = self.cells
+        # preprend 3 to indicate number of points per cell
+        stacked_cells = np.hstack(np.insert(cells, 0, values=3, axis=1))
+        return pv.PolyData(points, stacked_cells, n_faces=len(cells))
 
     @classmethod
     def from_open3d(cls,
                     mesh: 'open3d.geometry.TriangleMesh') -> 'TriangleMesh':
         """Return instance of `TriangleMesh` from open3d."""
-        vertices = np.asarray(mesh.vertices)
-        faces = np.asarray(mesh.triangles)
-        return cls(vertices=vertices, faces=faces)
+        points = np.asarray(mesh.vertices)
+        cells = np.asarray(mesh.triangles)
+        return cls(points=points, cells=cells)
 
     @classmethod
     def from_scipy(cls,
                    mesh: 'scipy.spatial.qhull.Delaunay') -> 'TriangleMesh':
         """Return instance of `TriangleMesh` from `scipy.spatial.Delaunay`
         object."""
-        vertices = mesh.points
-        faces = mesh.simplices
-        return cls(vertices=vertices, faces=faces)
+        points = mesh.points
+        cells = mesh.simplices
+        return cls(points=points, cells=cells)
 
     @classmethod
     def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'TriangleMesh':
         """Return instance of `TriangleMesh` from trimesh."""
-        return cls(vertices=mesh.vertices, faces=mesh.faces)
+        return cls(points=mesh.vertices, cells=mesh.faces)
 
     @classmethod
     def from_triangle_dict(cls, dct: dict) -> 'TriangleMesh':
         """Return instance of `TriangleMesh` from trimesh results dict."""
-        vertices = dct['vertices']
-        faces = dct['triangles']
-        return cls(vertices=vertices, faces=faces)
+        points = dct['vertices']
+        cells = dct['triangles']
+        return cls(points=points, cells=cells)
 
-    def simplify(self, n_faces: int) -> 'TriangleMesh':
+    def simplify(self, n_cells: int) -> 'TriangleMesh':
         """Simplify triangular mesh using `open3d`.
 
         Parameters
         ----------
-        n_faces : int
-            Simplify mesh until this number of faces is reached.
+        n_cells : int
+            Simplify mesh until this number of cells is reached.
 
         Returns
         -------
         TriangleMesh
         """
         mesh_o3d = self.to_open3d()
-        simplified_o3d = mesh_o3d.simplify_quadric_decimation(int(n_faces))
+        simplified_o3d = mesh_o3d.simplify_quadric_decimation(int(n_cells))
         return TriangleMesh.from_open3d(simplified_o3d)
 
-    def simplify_by_vertex_clustering(self,
-                                      voxel_size: float = 1.0
-                                      ) -> 'TriangleMesh':
-        """Simplify mesh geometry using vertex clustering.
+    def simplify_by_point_clustering(self,
+                                     voxel_size: float = 1.0
+                                     ) -> 'TriangleMesh':
+        """Simplify mesh geometry using point clustering.
 
         Parameters
         ----------
         voxel_size : float, optional
-            Size of the target voxel within which vertices are grouped.
+            Size of the target voxel within which points are grouped.
 
         Returns
         -------
@@ -285,20 +285,20 @@ class TriangleMesh(MeshContainer):
         TriangleMesh
         """
         import optimesh
-        verts, faces = optimesh.optimize_points_cells(
-            X=self.vertices,
-            cells=self.faces,
+        points, cells = optimesh.optimize_points_cells(
+            X=self.points,
+            cells=self.cells,
             method=method,
             tol=tol,
             max_num_steps=max_num_steps,
             **kwargs,
         )
-        return TriangleMesh(vertices=verts, faces=faces)
+        return TriangleMesh(points=points, cells=cells)
 
     def subdivide(self, max_edge: int = 10, iters: int = 10) -> 'TriangleMesh':
         """Subdivide triangles."""
-        verts, faces = remesh.subdivide(self.vertices, self.faces)
-        return TriangleMesh(vertices=verts, faces=faces)
+        points, cells = remesh.subdivide(self.points, self.cells)
+        return TriangleMesh(points=points, cells=cells)
 
     def tetrahedralize(self,
                        region_markers: dict = None,
@@ -349,23 +349,23 @@ class TetraMesh(MeshContainer):
         """Return instance of `open3d.geometry.TetraMesh`."""
         import open3d
         return open3d.geometry.TetraMesh(
-            vertices=open3d.utility.Vector3dVector(self.vertices),
-            tetras=open3d.utility.Vector4iVector(self.faces))
+            vertices=open3d.utility.Vector3dVector(self.points),
+            tetras=open3d.utility.Vector4iVector(self.cells))
 
     @classmethod
     def from_open3d(cls, mesh):
         """Return instance of `TetraMesh` from open3d."""
-        vertices = np.asarray(mesh.vertices)
-        faces = np.asarray(mesh.tetras)
-        return cls(vertices=vertices, faces=faces)
+        points = np.asarray(mesh.vertices)
+        cells = np.asarray(mesh.tetras)
+        return cls(points=points, cells=cells)
 
     @classmethod
     def from_pyvista_unstructured_grid(cls, grid: 'pv.UnstructuredGrid'):
         """Return infance of `TetraMesh` from `pyvista.UnstructuredGrid`."""
         assert grid.cells[0] == 4
-        faces = grid.cells.reshape(grid.n_cells, 5)[:, 1:]
-        vertices = np.array(grid.points)
-        return cls(vertices=vertices, faces=faces)
+        cells = grid.cells.reshape(grid.n_cells, 5)[:, 1:]
+        points = np.array(grid.points)
+        return cls(points=points, cells=cells)
 
     def plot(self, **kwargs):
         """Show grid using `pyvista`.

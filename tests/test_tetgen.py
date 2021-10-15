@@ -13,7 +13,7 @@ def triangle_mesh():
 
     This mesh is a cube with a rectangular 'pore' through the middle.
     """
-    vertices = np.array([
+    points = np.array([
         # cube
         [0.0, 0.0, 0.0],  # A
         [4.0, 0.0, 0.0],  # B
@@ -34,7 +34,7 @@ def triangle_mesh():
         [1.0, 3.0, 4.0],  # h
     ])
 
-    faces = np.array([
+    cells = np.array([
         # top face
         [0, 11, 8],
         [1, 8, 9],
@@ -77,7 +77,7 @@ def triangle_mesh():
         [15, 12, 13],
     ])
 
-    mesh = TriangleMesh(vertices=vertices, faces=faces)
+    mesh = TriangleMesh(points=points, cells=cells)
     return mesh
 
 
@@ -104,10 +104,10 @@ def test_generate_3d_mesh(triangle_mesh):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    assert tetra_mesh.vertices.shape == expected_mesh.vertices.shape
-    assert tetra_mesh.faces.shape == expected_mesh.faces.shape
-    np.testing.assert_allclose(tetra_mesh.vertices, expected_mesh.vertices)
-    np.testing.assert_allclose(tetra_mesh.faces, expected_mesh.faces)
+    assert tetra_mesh.points.shape == expected_mesh.points.shape
+    assert tetra_mesh.cells.shape == expected_mesh.cells.shape
+    np.testing.assert_allclose(tetra_mesh.points, expected_mesh.points)
+    np.testing.assert_allclose(tetra_mesh.cells, expected_mesh.cells)
 
     np.testing.assert_allclose(tetra_mesh.metadata['regions'],
                                expected_mesh.metadata['regions'])

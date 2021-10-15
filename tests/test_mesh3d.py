@@ -31,10 +31,10 @@ def compare_mesh_results(result_mesh, expected_fn):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    assert result_mesh.vertices.shape == expected_mesh.vertices.shape
-    assert result_mesh.faces.shape == expected_mesh.faces.shape
-    np.testing.assert_allclose(result_mesh.vertices, expected_mesh.vertices)
-    np.testing.assert_allclose(result_mesh.faces, expected_mesh.faces)
+    assert result_mesh.points.shape == expected_mesh.points.shape
+    assert result_mesh.cells.shape == expected_mesh.cells.shape
+    np.testing.assert_allclose(result_mesh.points, expected_mesh.points)
+    np.testing.assert_allclose(result_mesh.cells, expected_mesh.cells)
 
     np.testing.assert_allclose(result_mesh.metadata['tetgenRef'],
                                expected_mesh.metadata['tetgenRef'])

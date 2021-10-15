@@ -37,10 +37,6 @@ jobs:
           which python
           python --version
 
-      # Disabled -> https://github.com/hpgem/nanomesh/issues/35
-      # - name: Install MacOS dependencies
-      #   run: brew install cgal eigen
-
       - name: Install dependencies
         shell: bash
         # make sure to do eager upgrade to avoice cache going stale

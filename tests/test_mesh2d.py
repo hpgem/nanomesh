@@ -71,16 +71,19 @@ def test_subdivide_contour():
     assert np.all(ret == expected)
 
 
-@pytest.mark.parametrize('coords,is_corner', (
-    ([[0, 3], [5, 5], [0, 7]], False),
-    ([[0, 3], [5, 5], [3, 0]], True),
-    ([[3, 0], [5, 5], [0, 3]], True),
-    ([[9, 17], [5, 15], [17, 19]], True),
-    ([[9, 5], [7, 4], [4, 0]], True),
-    ([[0, 17], [5, 15], [3, 19]], True),
-    ([[5, 5], [5, 7], [6, 6]], False),
-))
-def test_close_contour(coords, is_corner):
+@pytest.mark.parametrize(
+    'coords,expected_corner',
+    (
+        ([[0, 3], [5, 5], [0, 7]], None),
+        ([[0, 3], [5, 5], [3, 0]], [0, 0]),  # bottom, left
+        ([[3, 0], [5, 5], [0, 3]], [0, 0]),  # bottom, left
+        ([[9, 17], [5, 15], [17, 19]], None),
+        ([[9, 5], [7, 4], [4, 0]], [9, 0]),  # bottom, right
+        ([[0, 17], [5, 15], [3, 19]], [0, 19]),  # top, left
+        ([[9, 17], [5, 15], [3, 19]], [9, 19]),  # top, right
+        ([[5, 5], [5, 7], [6, 6]], None),
+    ))
+def test_close_contour(coords, expected_corner):
     image_chape = 10, 20
     contour = np.array(coords)
 
@@ -88,8 +91,12 @@ def test_close_contour(coords, is_corner):
 
     ret = close_corner_contour(contour, image_chape)
 
+    is_corner = (expected_corner is not None)
+
     if is_corner:
         ret.shape[1] == n_rows + 1
+        corner = ret[-1]
+        np.testing.assert_equal(corner, expected_corner)
     else:
         ret.shape[1] == n_rows
 

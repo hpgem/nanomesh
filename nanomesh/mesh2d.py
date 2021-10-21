@@ -133,11 +133,11 @@ def close_corner_contour(contour: np.ndarray, shape: tuple) -> np.ndarray:
     if bottom and left:
         extra_point = (0, 0)
     elif top and left:
-        extra_point = (ydim, 0)
+        extra_point = (0, ydim)
     elif top and right:
-        extra_point = (ydim, xdim)
+        extra_point = (xdim, ydim)
     elif bottom and right:
-        extra_point = (0, xdim)
+        extra_point = (xdim, 0)
     else:
         # all good
         return contour

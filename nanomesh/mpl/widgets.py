@@ -39,7 +39,7 @@ class PolygonSelectorWithSnapping(PolygonSelector):
               and self._ys[-1] == self._ys[0]):
             self._polygon_completed = True
 
-        if self.snapped is not None:
+        elif self.snapped is not None:
             self._xs.insert(-1, self._xs[-1])
             self._ys.insert(-1, self._ys[-1])
 

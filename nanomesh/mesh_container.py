@@ -436,3 +436,14 @@ class TetraMesh(MeshContainer):
             plotter.show(jupyter_backend=backend)
 
         return plotter
+
+    def pad(self, **kwargs) -> 'TetraMesh':
+        """Pad a mesh.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments passed to `nanomesh.mesh_utils.pad3d`
+        """
+        from nanomesh.mesh_utils_3d import pad3d
+        return pad3d(self, **kwargs)

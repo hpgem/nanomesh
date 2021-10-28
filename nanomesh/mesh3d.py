@@ -27,7 +27,8 @@ class BoundingBox:
     zmax: float
 
     @classmethod
-    def from_shape(cls, shape):
+    def from_shape(cls, shape: tuple):
+        """Generate bounding box from data shape."""
         xmin, ymin, zmin = 0, 0, 0
         xmax, ymax, zmax = np.array(shape) - 1
         return cls(xmin=xmin,
@@ -36,6 +37,34 @@ class BoundingBox:
                    xmax=xmax,
                    ymax=ymax,
                    zmax=zmax)
+
+    @classmethod
+    def from_points(cls, points: np.array):
+        """Generate bounding box from set of points or coordinates."""
+        xmax, ymax, zmax = points.max(axis=0)
+        xmin, ymin, zmin = points.min(axis=0)
+
+        return cls(
+            xmin=xmin,
+            xmax=xmax,
+            ymin=ymin,
+            ymax=ymax,
+            zmin=zmin,
+            zmax=zmax,
+        )
+
+    def to_points(self):
+        """Return (m,3) array with corner points."""
+        return np.array([
+            [self.xmin, self.ymin, self.zmin],
+            [self.xmin, self.ymin, self.zmax],
+            [self.xmin, self.ymax, self.zmin],
+            [self.xmin, self.ymax, self.zmax],
+            [self.xmax, self.ymin, self.zmin],
+            [self.xmax, self.ymin, self.zmax],
+            [self.xmax, self.ymax, self.zmin],
+            [self.xmax, self.ymax, self.zmax],
+        ])
 
 
 def get_point_in_prop(
@@ -114,17 +143,7 @@ def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
     bbox : BoundingBox
         Container for the bounding box coordinates.
     """
-    corners = np.array([
-        [bbox.xmin, bbox.ymin, bbox.zmin],
-        [bbox.xmin, bbox.ymin, bbox.zmax],
-        [bbox.xmin, bbox.ymax, bbox.zmin],
-        [bbox.xmin, bbox.ymax, bbox.zmax],
-        [bbox.xmax, bbox.ymin, bbox.zmin],
-        [bbox.xmax, bbox.ymin, bbox.zmax],
-        [bbox.xmax, bbox.ymax, bbox.zmin],
-        [bbox.xmax, bbox.ymax, bbox.zmax],
-    ])
-
+    corners = bbox.to_points()
     mesh.points = np.vstack([mesh.points, corners])
 
 

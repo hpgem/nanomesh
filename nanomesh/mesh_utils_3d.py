@@ -42,49 +42,63 @@ def pad3d(mesh: TetraMesh,
     if width == 0:
         return mesh
 
-    back_edge, right_edge, top_edge = mesh.points.max(axis=0)
-    front_edge, left_edge, bottom_edge = mesh.points.min(axis=0)
-
-    bbox = BoundingBox(
-        xmin=front_edge,
-        xmax=back_edge,
-        ymin=left_edge,
-        ymax=right_edge,
-        zmin=top_edge,
-        zmax=bottom_edge,
-    )
+    bbox = BoundingBox.from_points(mesh.points)
 
     if side == 'top':
         edge_col = 2
-        edge_value = top_edge
-        bbox.zmax = top_edge
-        bbox.zmin = top_edge - width
+        edge_value = bbox.zmax
+        extra_coords = np.array([
+            [bbox.xmin, bbox.ymin, bbox.zmax + width],
+            [bbox.xmin, bbox.ymax, bbox.zmax + width],
+            [bbox.xmax, bbox.ymin, bbox.zmax + width],
+            [bbox.xmax, bbox.ymax, bbox.zmax + width],
+        ])
+        bbox.zmin, bbox.zmax = bbox.zmax, bbox.zmax + width
     elif side == 'bottom':
         edge_col = 2
-        edge_value = bottom_edge
-        bbox.zmax = bottom_edge + width
-        bbox.zmin = bottom_edge
+        edge_value = bbox.zmin
+        extra_coords = np.array([
+            [bbox.xmin, bbox.ymin, bbox.zmin - width],
+            [bbox.xmin, bbox.ymax, bbox.zmin - width],
+            [bbox.xmax, bbox.ymin, bbox.zmin - width],
+            [bbox.xmax, bbox.ymax, bbox.zmin - width],
+        ])
     elif side == 'left':
         edge_col = 1
-        edge_value = left_edge
-        bbox.ymin = left_edge - width
-        bbox.ymax = right_edge
+        edge_value = bbox.ymin
+        extra_coords = np.array([
+            [bbox.xmin, bbox.ymin - width, bbox.zmin],
+            [bbox.xmin, bbox.ymin - width, bbox.zmax],
+            [bbox.xmax, bbox.ymin - width, bbox.zmin],
+            [bbox.xmax, bbox.ymin - width, bbox.zmax],
+        ])
     elif side == 'right':
         edge_col = 1
-        edge_value = right_edge
-        bbox.ymin = right_edge
-        bbox.ymax = right_edge + width
+        edge_value = bbox.ymax
+        extra_coords = np.array([
+            [bbox.xmin, bbox.ymax + width, bbox.zmin],
+            [bbox.xmin, bbox.ymax + width, bbox.zmax],
+            [bbox.xmax, bbox.ymax + width, bbox.zmin],
+            [bbox.xmax, bbox.ymax + width, bbox.zmax],
+        ])
     elif side == 'front':
         edge_col = 0
-        edge_value = right_edge
-        bbox.xmin = front_edge
-        bbox.xmax = front_edge - width
+        edge_value = bbox.xmin
+        extra_coords = np.array([
+            [bbox.xmin - width, bbox.ymin, bbox.zmin],
+            [bbox.xmin - width, bbox.ymin, bbox.zmax],
+            [bbox.xmin - width, bbox.ymax, bbox.zmin],
+            [bbox.xmin - width, bbox.ymax, bbox.zmax],
+        ])
     elif side == 'back':
         edge_col = 0
-        edge_value = right_edge
-        bbox.xmin = back_edge + width
-        bbox.xmax = back_edge
-
+        edge_value = bbox.xmax
+        extra_coords = np.array([
+            [bbox.xmax + width, bbox.ymin, bbox.zmin],
+            [bbox.xmax + width, bbox.ymin, bbox.zmax],
+            [bbox.xmax + width, bbox.ymax, bbox.zmin],
+            [bbox.xmax + width, bbox.ymax, bbox.zmax],
+        ])
     else:
         raise ValueError('Side must be one of `right`, `left`, `bottom`'
                          f'`top`, `front`, `back`. Got {side=}')
@@ -92,8 +106,12 @@ def pad3d(mesh: TetraMesh,
     is_edge = mesh.points[:, edge_col] == edge_value
     edge_coords = mesh.points[is_edge]
 
+    coords = np.vstack([edge_coords, extra_coords])
+
+    bbox_padding = BoundingBox.from_points(coords)
+
     ## modified bbox is the piece to be filled with tetrahedra
-    return bbox
+    return coords, is_edge
 
     # TODO: update this part for 3d
 

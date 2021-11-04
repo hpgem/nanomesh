@@ -103,6 +103,8 @@ def pad3d(mesh: TetraMesh,
         raise ValueError('Side must be one of `right`, `left`, `bottom`'
                          f'`top`, `front`, `back`. Got {side=}')
 
+    return edge_col, edge_value, extra_coords
+
     is_edge = mesh.points[:, edge_col] == edge_value
     edge_coords = mesh.points[is_edge]
 

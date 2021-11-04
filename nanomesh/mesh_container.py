@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import meshio
@@ -18,6 +19,7 @@ class MeshContainer:
 
         self.points = points
         self.cells = cells
+        self.region_markers: List[Tuple[int, np.ndarray]] = []
 
         metadata.setdefault(self._label_key,
                             np.zeros(len(self.cells), dtype=int))
@@ -301,14 +303,14 @@ class TriangleMesh(MeshContainer):
         return TriangleMesh(points=points, cells=cells)
 
     def tetrahedralize(self,
-                       region_markers: dict = None,
+                       region_markers: List[Tuple[int, np.ndarray]] = None,
                        **kwargs) -> 'TetraMesh':
         """Tetrahedralize a contour.
 
         Parameters
         ----------
-        region_markers : dict, optional
-            Dictionary of region markers. If not defined, automatically
+        region_markers : list, optional
+            List of region markers. If not defined, automatically
             generate regions.
         **kwargs
             Keyword arguments passed to `nanomesh.tetgen.tetrahedralize`.
@@ -320,7 +322,9 @@ class TriangleMesh(MeshContainer):
         import tempfile
 
         if region_markers is None:
-            region_markers = {}
+            region_markers = []
+
+        region_markers.extend(self.region_markers)
 
         from nanomesh import tetgen
         with tempfile.TemporaryDirectory() as tmp:
@@ -340,6 +344,17 @@ class TriangleMesh(MeshContainer):
         """
         from nanomesh.mesh_utils import pad
         return pad(self, **kwargs)
+
+    def pad3d(self, **kwargs) -> 'TriangleMesh':
+        """Pad a 3d mesh.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments passed to `nanomesh.mesh_utils.pad3d`
+        """
+        from nanomesh.mesh_utils_3d import pad3d
+        return pad3d(self, **kwargs)
 
 
 class TetraMesh(MeshContainer):
@@ -436,14 +451,3 @@ class TetraMesh(MeshContainer):
             plotter.show(jupyter_backend=backend)
 
         return plotter
-
-    def pad(self, **kwargs) -> 'TetraMesh':
-        """Pad a mesh.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to `nanomesh.mesh_utils.pad3d`
-        """
-        from nanomesh.mesh_utils_3d import pad3d
-        return pad3d(self, **kwargs)

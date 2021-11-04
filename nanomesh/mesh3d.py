@@ -69,11 +69,11 @@ class BoundingBox:
     @property
     def center(self) -> np.ndarray:
         """Return center of the bounding box."""
-        return np.array(
+        return np.array((
             (self.xmin + self.xmax) / 2,
             (self.ymin + self.ymax) / 2,
-            (self.zmin + self.ymax) / 2,
-        )
+            (self.zmin + self.zmax) / 2,
+        ))
 
 
 def get_point_in_prop(

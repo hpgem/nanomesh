@@ -307,6 +307,26 @@ class Mesher3D(BaseMesher):
 
         self.contour = mesh
 
+    def pad_contour(self, **kwargs):
+        """Pad the contour. See `nanomesh.TriangleMesh.pad3d` for info.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for `nanomesh.TriangleMesh.pad3d`.
+        """
+        self.contour = self.contour.pad3d(**kwargs)
+
+    def show_contour(self, **kwargs):
+        """Pad the contour. See `nanomesh.MeshContainer.plot_pyvista` for info.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for `nanomesh.MeshContainer.plot_pyvista`.
+        """
+        self.contour.plot_pyvista(**kwargs)
+
     def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
         """Tetrahedralize a surface contour mesh.
 

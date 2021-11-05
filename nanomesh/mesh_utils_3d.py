@@ -149,6 +149,8 @@ def pad3d(mesh: TriangleMesh,
 
     center = extra_coords.mean(axis=0)
     center[col] = (center[col] + edge_value) / 2
+    # Next line introduces a BUG: https://github.com/hpgem/nanomesh/issues/137
+    # new_mesh.region_markers.extend(mesh.region_markers)
     new_mesh.region_markers.append((label, center))
 
     return new_mesh

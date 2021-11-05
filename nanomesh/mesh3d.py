@@ -224,7 +224,7 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
                               np.searchsorted(mapping[0, :], new_cells[mask])]
     new_cells = new_cells.reshape(shape)
 
-    new_labels = np.ones(len(new_cells)) * 123
+    new_labels = np.ones(len(new_cells))
 
     points = all_points
     cells = np.vstack([mesh.cells, new_cells])

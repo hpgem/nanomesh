@@ -27,7 +27,8 @@ class BoundingBox:
     zmax: float
 
     @classmethod
-    def from_shape(cls, shape):
+    def from_shape(cls, shape: tuple):
+        """Generate bounding box from data shape."""
         xmin, ymin, zmin = 0, 0, 0
         xmax, ymax, zmax = np.array(shape) - 1
         return cls(xmin=xmin,
@@ -36,6 +37,52 @@ class BoundingBox:
                    xmax=xmax,
                    ymax=ymax,
                    zmax=zmax)
+
+    @property
+    def dimensions(self) -> Tuple[float, float, float]:
+        """Return dimensions of bounding box."""
+        return (
+            self.xmax - self.xmin,
+            self.ymax - self.ymin,
+            self.zmax - self.zmin,
+        )
+
+    @classmethod
+    def from_points(cls, points: np.array):
+        """Generate bounding box from set of points or coordinates."""
+        xmax, ymax, zmax = np.max(points, axis=0)
+        xmin, ymin, zmin = np.min(points, axis=0)
+
+        return cls(
+            xmin=xmin,
+            xmax=xmax,
+            ymin=ymin,
+            ymax=ymax,
+            zmin=zmin,
+            zmax=zmax,
+        )
+
+    def to_points(self) -> np.ndarray:
+        """Return (m,3) array with corner points."""
+        return np.array([
+            [self.xmin, self.ymin, self.zmin],
+            [self.xmin, self.ymin, self.zmax],
+            [self.xmin, self.ymax, self.zmin],
+            [self.xmin, self.ymax, self.zmax],
+            [self.xmax, self.ymin, self.zmin],
+            [self.xmax, self.ymin, self.zmax],
+            [self.xmax, self.ymax, self.zmin],
+            [self.xmax, self.ymax, self.zmax],
+        ])
+
+    @property
+    def center(self) -> np.ndarray:
+        """Return center of the bounding box."""
+        return np.array((
+            (self.xmin + self.xmax) / 2,
+            (self.ymin + self.ymax) / 2,
+            (self.zmin + self.zmax) / 2,
+        ))
 
 
 def get_point_in_prop(
@@ -114,17 +161,7 @@ def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
     bbox : BoundingBox
         Container for the bounding box coordinates.
     """
-    corners = np.array([
-        [bbox.xmin, bbox.ymin, bbox.zmin],
-        [bbox.xmin, bbox.ymin, bbox.zmax],
-        [bbox.xmin, bbox.ymax, bbox.zmin],
-        [bbox.xmin, bbox.ymax, bbox.zmax],
-        [bbox.xmax, bbox.ymin, bbox.zmin],
-        [bbox.xmax, bbox.ymin, bbox.zmax],
-        [bbox.xmax, bbox.ymax, bbox.zmin],
-        [bbox.xmax, bbox.ymax, bbox.zmax],
-    ])
-
+    corners = bbox.to_points()
     mesh.points = np.vstack([mesh.points, corners])
 
 
@@ -196,7 +233,7 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
                               np.searchsorted(mapping[0, :], new_cells[mask])]
     new_cells = new_cells.reshape(shape)
 
-    new_labels = np.ones(len(new_cells)) * 123
+    new_labels = np.ones(len(new_cells))
 
     points = all_points
     cells = np.vstack([mesh.cells, new_cells])
@@ -278,6 +315,26 @@ class Mesher3D(BaseMesher):
         logger.info(f'Generated contour with {len(mesh.cells)} cells')
 
         self.contour = mesh
+
+    def pad_contour(self, **kwargs):
+        """Pad the contour. See `nanomesh.TriangleMesh.pad3d` for info.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for `nanomesh.TriangleMesh.pad3d`.
+        """
+        self.contour = self.contour.pad3d(**kwargs)
+
+    def show_contour(self, **kwargs):
+        """Pad the contour. See `nanomesh.MeshContainer.plot_pyvista` for info.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for `nanomesh.MeshContainer.plot_pyvista`.
+        """
+        self.contour.plot_pyvista(**kwargs)
 
     def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
         """Tetrahedralize a surface contour mesh.

@@ -27,3 +27,4 @@ install.rst:
 clean:
 	rm -rvf "$(BUILDDIR)" "$(STATICDIR)/examples" "$(STATICDIR)/banner.png"
 	rm -rvf nanomesh*.rst examples.*rst
+	rm -rvf apidocs/*.rst

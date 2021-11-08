@@ -6,11 +6,11 @@ import meshio
 import numpy as np
 from skimage import measure, morphology
 
-from nanomesh import Volume
 from nanomesh._mesh_shared import BaseMesher
+from nanomesh.mesh2d import simple_triangulate
 from nanomesh.mesh3d import BoundingBox
 from nanomesh.mesh_container import TriangleMesh
-from nanomesh.mesh_utils import simple_triangulate
+from nanomesh.volume import Volume
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,11 @@ def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
     mesh.points = np.vstack([mesh.points, corners])
 
 
-def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
+def close_side(mesh: TriangleMesh,
+               *,
+               side: str,
+               bbox: BoundingBox,
+               ax: plt.Axes = None):
     """Fill a side of the bounding box with triangles.
 
     Parameters

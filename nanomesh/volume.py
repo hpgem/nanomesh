@@ -6,9 +6,9 @@ from typing import Callable
 import meshio
 import numpy as np
 
-from .base_image import BaseImage
-from .io import load_vol
-from .plane import Plane
+from nanomesh.base_image import BaseImage
+from nanomesh.io import load_vol
+from nanomesh.plane import Plane
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class Volume(BaseImage):
 
         Extra arguments are passed on.
         """
-        from .utils import SliceViewer
+        from nanomesh.utils import SliceViewer
         sv = SliceViewer(self.image, **kwargs)
         sv.interact()
         return sv
@@ -111,7 +111,7 @@ class Volume(BaseImage):
         meshio.Mesh
             Description of the mesh.
         """
-        from .mesh3d import generate_3d_mesh
+        from nanomesh.mesh3d import generate_3d_mesh
         return generate_3d_mesh(image=self.image, **kwargs)
 
     def select_plane(self,

@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
-from nanomesh import Plane
 from nanomesh.mesh_container import TriangleMesh
+from nanomesh.plane import Plane
 
 
 @pytest.fixture

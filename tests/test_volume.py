@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
 
-from nanomesh import Plane, Volume
+from nanomesh.plane import Plane
+from nanomesh.volume import Volume
 
 
 @pytest.fixture

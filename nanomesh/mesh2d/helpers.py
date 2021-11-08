@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import triangle as tr
 
-from nanomesh.mesh_container import TriangleMesh
-
 
 def _legend_with_triplot_fix(ax: plt.Axes):
     """Add legend for triplot with fix that avoids duplicate labels."""
@@ -13,7 +11,7 @@ def _legend_with_triplot_fix(ax: plt.Axes):
     ax.legend(by_label.values(), by_label.keys())
 
 
-def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
+def compare_mesh_with_image(image: np.ndarray, mesh: 'TriangleMesh'):
     """Compare mesh with image.
 
     Parameters
@@ -47,7 +45,7 @@ def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
                        regions: np.ndarray = None,
-                       opts: str = '') -> TriangleMesh:
+                       opts: str = '') -> 'TriangleMesh':
     """Simple triangulation using `triangle`.
 
     Parameters
@@ -86,12 +84,12 @@ def simple_triangulate(points: np.ndarray,
     return mesh
 
 
-def pad(mesh: TriangleMesh,
+def pad(mesh: 'TriangleMesh',
         *,
         side: str,
         width: int,
         opts: str = '',
-        label: int = None) -> TriangleMesh:
+        label: int = None) -> 'TriangleMesh':
     """Pad a triangle mesh.
 
     Parameters

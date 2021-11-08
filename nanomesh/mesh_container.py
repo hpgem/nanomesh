@@ -10,6 +10,8 @@ import scipy
 import trimesh
 from trimesh import remesh
 
+from nanomesh import mesh2d, mesh3d
+
 
 class MeshContainer:
     _element_type: str = ''
@@ -342,8 +344,7 @@ class TriangleMesh(MeshContainer):
         **kwargs
             Keyword arguments passed to `nanomesh.mesh_utils.pad`
         """
-        from nanomesh.mesh_utils import pad
-        return pad(self, **kwargs)
+        return mesh2d.pad(self, **kwargs)
 
     def pad3d(self, **kwargs) -> 'TriangleMesh':
         """Pad a 3d mesh.
@@ -353,8 +354,7 @@ class TriangleMesh(MeshContainer):
         **kwargs
             Keyword arguments passed to `nanomesh.mesh_utils.pad3d`
         """
-        from nanomesh.mesh_utils_3d import pad3d
-        return pad3d(self, **kwargs)
+        return mesh3d.pad(self, **kwargs)
 
 
 class TetraMesh(MeshContainer):

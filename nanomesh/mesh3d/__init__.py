@@ -1,6 +1,6 @@
-from .bounding_box import BoundingBox
-from .helpers import pad
-from .mesher import Mesher3D, generate_3d_mesh
+from nanomesh.mesh3d.bounding_box import BoundingBox
+from nanomesh.mesh3d.helpers import pad
+from nanomesh.mesh3d.mesher import Mesher3D, generate_3d_mesh
 
 __all__ = [
     'BoundingBox',

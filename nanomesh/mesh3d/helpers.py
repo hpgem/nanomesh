@@ -1,15 +1,14 @@
 import numpy as np
 
-from nanomesh.mesh3d import BoundingBox
-from nanomesh.mesh_container import TriangleMesh
+from nanomesh.mesh3d.bounding_box import BoundingBox
 from nanomesh.utils import pairwise
 
 
-def pad(mesh: TriangleMesh,
+def pad(mesh: 'TriangleMesh',
         *,
         side: str,
         width: int,
-        label: int = None) -> TriangleMesh:
+        label: int = None) -> 'TriangleMesh':
     """Pad a triangle mesh.
 
     Parameters
@@ -137,7 +136,7 @@ def pad(mesh: TriangleMesh,
 
     cells = np.vstack([mesh.cells, new_triangles])
 
-    new_mesh = TriangleMesh(points=points, cells=cells)
+    new_mesh = mesh.__class__(points=points, cells=cells)
 
     center = extra_coords.mean(axis=0)
     center[col] = (center[col] + edge_value) / 2

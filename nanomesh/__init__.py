@@ -1,12 +1,12 @@
 import logging
 import sys
 
-from .mesh2d import Mesher2D
-from .mesh3d import Mesher3D
-from .mesh_containers import TetraMesh, TriangleMesh
-from .mesh_utils import simple_triangulate
-from .plane import Plane
-from .volume import Volume
+from nanomesh.mesh2d import Mesher2D
+from nanomesh.mesh3d import Mesher3D
+from nanomesh.mesh_containers import TetraMesh, TriangleMesh
+from nanomesh.mesh_utils import simple_triangulate
+from nanomesh.plane import Plane
+from nanomesh.volume import Volume
 
 logging.basicConfig(format='%(message)s',
                     level=logging.INFO,

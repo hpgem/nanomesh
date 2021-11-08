@@ -27,18 +27,17 @@ def run_apidoc(app):
     apidoc.main(args)
 
 
-# Convert readme.md to rst to be included in index.html
-def make_readme(app):
-    import subprocess
-    cmd = 'pandoc --from=markdown --to=rst --output=README.rst ../README.md'
-    args = cmd.split()
-    subprocess.run(args)
+# Include banner as static image
+def copy_banner_to_static(app):
+    import shutil
+    src = Path('.').absolute().parent / 'notebooks' / 'banner' / 'banner.png'
+    shutil.copy2(src, STATICDIR)
 
 
 # https://www.sphinx-doc.org/en/master/extdev/appapi.html#sphinx-core-events
 # https://github.com/readthedocs/readthedocs.org/issues/2276
 def setup(app):
-    app.connect('builder-inited', make_readme)
+    app.connect('builder-inited', copy_banner_to_static)
     app.connect('builder-inited', run_apidoc)
 
 

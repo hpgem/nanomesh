@@ -48,11 +48,15 @@ Compiling tetgen on Windows
 
    -  Install/update packages:
 
-      ``pacman -Syu``
+      ::
+
+          pacman -Syu
 
    -  Install development toolchain:
 
-      ``pacman -S –needed base-devel mingw-w64-x86_64-toolchain
+      ::
+
+          pacman -S –needed base-devel mingw-w64-x86_64-toolchain
 
 3. Add ``C:\msys64\mingw64\bin`` to the Windows Path environment
    variable. Click

@@ -20,6 +20,7 @@ Getting started
    :caption: Getting Started
 
    install
+   development
 
 
 Examples

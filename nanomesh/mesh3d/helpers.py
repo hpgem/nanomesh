@@ -5,12 +5,12 @@ from nanomesh.mesh_container import TriangleMesh
 from nanomesh.utils import pairwise
 
 
-def pad3d(mesh: TriangleMesh,
-          *,
-          side: str,
-          width: int,
-          label: int = None) -> TriangleMesh:
-    """Pad a tetra mesh.
+def pad(mesh: TriangleMesh,
+        *,
+        side: str,
+        width: int,
+        label: int = None) -> TriangleMesh:
+    """Pad a triangle mesh.
 
     Parameters
     ----------

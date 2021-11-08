@@ -1,16 +1,8 @@
-from itertools import tee
-
 import numpy as np
 
 from nanomesh.mesh3d import BoundingBox
 from nanomesh.mesh_container import TriangleMesh
-
-
-def pairwise(iterable):
-    """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b)
+from nanomesh.utils import pairwise
 
 
 def pad3d(mesh: TriangleMesh,

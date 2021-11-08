@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from nanomesh.mesh3d import generate_3d_mesh, get_region_markers
+from nanomesh.mesh3d import BoundingBox, generate_3d_mesh, get_region_markers
 
 TETGEN_NOT_AVAILABLE = shutil.which('tetgen') is None
 
@@ -61,3 +61,38 @@ def test_generate_3d_mesh_region_markers(segmented_image):
     tetra_mesh = generate_3d_mesh(segmented_image,
                                   region_markers=region_markers)
     compare_mesh_results(tetra_mesh, expected_fn)
+
+
+def test_BoundingBox_center():
+    """Test BoundingBox init / center."""
+    bbox = BoundingBox(
+        xmin=0.0,
+        xmax=10.0,
+        ymin=20.0,
+        ymax=30.0,
+        zmin=40.0,
+        zmax=50.0,
+    )
+    np.testing.assert_equal(bbox.center, (5, 25, 45))
+
+
+def test_BoundingBox_from_shape():
+    """Test BoundingBox .from_shape / .dimensions."""
+    shape = np.array((10, 20, 30))
+    bbox = BoundingBox.from_shape(shape)
+    np.testing.assert_equal(bbox.dimensions, shape - 1)
+
+
+def test_BoundingBox_from_points():
+    """Test BoundingBox .from_points / to_points."""
+    points = np.array([
+        (10, 20, 30),
+        (5, 5, 0),
+        (0, 0, 5),
+    ])
+    bbox = BoundingBox.from_points(points)
+    corners = bbox.to_points()
+    expected = ([0, 0, 0], [0, 0, 30], [0, 20, 0], [0, 20, 30], [10, 0, 0],
+                [10, 0, 30], [10, 20, 0], [10, 20, 30])
+
+    np.testing.assert_equal(corners, expected)

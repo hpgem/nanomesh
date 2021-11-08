@@ -38,11 +38,20 @@ class BoundingBox:
                    ymax=ymax,
                    zmax=zmax)
 
+    @property
+    def dimensions(self) -> Tuple[float, float, float]:
+        """Return dimensions of bounding box."""
+        return (
+            self.xmax - self.xmin,
+            self.ymax - self.ymin,
+            self.zmax - self.zmin,
+        )
+
     @classmethod
     def from_points(cls, points: np.array):
         """Generate bounding box from set of points or coordinates."""
-        xmax, ymax, zmax = points.max(axis=0)
-        xmin, ymin, zmin = points.min(axis=0)
+        xmax, ymax, zmax = np.max(points, axis=0)
+        xmin, ymin, zmin = np.min(points, axis=0)
 
         return cls(
             xmin=xmin,
@@ -53,7 +62,7 @@ class BoundingBox:
             zmax=zmax,
         )
 
-    def to_points(self):
+    def to_points(self) -> np.ndarray:
         """Return (m,3) array with corner points."""
         return np.array([
             [self.xmin, self.ymin, self.zmin],

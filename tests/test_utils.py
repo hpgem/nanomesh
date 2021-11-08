@@ -121,3 +121,11 @@ def test_pad_label(simple_mesh, label, expected_labels):
     assert isinstance(res, TriangleMesh)
 
     np.testing.assert_equal(res.labels, expected_labels)
+
+
+def test_pairwise():
+    """Test pairwise function."""
+    from nanomesh.utils import pairwise
+    inp = range(3)
+    out = pairwise(inp)
+    assert list(out) == [(0, 1), (1, 2)]

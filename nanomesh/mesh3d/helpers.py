@@ -1,14 +1,21 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from nanomesh.mesh3d.bounding_box import BoundingBox
 from nanomesh.utils import pairwise
 
+if TYPE_CHECKING:
+    from nanomesh.mesh_container import TriangleMesh
 
-def pad(mesh: 'TriangleMesh',
+
+def pad(mesh: TriangleMesh,
         *,
         side: str,
         width: int,
-        label: int = None) -> 'TriangleMesh':
+        label: int = None) -> TriangleMesh:
     """Pad a triangle mesh.
 
     Parameters

@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import Callable, Union
+from typing import TYPE_CHECKING, Callable, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from nanomesh.base_image import BaseImage
-from nanomesh.mesh_container import TriangleMesh
 from nanomesh.utils import show_image
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from nanomesh.mesh_container import TriangleMesh
 
 
 class Plane(BaseImage):
@@ -73,7 +77,7 @@ class Plane(BaseImage):
         """
         return show_image(self.image, dpi=dpi, title=title, **kwargs)
 
-    def generate_mesh(self, **kwargs) -> 'TriangleMesh':
+    def generate_mesh(self, **kwargs) -> TriangleMesh:
         """Generate mesh from binary (segmented) image.
 
         Parameters
@@ -151,7 +155,7 @@ class Plane(BaseImage):
         -------
         ax : matplotlib.Axes
         """
-        from nanomesh.mesh_utils import compare_mesh_with_image
+        from nanomesh.mesh2d import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
 
     def compare_with_digitized(self, digitized: Union[np.ndarray, 'Plane'],

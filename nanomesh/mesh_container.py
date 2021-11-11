@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import List, Tuple
 
@@ -180,16 +182,14 @@ class TriangleMesh(MeshContainer):
         return pv.PolyData(points, stacked_cells, n_faces=len(cells))
 
     @classmethod
-    def from_open3d(cls,
-                    mesh: 'open3d.geometry.TriangleMesh') -> 'TriangleMesh':
+    def from_open3d(cls, mesh: 'open3d.geometry.TriangleMesh') -> TriangleMesh:
         """Return instance of `TriangleMesh` from open3d."""
         points = np.asarray(mesh.vertices)
         cells = np.asarray(mesh.triangles)
         return cls(points=points, cells=cells)
 
     @classmethod
-    def from_scipy(cls,
-                   mesh: 'scipy.spatial.qhull.Delaunay') -> 'TriangleMesh':
+    def from_scipy(cls, mesh: 'scipy.spatial.qhull.Delaunay') -> TriangleMesh:
         """Return instance of `TriangleMesh` from `scipy.spatial.Delaunay`
         object."""
         points = mesh.points
@@ -197,18 +197,18 @@ class TriangleMesh(MeshContainer):
         return cls(points=points, cells=cells)
 
     @classmethod
-    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'TriangleMesh':
+    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> TriangleMesh:
         """Return instance of `TriangleMesh` from trimesh."""
         return cls(points=mesh.vertices, cells=mesh.faces)
 
     @classmethod
-    def from_triangle_dict(cls, dct: dict) -> 'TriangleMesh':
+    def from_triangle_dict(cls, dct: dict) -> TriangleMesh:
         """Return instance of `TriangleMesh` from trimesh results dict."""
         points = dct['vertices']
         cells = dct['triangles']
         return cls(points=points, cells=cells)
 
-    def simplify(self, n_cells: int) -> 'TriangleMesh':
+    def simplify(self, n_cells: int) -> TriangleMesh:
         """Simplify triangular mesh using `open3d`.
 
         Parameters
@@ -225,8 +225,7 @@ class TriangleMesh(MeshContainer):
         return TriangleMesh.from_open3d(simplified_o3d)
 
     def simplify_by_point_clustering(self,
-                                     voxel_size: float = 1.0
-                                     ) -> 'TriangleMesh':
+                                     voxel_size: float = 1.0) -> TriangleMesh:
         """Simplify mesh geometry using point clustering.
 
         Parameters
@@ -245,7 +244,7 @@ class TriangleMesh(MeshContainer):
 
         return TriangleMesh.from_open3d(mesh_smp)
 
-    def smooth(self, iterations: int = 50) -> 'TriangleMesh':
+    def smooth(self, iterations: int = 50) -> TriangleMesh:
         """Smooth mesh using the Taubin filter in `trimesh`.
 
         The advantage of the Taubin algorithm is that it avoids
@@ -270,7 +269,7 @@ class TriangleMesh(MeshContainer):
                  method='CVT (block-diagonal)',
                  tol: float = 1.0e-3,
                  max_num_steps: int = 10,
-                 **kwargs) -> 'TriangleMesh':
+                 **kwargs) -> TriangleMesh:
         """Optimize mesh using `optimesh`.
 
         Parameters
@@ -299,7 +298,7 @@ class TriangleMesh(MeshContainer):
         )
         return TriangleMesh(points=points, cells=cells)
 
-    def subdivide(self, max_edge: int = 10, iters: int = 10) -> 'TriangleMesh':
+    def subdivide(self, max_edge: int = 10, iters: int = 10) -> TriangleMesh:
         """Subdivide triangles."""
         points, cells = remesh.subdivide(self.points, self.cells)
         return TriangleMesh(points=points, cells=cells)
@@ -336,23 +335,23 @@ class TriangleMesh(MeshContainer):
             ele_path = path.with_suffix('.1.ele')
             return TetraMesh.read(ele_path)
 
-    def pad(self, **kwargs) -> 'TriangleMesh':
+    def pad(self, **kwargs) -> TriangleMesh:
         """Pad a mesh.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments passed to `nanomesh.mesh_utils.pad`
+            Keyword arguments passed to `nanomesh.mesh2d.helpers.pad`
         """
         return mesh2d.pad(self, **kwargs)
 
-    def pad3d(self, **kwargs) -> 'TriangleMesh':
+    def pad3d(self, **kwargs) -> TriangleMesh:
         """Pad a 3d mesh.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments passed to `nanomesh.mesh_utils.pad3d`
+            Keyword arguments passed to `nanomesh.mesh3d.helpers.pad`
         """
         return mesh3d.pad(self, **kwargs)
 

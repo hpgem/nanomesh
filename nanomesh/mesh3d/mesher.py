@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import logging
-from typing import List, Tuple, Union
+from typing import TYPE_CHECKING, List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import meshio
@@ -9,10 +11,12 @@ from skimage import measure, morphology
 from nanomesh._mesh_shared import BaseMesher
 from nanomesh.mesh2d import simple_triangulate
 from nanomesh.mesh3d import BoundingBox
-from nanomesh.mesh_container import TriangleMesh
 from nanomesh.volume import Volume
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from nanomesh.mesh_container import TriangleMesh
 
 
 def get_point_in_prop(
@@ -124,6 +128,7 @@ def close_side(mesh: TriangleMesh,
     ValueError
         When the value of `side` is invalid.
     """
+    from nanomesh.mesh_container import TriangleMesh
     all_points = mesh.points
 
     if side == 'top':
@@ -235,6 +240,8 @@ class Mesher3D(BaseMesher):
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher3D`.
         """
+        from nanomesh.mesh_container import TriangleMesh
+
         points, cells, *_ = measure.marching_cubes(
             self.image,
             level=level,

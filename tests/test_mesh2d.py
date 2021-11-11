@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
-from nanomesh.mesh2d import (Mesher2D, close_corner_contour, generate_2d_mesh,
-                             subdivide_contour)
+from nanomesh.mesh2d import Mesher2D, generate_2d_mesh
+from nanomesh.mesh2d.mesher import close_corner_contour, subdivide_contour
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux). Allow some deviation if the platforms do not match.

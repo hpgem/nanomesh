@@ -1,10 +1,10 @@
 import logging
 import sys
 
-from nanomesh.mesh2d import Mesher2D
+from nanomesh.mesh2d import (Mesher2D, compare_mesh_with_image,
+                             simple_triangulate)
 from nanomesh.mesh3d import Mesher3D
-from nanomesh.mesh_containers import TetraMesh, TriangleMesh
-from nanomesh.mesh_utils import simple_triangulate
+from nanomesh.mesh_container import TetraMesh, TriangleMesh
 from nanomesh.plane import Plane
 from nanomesh.volume import Volume
 
@@ -20,6 +20,7 @@ __all__ = [
     '__author__',
     '__email__',
     '__version__',
+    'compare_mesh_with_image',
     'Mesher2D',
     'Mesher3D',
     'Plane',

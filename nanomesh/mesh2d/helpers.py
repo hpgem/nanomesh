@@ -1,6 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
 import triangle as tr
+
+if TYPE_CHECKING:
+    from nanomesh.mesh_container import TriangleMesh
 
 
 def _legend_with_triplot_fix(ax: plt.Axes):
@@ -11,7 +18,7 @@ def _legend_with_triplot_fix(ax: plt.Axes):
     ax.legend(by_label.values(), by_label.keys())
 
 
-def compare_mesh_with_image(image: np.ndarray, mesh: 'TriangleMesh'):
+def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
     """Compare mesh with image.
 
     Parameters
@@ -45,7 +52,7 @@ def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
                        regions: np.ndarray = None,
-                       opts: str = '') -> 'TriangleMesh':
+                       opts: str = '') -> TriangleMesh:
     """Simple triangulation using `triangle`.
 
     Parameters
@@ -70,6 +77,8 @@ def simple_triangulate(points: np.ndarray,
     mesh : TriangleMesh
         Triangle mesh
     """
+    from nanomesh.mesh_container import TriangleMesh
+
     triangle_dict_in = {'vertices': points}
 
     if segments is not None:
@@ -84,12 +93,12 @@ def simple_triangulate(points: np.ndarray,
     return mesh
 
 
-def pad(mesh: 'TriangleMesh',
+def pad(mesh: TriangleMesh,
         *,
         side: str,
         width: int,
         opts: str = '',
-        label: int = None) -> 'TriangleMesh':
+        label: int = None) -> TriangleMesh:
     """Pad a triangle mesh.
 
     Parameters
@@ -116,6 +125,8 @@ def pad(mesh: 'TriangleMesh',
     ValueError
         When the value of `side` is invalid.
     """
+    from nanomesh.mesh_container import TriangleMesh
+
     if label is None:
         label = mesh.unique_labels.max() + 1
 

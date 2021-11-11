@@ -92,4 +92,4 @@ def tetrahedralize(fname: os.PathLike, opts: str = '-pAq1.2'):
     # -a: Applies a maximum tetrahedron volume constraint.
 
     import subprocess as sp
-    sp.run(f'tetgen {opts} {fname}')
+    sp.run(['tetgen', opts, fname])

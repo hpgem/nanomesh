@@ -3,8 +3,8 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
+from nanomesh.mesh2d import simple_triangulate
 from nanomesh.mesh_container import TriangleMesh
-from nanomesh.mesh_utils import simple_triangulate
 from nanomesh.utils import SliceViewer, show_image
 
 

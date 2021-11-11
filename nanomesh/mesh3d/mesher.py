@@ -1,88 +1,23 @@
+from __future__ import annotations
+
 import logging
-from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import TYPE_CHECKING, List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 from skimage import measure, morphology
 
-from nanomesh import Volume
-from nanomesh.mesh_utils import simple_triangulate
+from nanomesh._mesh_shared import BaseMesher
+from nanomesh.mesh2d import simple_triangulate
+from nanomesh.volume import Volume
 
-from ._mesh_shared import BaseMesher
-from .mesh_container import TriangleMesh
+from .bounding_box import BoundingBox
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class BoundingBox:
-    """Container for bounding box coordinates."""
-    xmin: float
-    xmax: float
-    ymin: float
-    ymax: float
-    zmin: float
-    zmax: float
-
-    @classmethod
-    def from_shape(cls, shape: tuple):
-        """Generate bounding box from data shape."""
-        xmin, ymin, zmin = 0, 0, 0
-        xmax, ymax, zmax = np.array(shape) - 1
-        return cls(xmin=xmin,
-                   ymin=ymin,
-                   zmin=zmin,
-                   xmax=xmax,
-                   ymax=ymax,
-                   zmax=zmax)
-
-    @property
-    def dimensions(self) -> Tuple[float, float, float]:
-        """Return dimensions of bounding box."""
-        return (
-            self.xmax - self.xmin,
-            self.ymax - self.ymin,
-            self.zmax - self.zmin,
-        )
-
-    @classmethod
-    def from_points(cls, points: np.array):
-        """Generate bounding box from set of points or coordinates."""
-        xmax, ymax, zmax = np.max(points, axis=0)
-        xmin, ymin, zmin = np.min(points, axis=0)
-
-        return cls(
-            xmin=xmin,
-            xmax=xmax,
-            ymin=ymin,
-            ymax=ymax,
-            zmin=zmin,
-            zmax=zmax,
-        )
-
-    def to_points(self) -> np.ndarray:
-        """Return (m,3) array with corner points."""
-        return np.array([
-            [self.xmin, self.ymin, self.zmin],
-            [self.xmin, self.ymin, self.zmax],
-            [self.xmin, self.ymax, self.zmin],
-            [self.xmin, self.ymax, self.zmax],
-            [self.xmax, self.ymin, self.zmin],
-            [self.xmax, self.ymin, self.zmax],
-            [self.xmax, self.ymax, self.zmin],
-            [self.xmax, self.ymax, self.zmax],
-        ])
-
-    @property
-    def center(self) -> np.ndarray:
-        """Return center of the bounding box."""
-        return np.array((
-            (self.xmin + self.xmax) / 2,
-            (self.ymin + self.ymax) / 2,
-            (self.zmin + self.zmax) / 2,
-        ))
+if TYPE_CHECKING:
+    from nanomesh.mesh_container import TriangleMesh
 
 
 def get_point_in_prop(
@@ -165,7 +100,11 @@ def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
     mesh.points = np.vstack([mesh.points, corners])
 
 
-def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
+def close_side(mesh: TriangleMesh,
+               *,
+               side: str,
+               bbox: BoundingBox,
+               ax: plt.Axes = None):
     """Fill a side of the bounding box with triangles.
 
     Parameters
@@ -190,6 +129,7 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
     ValueError
         When the value of `side` is invalid.
     """
+    from nanomesh.mesh_container import TriangleMesh
     all_points = mesh.points
 
     if side == 'top':
@@ -301,6 +241,8 @@ class Mesher3D(BaseMesher):
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher3D`.
         """
+        from nanomesh.mesh_container import TriangleMesh
+
         points, cells, *_ = measure.marching_cubes(
             self.image,
             level=level,

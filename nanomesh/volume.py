@@ -78,7 +78,7 @@ class Volume(BaseImage):
 
         Extra arguments are passed on.
         """
-        from .utils import SliceViewer
+        from nanomesh.utils import SliceViewer
         sv = SliceViewer(self.image, **kwargs)
         sv.interact()
         return sv
@@ -111,7 +111,7 @@ class Volume(BaseImage):
         meshio.Mesh
             Description of the mesh.
         """
-        from .mesh3d import generate_3d_mesh
+        from nanomesh.mesh3d import generate_3d_mesh
         return generate_3d_mesh(image=self.image, **kwargs)
 
     def select_plane(self,

@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import Callable, Union
+from typing import TYPE_CHECKING, Callable, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from .base_image import BaseImage
-from .mesh_container import TriangleMesh
 from .utils import show_image
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from .mesh_container import TriangleMesh
 
 
 class Plane(BaseImage):
@@ -73,7 +77,7 @@ class Plane(BaseImage):
         """
         return show_image(self.image, dpi=dpi, title=title, **kwargs)
 
-    def generate_mesh(self, **kwargs) -> 'TriangleMesh':
+    def generate_mesh(self, **kwargs) -> TriangleMesh:
         """Generate mesh from binary (segmented) image.
 
         Parameters
@@ -86,7 +90,7 @@ class Plane(BaseImage):
         mesh : TriangleMesh
             Description of the mesh.
         """
-        from .mesh2d import generate_2d_mesh
+        from nanomesh.mesh2d import generate_2d_mesh
         return generate_2d_mesh(image=self.image, **kwargs)
 
     def select_roi(self, from_points: np.ndarray = None):
@@ -97,7 +101,7 @@ class Plane(BaseImage):
         roi : `nanomesh.roi2d.ROISelector`
             Region of interest object. Bounding box is stored in `roi.bbox`.
         """
-        from .roi2d import ROISelector
+        from nanomesh.roi2d import ROISelector
         ax = self.show(title='Select region of interest')
         if from_points is not None:
             # reverse columns to match image
@@ -135,7 +139,7 @@ class Plane(BaseImage):
         `nanomesh.Plane`
             Cropped region as `nanomesh.Plane` object.
         """
-        from .roi2d import extract_rectangle
+        from nanomesh.roi2d import extract_rectangle
         cropped = extract_rectangle(self.image, bbox=bbox)
         return Plane(cropped)
 
@@ -151,7 +155,7 @@ class Plane(BaseImage):
         -------
         ax : matplotlib.Axes
         """
-        from .mesh_utils import compare_mesh_with_image
+        from nanomesh.mesh2d import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
 
     def compare_with_digitized(self, digitized: Union[np.ndarray, 'Plane'],

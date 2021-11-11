@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
-"""Documentation about nanomesh."""
 import logging
 import sys
 
+from .mesh2d import Mesher2D, compare_mesh_with_image, simple_triangulate
+from .mesh3d import Mesher3D
+from .mesh_container import TetraMesh, TriangleMesh
 from .plane import Plane
 from .volume import Volume
 
@@ -18,6 +19,12 @@ __all__ = [
     '__author__',
     '__email__',
     '__version__',
+    'compare_mesh_with_image',
+    'Mesher2D',
+    'Mesher3D',
     'Plane',
+    'simple_triangulate',
+    'TetraMesh',
+    'TriangleMesh',
     'Volume',
 ]

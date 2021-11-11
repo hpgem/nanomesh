@@ -1,9 +1,8 @@
 import numpy as np
 import pytest
 
-from nanomesh.mesh3d import BoundingBox
+from nanomesh.mesh3d import BoundingBox, pad
 from nanomesh.mesh_container import TriangleMesh
-from nanomesh.mesh_utils_3d import pad3d
 
 
 @pytest.fixture
@@ -39,9 +38,9 @@ def mesh():
      BoundingBox(
          xmin=0.0, xmax=133.0, ymin=0.0, ymax=20.0, zmin=0.0, zmax=30.0)),
 ))
-def test_pad3d(mesh, side, width, expected_bbox):
-    """Test pad3d function."""
-    out = pad3d(mesh, side=side, width=width)
+def test_mesh3d_pad(mesh, side, width, expected_bbox):
+    """Test mesh3d.pad function."""
+    out = pad(mesh, side=side, width=width)
 
     assert len(out.points) == len(mesh.points) + 4
     assert len(out.cells) == len(mesh.cells) + 10
@@ -51,14 +50,14 @@ def test_pad3d(mesh, side, width, expected_bbox):
     assert bbox == expected_bbox
 
 
-def test_pad3d_no_width(mesh):
+def test_mesh3d_pad_no_width(mesh):
     """Test early return when width==0."""
-    out = pad3d(mesh, side='top', width=0)
+    out = pad(mesh, side='top', width=0)
 
     assert out is mesh
 
 
-def test_pad3d_invalid_side(mesh):
+def test_mesh3d_pad_invalid_side(mesh):
     """Test invalide keyword argument."""
     with pytest.raises(ValueError):
-        _ = pad3d(mesh, side='FAIL', width=123)
+        _ = pad(mesh, side='FAIL', width=123)

@@ -5,7 +5,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from nanomesh.mesh3d import BoundingBox, generate_3d_mesh, get_region_markers
+from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
+from nanomesh.mesh3d.mesher import get_region_markers
 
 TETGEN_NOT_AVAILABLE = shutil.which('tetgen') is None
 

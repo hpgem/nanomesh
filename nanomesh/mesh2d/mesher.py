@@ -6,10 +6,10 @@ import meshio
 import numpy as np
 from skimage import measure
 
-from nanomesh.mesh_utils import simple_triangulate
+from nanomesh._mesh_shared import BaseMesher
+from nanomesh.mesh_container import TriangleMesh
 
-from ._mesh_shared import BaseMesher
-from .mesh_container import TriangleMesh
+from .helpers import simple_triangulate
 
 logger = logging.getLogger(__name__)
 

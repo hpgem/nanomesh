@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from nanomesh.mesh3d.bounding_box import BoundingBox
 from nanomesh.utils import pairwise
+
+from .bounding_box import BoundingBox
 
 if TYPE_CHECKING:
     from nanomesh.mesh_container import TriangleMesh

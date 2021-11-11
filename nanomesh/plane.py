@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, Callable, Union
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nanomesh.base_image import BaseImage
-from nanomesh.utils import show_image
+from .base_image import BaseImage
+from .utils import show_image
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from nanomesh.mesh_container import TriangleMesh
+    from .mesh_container import TriangleMesh
 
 
 class Plane(BaseImage):

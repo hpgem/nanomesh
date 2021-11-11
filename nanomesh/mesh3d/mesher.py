@@ -10,8 +10,9 @@ from skimage import measure, morphology
 
 from nanomesh._mesh_shared import BaseMesher
 from nanomesh.mesh2d import simple_triangulate
-from nanomesh.mesh3d import BoundingBox
 from nanomesh.volume import Volume
+
+from .bounding_box import BoundingBox
 
 logger = logging.getLogger(__name__)
 

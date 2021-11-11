@@ -6,9 +6,9 @@ from typing import Callable
 import meshio
 import numpy as np
 
-from nanomesh.base_image import BaseImage
-from nanomesh.io import load_vol
-from nanomesh.plane import Plane
+from .base_image import BaseImage
+from .io import load_vol
+from .plane import Plane
 
 logger = logging.getLogger(__name__)
 

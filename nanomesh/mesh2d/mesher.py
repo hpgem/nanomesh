@@ -7,8 +7,9 @@ import numpy as np
 from skimage import measure
 
 from nanomesh._mesh_shared import BaseMesher
-from nanomesh.mesh2d import simple_triangulate
 from nanomesh.mesh_container import TriangleMesh
+
+from .helpers import simple_triangulate
 
 logger = logging.getLogger(__name__)
 

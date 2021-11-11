@@ -12,7 +12,7 @@ import scipy
 import trimesh
 from trimesh import remesh
 
-from nanomesh import mesh2d, mesh3d
+from . import mesh2d, mesh3d
 
 
 class MeshContainer:

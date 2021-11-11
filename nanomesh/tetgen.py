@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
-from typing import Any, Tuple, List
+from typing import Any, List, Tuple
+
 import numpy as np
 
-from nanomesh.mesh_container import TriangleMesh
+from .mesh_container import TriangleMesh
 
 
 def write_smesh(filename: os.PathLike,

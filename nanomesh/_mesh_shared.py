@@ -3,8 +3,8 @@ from typing import Union
 
 import numpy as np
 
-from nanomesh.plane import Plane
-from nanomesh.volume import Volume
+from .plane import Plane
+from .volume import Volume
 
 logger = logging.getLogger(__name__)
 

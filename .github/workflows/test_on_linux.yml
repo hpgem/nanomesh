@@ -46,8 +46,7 @@ jobs:
       - name: Install tetgen
         shell: bash -l {0}
         run: |
-          echo $PATH
-          wget -O tetgen.zip https://github.com/hpgem/tetgen/releases/download/1.6.0/tetgen-Linux.zip
+          wget -O tetgen.zip https://github.com/hpgem/tetgen/releases/download/1.6.0/tetgen-${{ runner.os }}.zip
           unzip tetgen.zip
           mv tetgen /usr/local/bin/
           which tetgen

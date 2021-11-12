@@ -1,5 +1,5 @@
+import os
 import pickle
-import shutil
 from pathlib import Path
 
 import numpy as np
@@ -8,7 +8,11 @@ import pytest
 from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
 from nanomesh.mesh3d.mesher import get_region_markers
 
-TETGEN_NOT_AVAILABLE = shutil.which('tetgen') is None
+# There is a small disparity between the data generated on Windows / posix
+# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
+# Update the variable below for the platform on which the testing data
+# have been generated, windows: nt, linux/mac: posix
+GENERATED_ON = 'nt'
 
 
 @pytest.fixture
@@ -41,8 +45,11 @@ def compare_mesh_results(result_mesh, expected_fn):
                                expected_mesh.metadata['tetgenRef'])
 
 
-@pytest.mark.xfail(TETGEN_NOT_AVAILABLE,
-                   reason='https://github.com/hpgem/nanomesh/issues/106')
+@pytest.mark.xfail(
+    os.name != GENERATED_ON,
+    raises=AssertionError,
+    reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
+            'are exactly the same.'))
 def test_generate_3d_mesh(segmented_image):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
@@ -51,8 +58,11 @@ def test_generate_3d_mesh(segmented_image):
     compare_mesh_results(tetra_mesh, expected_fn)
 
 
-@pytest.mark.xfail(TETGEN_NOT_AVAILABLE,
-                   reason='https://github.com/hpgem/nanomesh/issues/106')
+@pytest.mark.xfail(
+    os.name != GENERATED_ON,
+    raises=AssertionError,
+    reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
+            'are exactly the same.'))
 def test_generate_3d_mesh_region_markers(segmented_image):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d_markers.pickle'

@@ -1,3 +1,4 @@
+import os
 import pickle
 from pathlib import Path
 
@@ -5,6 +6,12 @@ import numpy as np
 import pytest
 
 from nanomesh.mesh_container import TriangleMesh
+
+# There is a small disparity between the data generated on Windows / posix
+# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
+# Update the variable below for the platform on which the testing data
+# have been generated, windows: nt, linux/mac: posix
+GENERATED_ON = 'nt'
 
 
 @pytest.fixture
@@ -81,17 +88,19 @@ def triangle_mesh():
     return mesh
 
 
-@pytest.mark.xfail(reason='https://github.com/hpgem/nanomesh/issues/106')
+@pytest.mark.xfail(os.name != GENERATED_ON,
+                   raises=AssertionError,
+                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_generate_3d_mesh(triangle_mesh):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'expected_tetra_mesh.pickle'
 
     np.random.seed(1234)  # set seed for reproducible clustering
 
-    region_markers = {
-        10: [0.5, 0.5, 0.5],
-        20: [2.0, 2.0, 2.0],
-    }
+    region_markers = [
+        (10, (0.5, 0.5, 0.5)),
+        (20, (0.0, 2.0, 2.0)),
+    ]
 
     tetra_mesh = triangle_mesh.tetrahedralize(region_markers=region_markers)
 
@@ -109,5 +118,5 @@ def test_generate_3d_mesh(triangle_mesh):
     np.testing.assert_allclose(tetra_mesh.points, expected_mesh.points)
     np.testing.assert_allclose(tetra_mesh.cells, expected_mesh.cells)
 
-    np.testing.assert_allclose(tetra_mesh.metadata['regions'],
-                               expected_mesh.metadata['regions'])
+    np.testing.assert_allclose(tetra_mesh.region_markers,
+                               expected_mesh.region_markers)

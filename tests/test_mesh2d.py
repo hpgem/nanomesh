@@ -10,8 +10,9 @@ from nanomesh.mesh2d import Mesher2D, generate_2d_mesh
 from nanomesh.mesh2d.mesher import close_corner_contour, subdivide_contour
 
 # There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux). Allow some deviation if the platforms do not match.
-# windows: nt, linux/mac: posix
+# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
+# Update the variable below for the platform on which the testing data
+# have been generated, windows: nt, linux/mac: posix
 GENERATED_ON = 'nt'
 
 
@@ -32,11 +33,9 @@ def segmented():
     return image
 
 
-@pytest.mark.xfail(
-    os.name != GENERATED_ON,
-    raises=AssertionError,
-    reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
-            'are exactly the same.'))
+@pytest.mark.xfail(os.name != GENERATED_ON,
+                   raises=AssertionError,
+                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_generate_2d_mesh(segmented):
     """Test 2D mesh generation and plot."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_2d.pickle'
@@ -101,11 +100,9 @@ def test_close_contour(coords, expected_corner):
         ret.shape[1] == n_rows
 
 
-@pytest.mark.xfail(
-    os.name != GENERATED_ON,
-    raises=AssertionError,
-    reason=('No way of currently ensuring contours on OSX / Linux / Windows '
-            'are exactly the same.'))
+@pytest.mark.xfail(os.name != GENERATED_ON,
+                   raises=AssertionError,
+                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
 @image_comparison(
     baseline_images=['contour_plot'],
     remove_text=True,

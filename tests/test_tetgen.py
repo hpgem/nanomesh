@@ -8,8 +8,9 @@ import pytest
 from nanomesh.mesh_container import TriangleMesh
 
 # There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux). Allow some deviation if the platforms do not match.
-# windows: nt, linux/mac: posix
+# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
+# Update the variable below for the platform on which the testing data
+# have been generated, windows: nt, linux/mac: posix
 GENERATED_ON = 'nt'
 
 
@@ -87,11 +88,9 @@ def triangle_mesh():
     return mesh
 
 
-@pytest.mark.xfail(
-    os.name != GENERATED_ON,
-    raises=AssertionError,
-    reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
-            'are exactly the same.'))
+@pytest.mark.xfail(os.name != GENERATED_ON,
+                   raises=AssertionError,
+                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_generate_3d_mesh(triangle_mesh):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'expected_tetra_mesh.pickle'

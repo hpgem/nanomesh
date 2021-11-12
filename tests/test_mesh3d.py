@@ -9,8 +9,9 @@ from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
 from nanomesh.mesh3d.mesher import get_region_markers
 
 # There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux). Allow some deviation if the platforms do not match.
-# windows: nt, linux/mac: posix
+# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
+# Update the variable below for the platform on which the testing data
+# have been generated, windows: nt, linux/mac: posix
 GENERATED_ON = 'nt'
 
 

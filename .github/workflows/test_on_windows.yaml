@@ -46,7 +46,7 @@ jobs:
         shell: pwsh
         run: |
           Get-ChildItem Env:Path
-          Invoke-WebRequest -Uri "https://github.com/hpgem/tetgen/releases/download/1.6.0/tetgen-${{ runner.os }}" -OutFile "tetgen.zip"
+          Invoke-WebRequest -Uri "https://github.com/hpgem/tetgen/releases/download/1.6.0/tetgen-${{ runner.os }}.zip" -OutFile "tetgen.zip"
           Expand-Archive tetgen.zip -DestinationPath .
 
           gcm tetgen.exe

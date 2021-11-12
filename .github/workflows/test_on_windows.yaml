@@ -48,7 +48,7 @@ jobs:
           $env:path.Split(";")
           Invoke-WebRequest -Uri "https://github.com/hpgem/tetgen/releases/download/1.6.0/tetgen-${{ runner.os }}.zip" -OutFile "tetgen.zip"
           Expand-Archive tetgen.zip -DestinationPath .
-
+          mv tetgen.exe C:\Users\runneradmin\AppData\Local\Microsoft\WindowsApps
           gcm tetgen.exe
 
       - name: Test with pytest

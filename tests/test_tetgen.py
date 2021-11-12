@@ -81,7 +81,6 @@ def triangle_mesh():
     return mesh
 
 
-@pytest.mark.xfail(reason='https://github.com/hpgem/nanomesh/issues/106')
 def test_generate_3d_mesh(triangle_mesh):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'expected_tetra_mesh.pickle'

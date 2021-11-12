@@ -28,48 +28,22 @@ lab <https://github.com/InsightSoftwareConsortium/itkwidgets#installation>`__:
 
    jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib jupyterlab-datawidgets itkwidgets
 
+Tetgen
+------
+
 For tetrahedral meshing, ``nanomesh`` requires `tetgen <https://wias-berlin.de/software/tetgen/>`__ to be
-installed. See below for instructions on how to obtain/install
-``tetgen`` on different platforms.
+installed. Binaries are available `here <https://github.com/hpgem/tetgen/releases>`__
 
+Make sure `tetgen` is available on a directory on your system path. To verify tetgen is available, make sure that the following commands return a path:
 
-Compiling tetgen on Linux/Mac
------------------------------
+Linux/MacOS
 
-Follow the `compilation
-instructions <https://wias-berlin.de/software/tetgen/1.5/doc/manual/manual004.html#sec%3Acompile>`__.
+::
 
-Compiling tetgen on Windows
----------------------------
+   which tetgen
 
-1. Install MinGW using `MSYS2 <https://www.msys2.org/>`__
+Windows
 
-2. Follow the installation instructions!
+::
 
-   -  Install/update packages:
-
-      ::
-
-          pacman -Syu
-
-   -  Install development toolchain:
-
-      ::
-
-          pacman -S –needed base-devel mingw-w64-x86_64-toolchain
-
-3. Add ``C:\msys64\mingw64\bin`` to the Windows Path environment
-   variable. Click
-   `here <https://code.visualstudio.com/docs/languages/cpp#_add-the-mingw-compiler-to-your-path>`__
-   for info.
-
-4. Compiling/installing tetgen:
-
-   -  Compilation steps:
-
-      ::
-
-          g++ -O0 -c predicates.cxx 
-          g++ -O3 -o tetgen tetgen.cxx predicates.o -lm
-
-   -  Move ``tetgen.exe`` to a location on your system path
+   gcm tetgen.exe

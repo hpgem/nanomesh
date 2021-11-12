@@ -87,10 +87,10 @@ def test_generate_3d_mesh(triangle_mesh):
 
     np.random.seed(1234)  # set seed for reproducible clustering
 
-    region_markers = {
-        10: [0.5, 0.5, 0.5],
-        20: [2.0, 2.0, 2.0],
-    }
+    region_markers = [
+        (10, (0.5, 0.5, 0.5)),
+        (20, (0.0, 2.0, 2.0)),
+    ]
 
     tetra_mesh = triangle_mesh.tetrahedralize(region_markers=region_markers)
 
@@ -108,5 +108,5 @@ def test_generate_3d_mesh(triangle_mesh):
     np.testing.assert_allclose(tetra_mesh.points, expected_mesh.points)
     np.testing.assert_allclose(tetra_mesh.cells, expected_mesh.cells)
 
-    np.testing.assert_allclose(tetra_mesh.metadata['regions'],
-                               expected_mesh.metadata['regions'])
+    np.testing.assert_allclose(tetra_mesh.region_markers,
+                               expected_mesh.region_markers)

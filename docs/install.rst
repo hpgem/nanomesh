@@ -69,7 +69,7 @@ Compiling tetgen on Windows
 
       ::
 
-          g++ -O0 -c .:raw-latex:`\predicates`.cxx g++ -O3 -o tetgen
-          tetgen.cxx predicates.o -lm``
+          g++ -O0 -c \predicates.cxx g++ -O3 -o tetgen
+          tetgen.cxx predicates.o -lm
 
    -  Move ``tetgen.exe`` to a location on your system path

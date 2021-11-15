@@ -33,7 +33,7 @@ def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    point : np.array
+    point : np.ndarray
         Coordinate of point in the contour
     """
     # start with guess in center of contour
@@ -45,6 +45,30 @@ def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
         point = np.random.uniform(xmin, xmax), np.random.uniform(ymin, ymax)
 
     return point
+
+
+def generate_points(contours: List[np.ndarray],
+                    bbox: np.ndarray) -> np.ndarray:
+    """Generate points from contours and surrounding bbox. The contours are
+    stacked and missing corners are obtained from the bounding box coordinates.
+
+    Parameters
+    ----------
+    contours : List[np.ndarray]
+        List of contours.
+    bbox : (n, 2) np.ndarray
+        Coordinates for the bounding box. These define the convex hull
+        of the meshing area.
+
+    Returns
+    -------
+    points : (m,2) np.ndarray
+        List of points.
+    """
+    idx = ~np.any(cdist(bbox, np.vstack(contours)) == 0, axis=1)
+    missing_corners = bbox[idx]
+
+    return np.vstack([*contours, missing_corners])
 
 
 def generate_regions(contours: List[np.ndarray]) -> np.ndarray:
@@ -288,24 +312,47 @@ class Mesher2D(BaseMesher):
         mesh : TriangleMesh
             Output 2D mesh with domain labels
         """
+        # ensure edges get returned
+        opts = kwargs.get('opts', 'e')
+        if not 'e' in opts:
+            kwargs['opts'] = f'{opts}e'
+
+        print(opts)
+
         contours = self.contours
 
         regions = generate_regions(contours)
         segments = generate_segments(contours)
-
-        bbox = self.image_bbox
-        idx = ~np.any(cdist(bbox, np.vstack(contours)) == 0, axis=1)
-        missing_corners = bbox[idx]
-
-        points = np.vstack([*contours, missing_corners])
+        points = generate_points(contours, bbox=self.image_bbox)
 
         mesh = simple_triangulate(points=points,
                                   segments=segments,
                                   regions=regions,
                                   **kwargs)
 
+        segment_markers = np.hstack([[i + 2] * len(contour)
+                                     for i, contour in enumerate(contours)])
+
+        markers_dict = {}
+        for i, segment in enumerate(segments):
+            number = segment_markers[i]
+            markers_dict[frozenset(segment)] = number
+
+        edges = mesh.edges
+        edge_markers = mesh.edge_markers
+
+        for i, edge in enumerate(edges):
+            segment = frozenset(edge)
+            try:
+                edge_markers[i] = markers_dict[segment]
+            except KeyError:
+                pass
+
+        mesh.edge_markers = edge_markers
+
         labels = self.generate_domain_mask_from_contours(mesh)
         mesh.labels = labels
+
         return mesh
 
     def generate_domain_mask_from_contours(

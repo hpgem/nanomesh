@@ -206,7 +206,22 @@ class TriangleMesh(MeshContainer):
         """Return instance of `TriangleMesh` from trimesh results dict."""
         points = dct['vertices']
         cells = dct['triangles']
-        return cls(points=points, cells=cells)
+
+        metadata = {}
+        try:
+            metadata['is_boundary_point'] = dct['vertex_markers'].squeeze()
+        except KeyError:
+            pass
+
+        mesh = cls(points=points, cells=cells, **metadata)
+
+        try:
+            mesh.edges = dct['edges']
+            mesh.edge_markers = dct['edge_markers']
+        except KeyError:
+            pass
+
+        return mesh
 
     def simplify(self, n_cells: int) -> TriangleMesh:
         """Simplify triangular mesh using `open3d`.

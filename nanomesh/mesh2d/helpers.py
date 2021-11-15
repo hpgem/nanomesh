@@ -88,6 +88,7 @@ def simple_triangulate(points: np.ndarray,
         triangle_dict_in['regions'] = regions
 
     triangle_dict_out = tr.triangulate(triangle_dict_in, opts=opts)
+
     mesh = TriangleMesh.from_triangle_dict(triangle_dict_out)
 
     return mesh

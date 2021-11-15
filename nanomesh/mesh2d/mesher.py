@@ -4,6 +4,7 @@ from typing import Any, List
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
+from scipy.spatial.distance import cdist
 from skimage import measure
 
 from nanomesh._mesh_shared import BaseMesher
@@ -270,13 +271,16 @@ class Mesher2D(BaseMesher):
         mesh : TriangleMesh
             Output 2D mesh with domain labels
         """
-        bbox = self.image_bbox
-
-        contours = [bbox, *self.contours]
+        contours = self.contours
 
         regions = generate_regions(contours)
         segments = generate_segments(contours)
-        points = np.vstack(contours)
+
+        bbox = self.image_bbox
+        idx = ~np.any(cdist(bbox, np.vstack(contours)) == 0, axis=1)
+        missing_corners = bbox[idx]
+
+        points = np.vstack([*contours, missing_corners])
 
         mesh = simple_triangulate(points=points,
                                   segments=segments,

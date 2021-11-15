@@ -197,6 +197,22 @@ def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
     return new_contour
 
 
+def remove_duplicate_points(contour):
+    """Remove duplicate points from contour.
+
+    For a contour it is implied that the last point connects to the
+    first point. In case the first point equals the last point, this
+    results in errors down the line.
+    """
+    first = contour[0]
+    last = contour[-1]
+
+    if np.all(first == last):
+        contour = contour[:-1]
+
+    return contour
+
+
 class Mesher2D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
@@ -239,6 +255,7 @@ class Mesher2D(BaseMesher):
             close_corner_contour(contour, self.image.shape)
             for contour in contours
         ]
+        contours = [remove_duplicate_points(contour) for contour in contours]
         self.contours = contours
 
     @property
@@ -334,8 +351,10 @@ class Mesher2D(BaseMesher):
 
         ax.set_title('Contours')
         for contour in self.contours:
+            contour = np.vstack([contour, contour[0]])
             cont_x, cont_y = contour.T
-            ax.plot(cont_y, cont_x)
+
+            ax.plot(cont_y, cont_x, marker='.')
 
         ax.imshow(self.image)
         ax.axis('image')

@@ -317,8 +317,6 @@ class Mesher2D(BaseMesher):
         if not 'e' in opts:
             kwargs['opts'] = f'{opts}e'
 
-        print(opts)
-
         contours = self.contours
 
         regions = generate_regions(contours)

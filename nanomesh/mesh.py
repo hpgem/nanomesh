@@ -90,9 +90,21 @@ class BaseMesh:
         """
         return pv.from_meshio(self.to_meshio())
 
-    def plot_itk(self):
-        """Wrapper for `pyvista.plot_itk`."""
-        pv.plot_itk(self.to_meshio())
+    def plot(self, **kwargs):
+        raise NotImplementedError
+
+    def plot_mpl(self, **kwargs):
+        raise NotImplementedError
+
+    def plot_itk(self, **kwargs):
+        """Wrapper for `pyvista.plot_itk`.
+
+        Parameters
+        ----------
+        **kwargs
+            Extra keyword arguments passed to `pyvista.plot_itk`
+        """
+        pv.plot_itk(self.to_meshio(), **kwargs)
 
     def plot_pyvista(self, **kwargs):
         """Wrapper for `pyvista.plot`.
@@ -142,13 +154,19 @@ class TriangleMesh(BaseMesh):
         if has_third_dimension:
             self.points = self.points[:, 0:2]
 
-    def plot(self, ax: plt.Axes = None) -> plt.Axes:
+    def plot(self, *args, **kwargs):
+        """Shortcut for `.plot_mpl`."""
+        self.plot_mpl(*args, **kwargs)
+
+    def plot_mpl(self, ax: plt.Axes = None, **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
 
         Parameters
         ----------
         ax : matplotlib.Axes, optional
             Axes to use for plotting.
+        **kwargs
+            Extra keyword arguments passed to `ax.triplot`
 
         Returns
         -------
@@ -391,6 +409,10 @@ class TetraMesh(BaseMesh):
         return cls(points=points, cells=cells)
 
     def plot(self, **kwargs):
+        """Shortcut for `.plot_pyvista`."""
+        self.plot_pyvista(**kwargs)
+
+    def plot_pyvista(self, **kwargs):
         """Show grid using `pyvista`.
 
         Parameters

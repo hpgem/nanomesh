@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from nanomesh.mesh_container import TriangleMesh
+from nanomesh.mesh import TriangleMesh
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144

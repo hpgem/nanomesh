@@ -1,8 +1,8 @@
 import numpy as np
 from matplotlib.testing.decorators import image_comparison
 
+from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh2d import compare_mesh_with_image
-from nanomesh.mesh_container import TriangleMesh
 
 
 @image_comparison(

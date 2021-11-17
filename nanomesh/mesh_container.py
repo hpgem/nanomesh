@@ -207,13 +207,14 @@ class TriangleMesh(MeshContainer):
         points = dct['vertices']
         cells = dct['triangles']
 
-        metadata = {}
-        try:
-            metadata['is_boundary_point'] = dct['vertex_markers'].squeeze()
-        except KeyError:
-            pass
+        # TODO: Add this to `.point_data`
+        # metadata = {}
+        # try:
+        #     metadata['is_boundary_point'] = dct['vertex_markers'].squeeze()
+        # except KeyError:
+        #     pass
 
-        mesh = cls(points=points, cells=cells, **metadata)
+        mesh = cls(points=points, cells=cells)
 
         try:
             mesh.edges = dct['edges']

@@ -10,6 +10,10 @@ class MeshContainer(meshio.Mesh):
         """Try to return highest dimension type.
 
         Default to first type `cells_dict`.
+
+        Returns
+        -------
+        cell_type : str
         """
         for type_ in ('tetra', 'triangle', 'line'):
             if type_ in self.cells_dict:
@@ -27,7 +31,7 @@ class MeshContainer(meshio.Mesh):
 
         Returns
         -------
-        Instance of BaseMesh or derived class
+        BaseMesh
             Dataclass with `points`/`cells` attributes
         """
         if not cell_type:
@@ -44,27 +48,71 @@ class MeshContainer(meshio.Mesh):
         return BaseMesh.create(cells=cells, points=points)
 
     def plot(self, cell_type: str = None, **kwargs):
-        """Plot data."""
+        """Plot data.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
         mesh = self.get(cell_type)
         mesh.plot(**kwargs)
 
     def plot_mpl(self, cell_type: str = None, **kwargs):
-        """Plot data using matplotlib."""
+        """Plot data using matplotlib.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
         mesh = self.get(cell_type)
         mesh.plot_mpl(**kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
-        """Plot data using itk."""
+        """Plot data using itk.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
         mesh = self.get(cell_type)
         mesh.plot_itk(**kwargs)
 
     def plot_pyvista(self, cell_type: str = None, **kwargs):
-        """Plot data using pyvista."""
+        """Plot data using pyvista.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
         mesh = self.get(cell_type)
         mesh.plot_pyvista(**kwargs)
 
     @classmethod
     def from_mesh(cls, mesh: BaseMesh):
-        """Convert from `BaseMesh` to `MeshContainer`."""
-        tmp = mesh.to_meshio()
-        return cls(points=tmp.points, cells=tmp.cells, cell_data=tmp.cell_data)
+        """Convert from `BaseMesh` to `MeshContainer`.
+
+        Parameters
+        ----------
+        mesh : BaseMesh
+            Input mesh, must be a subclass of `BaseMesh`.
+
+        Returns
+        -------
+        MeshContainer
+        """
+        meshio_mesh = mesh.to_meshio()
+        return cls(points=meshio_mesh.points,
+                   cells=meshio_mesh.cells,
+                   cell_data=meshio_mesh.cell_data)

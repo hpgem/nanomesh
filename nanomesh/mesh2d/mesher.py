@@ -7,7 +7,7 @@ import numpy as np
 from skimage import measure
 
 from nanomesh._mesh_shared import BaseMesher
-from nanomesh.mesh_container import TriangleMesh
+from nanomesh.mesh import TriangleMesh
 
 from .helpers import simple_triangulate
 

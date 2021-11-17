@@ -17,7 +17,7 @@ from .bounding_box import BoundingBox
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from nanomesh.mesh_container import TriangleMesh
+    from nanomesh.mesh import TriangleMesh
 
 
 def get_point_in_prop(
@@ -129,7 +129,7 @@ def close_side(mesh: TriangleMesh,
     ValueError
         When the value of `side` is invalid.
     """
-    from nanomesh.mesh_container import TriangleMesh
+    from nanomesh.mesh import TriangleMesh
     all_points = mesh.points
 
     if side == 'top':
@@ -241,7 +241,7 @@ class Mesher3D(BaseMesher):
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher3D`.
         """
-        from nanomesh.mesh_container import TriangleMesh
+        from nanomesh.mesh import TriangleMesh
 
         points, cells, *_ = measure.marching_cubes(
             self.image,

@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
+from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh3d import BoundingBox, pad
-from nanomesh.mesh_container import TriangleMesh
 
 
 @pytest.fixture

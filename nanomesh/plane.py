@@ -13,7 +13,7 @@ from .utils import show_image
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .mesh_container import TriangleMesh
+    from .mesh import TriangleMesh
 
 
 class Plane(BaseImage):

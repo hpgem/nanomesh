@@ -9,7 +9,7 @@ from nanomesh.utils import pairwise
 from .bounding_box import BoundingBox
 
 if TYPE_CHECKING:
-    from nanomesh.mesh_container import TriangleMesh
+    from nanomesh.mesh import TriangleMesh
 
 
 def pad(mesh: TriangleMesh,

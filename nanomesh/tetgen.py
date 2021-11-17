@@ -4,7 +4,7 @@ from typing import Any, List, Tuple
 
 import numpy as np
 
-from .mesh_container import TriangleMesh
+from .mesh import TriangleMesh
 
 
 def write_smesh(filename: os.PathLike,

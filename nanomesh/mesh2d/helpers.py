@@ -7,7 +7,7 @@ import numpy as np
 import triangle as tr
 
 if TYPE_CHECKING:
-    from nanomesh.mesh_container import TriangleMesh
+    from nanomesh.mesh import TriangleMesh
 
 
 def _legend_with_triplot_fix(ax: plt.Axes):
@@ -77,7 +77,7 @@ def simple_triangulate(points: np.ndarray,
     mesh : TriangleMesh
         Triangle mesh
     """
-    from nanomesh.mesh_container import TriangleMesh
+    from nanomesh.mesh import TriangleMesh
 
     triangle_dict_in = {'vertices': points}
 
@@ -126,7 +126,7 @@ def pad(mesh: TriangleMesh,
     ValueError
         When the value of `side` is invalid.
     """
-    from nanomesh.mesh_container import TriangleMesh
+    from nanomesh.mesh import TriangleMesh
 
     if label is None:
         label = mesh.unique_labels.max() + 1

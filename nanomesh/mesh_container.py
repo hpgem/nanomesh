@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import TYPE_CHECKING, List, Tuple
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
-import open3d
 import pyvista as pv
 import scipy
 import trimesh
@@ -14,20 +13,86 @@ from trimesh import remesh
 
 from . import mesh2d, mesh3d
 
+if TYPE_CHECKING:
+    import open3d
 
-class MeshContainer:
-    _element_type: str = ''
 
-    def __init__(self, points: np.ndarray, cells: np.ndarray, **metadata):
+class MeshContainer(meshio.Mesh):
+    def extract(self, element_type: str = None) -> BaseMesh:
+        """Extract points/cells of `element_type`.
+
+        Parameters
+        ----------
+        element_type : str, optional
+            Element type, such as line, triangle, tetra, etc.
+
+        Returns
+        -------
+        Instance of BaseMesh or derived class
+            Dataclass with `points`/`cells` attributes
+        """
+        if not element_type:
+            element_type = self.get_default_type()
+
+        cells = self.cells_dict[element_type]
+        points = self.points
+        return TriangleMesh(cells=cells, points=points)
+
+    def plot(self, element_type: str = None):
+        """Plot data."""
+        if not element_type:
+            element_type = self.get_default_type()
+
+        if element_type == 'line':
+            self.plot_mpl(element_type)
+        elif element_type == 'triangle':
+            dimensions = self.points.shape[-1]
+            if dimensions == 2:
+                self.plot_mpl(element_type)
+            else:
+                self.plot_itk(element_type)
+        else:
+            self.plot_itk(element_type)
+
+    def plot_mpl(self, element_type: str = None):
+        if not element_type:
+            element_type = self.get_default_type()
+
+        mesh = self.extract_element_type()
+        mesh.plot_mpl()
+
+    def plot_itk(self, element_type: str = None):
+        if not element_type:
+            element_type = self.get_default_type()
+
+        mesh = self.extract_element_type()
+        mesh.plot_itk()
+
+    def get_default_type(self) -> str:
+        """Try to return highest dimension type.
+
+        Default to first type `cells_dict`.
+        """
+        for type_ in ('tetra', 'triangle', 'line'):
+            if type_ in self.cells_dict:
+                return type_
+
+        return list(self.cells_dict.keys())[0]
+
+
+class BaseMesh:
+    _element_type: str = 'base'
+
+    def __init__(self, points: np.ndarray, cells: np.ndarray, **cell_data):
         self._label_key = 'labels'
 
         self.points = points
         self.cells = cells
         self.region_markers: List[Tuple[int, np.ndarray]] = []
 
-        metadata.setdefault(self._label_key,
-                            np.zeros(len(self.cells), dtype=int))
-        self.metadata = metadata
+        cell_data.setdefault(self._label_key,
+                             np.zeros(len(self.cells), dtype=int))
+        self.cell_data = cell_data
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
@@ -37,27 +102,27 @@ class MeshContainer:
 
         mesh = meshio.Mesh(self.points, cells)
 
-        for key, value in self.metadata.items():
+        for key, value in self.cell_data.items():
             mesh.cell_data[key] = [value]
 
         return mesh
 
     @classmethod
     def from_meshio(cls, mesh: 'meshio.Mesh'):
-        """Return `MeshContainer` from meshio object."""
+        """Return `BaseMesh` from meshio object."""
         points = mesh.points
         cells = mesh.cells[0].data
-        metadata = {}
+        cell_data = {}
 
         for key, value in mesh.cell_data.items():
-            # PyVista chokes on ':ref' in metadata
+            # PyVista chokes on ':ref' in cell_data
             key = key.replace(':ref', 'Ref')
-            metadata[key] = value[0]
+            cell_data[key] = value[0]
 
-        return MeshContainer.create(points=points, cells=cells, **metadata)
+        return BaseMesh.create(points=points, cells=cells, **cell_data)
 
     @classmethod
-    def create(cls, points, cells, **metadata):
+    def create(cls, points, cells, **cell_data):
         """Class dispatcher."""
         n = cells.shape[1]
         if n == 3:
@@ -66,7 +131,7 @@ class MeshContainer:
             item_class = TetraMesh
         else:
             item_class = cls
-        return item_class(points=points, cells=cells, **metadata)
+        return item_class(points=points, cells=cells, **cell_data)
 
     def write(self, *args, **kwargs):
         """Simple wrapper around `meshio.write`."""
@@ -109,12 +174,12 @@ class MeshContainer:
     @property
     def labels(self):
         """Shortcut for cell labels."""
-        return self.metadata[self._label_key]
+        return self.cell_data[self._label_key]
 
     @labels.setter
     def labels(self, data: np.array):
         """Shortcut for setting cell labels."""
-        self.metadata[self._label_key] = data
+        self.cell_data[self._label_key] = data
 
     @property
     def unique_labels(self):
@@ -122,7 +187,11 @@ class MeshContainer:
         return np.unique(self.labels)
 
 
-class TriangleMesh(MeshContainer):
+class LineMesh2(BaseMesh):
+    _element_type = 'line'
+
+
+class TriangleMesh(BaseMesh):
     _element_type = 'triangle'
 
     def drop_third_dimension(self):
@@ -237,6 +306,7 @@ class TriangleMesh(MeshContainer):
         -------
         TriangleMesh
         """
+        import open3d
         mesh_in = self.to_open3d()
         mesh_smp = mesh_in.simplify_vertex_clustering(
             voxel_size=voxel_size,
@@ -356,7 +426,7 @@ class TriangleMesh(MeshContainer):
         return mesh3d.pad(self, **kwargs)
 
 
-class TetraMesh(MeshContainer):
+class TetraMesh(BaseMesh):
     _element_type = 'tetra'
 
     def to_open3d(self):

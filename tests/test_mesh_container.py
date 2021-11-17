@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import pyvista as pv
 
-from nanomesh.mesh_container import MeshContainer, TetraMesh, TriangleMesh
+from nanomesh.mesh_container import BaseMesh, TetraMesh, TriangleMesh
 
 
 @pytest.mark.parametrize('n_points,n_cells,expected', (
@@ -14,7 +14,7 @@ def test_create(n_points, n_cells, expected):
     points = np.arange(5 * n_points).reshape(5, n_points)
     cells = np.zeros((5, n_cells))
 
-    mesh = MeshContainer.create(points=points, cells=cells)
+    mesh = BaseMesh.create(points=points, cells=cells)
 
     assert mesh._element_type == expected
 
@@ -23,9 +23,9 @@ def test_create(n_points, n_cells, expected):
 def triangle_mesh_2d():
     points = np.arange(10).reshape(5, 2)
     cells = np.zeros((5, 3), dtype=int)
-    metadata = {'labels': np.arange(5)}
+    cell_data = {'labels': np.arange(5)}
 
-    mesh = TriangleMesh.create(cells=cells, points=points, **metadata)
+    mesh = TriangleMesh.create(cells=cells, points=points, **cell_data)
     assert isinstance(mesh, TriangleMesh)
     return mesh
 
@@ -34,9 +34,9 @@ def triangle_mesh_2d():
 def triangle_mesh_3d():
     points = np.arange(15).reshape(5, 3)
     cells = np.zeros((5, 3), dtype=int)
-    metadata = {'labels': np.arange(5)}
+    cell_data = {'labels': np.arange(5)}
 
-    mesh = TriangleMesh.create(cells=cells, points=points, **metadata)
+    mesh = TriangleMesh.create(cells=cells, points=points, **cell_data)
     assert isinstance(mesh, TriangleMesh)
     return mesh
 
@@ -45,9 +45,9 @@ def triangle_mesh_3d():
 def tetra_mesh():
     points = np.arange(15).reshape(5, 3)
     cells = np.zeros((5, 4), dtype=int)
-    metadata = {'labels': np.arange(5)}
+    cell_data = {'labels': np.arange(5)}
 
-    mesh = TetraMesh.create(cells=cells, points=points, **metadata)
+    mesh = TetraMesh.create(cells=cells, points=points, **cell_data)
     assert isinstance(mesh, TetraMesh)
     return mesh
 
@@ -58,8 +58,8 @@ def test_meshio_interface(triangle_mesh_2d):
 
     np.testing.assert_allclose(new_mesh.points, triangle_mesh_2d.points)
     np.testing.assert_allclose(new_mesh.cells, triangle_mesh_2d.cells)
-    np.testing.assert_allclose(new_mesh.metadata['labels'],
-                               triangle_mesh_2d.metadata['labels'])
+    np.testing.assert_allclose(new_mesh.cell_data['labels'],
+                               triangle_mesh_2d.cell_data['labels'])
 
 
 def test_open3d_interface_triangle(triangle_mesh_3d):

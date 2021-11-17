@@ -41,8 +41,8 @@ def compare_mesh_results(result_mesh, expected_fn):
     np.testing.assert_allclose(result_mesh.points, expected_mesh.points)
     np.testing.assert_allclose(result_mesh.cells, expected_mesh.cells)
 
-    np.testing.assert_allclose(result_mesh.metadata['tetgenRef'],
-                               expected_mesh.metadata['tetgenRef'])
+    np.testing.assert_allclose(result_mesh.cell_data['tetgenRef'],
+                               expected_mesh.cell_data['tetgenRef'])
 
 
 @pytest.mark.xfail(

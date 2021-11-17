@@ -4,7 +4,7 @@ from typing import Callable, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .mesh_container import MeshContainer
+from .mesh_container import BaseMesh
 
 
 class Metric:
@@ -20,7 +20,7 @@ class Metric:
         super().__init__()
         self.metric = metric
 
-    def __call__(self, mesh: MeshContainer) -> np.ndarray:
+    def __call__(self, mesh: BaseMesh) -> np.ndarray:
         grid = mesh.to_pyvista_unstructured_grid()
         ret = grid.compute_cell_quality(self.metric)
         quality = ret.cell_arrays['CellQuality']
@@ -61,7 +61,7 @@ shape = Metric('shape')
 shape_and_size = Metric('shape_and_size')
 
 
-def max_min_edge_ratio(mesh: MeshContainer) -> np.ndarray:
+def max_min_edge_ratio(mesh: BaseMesh) -> np.ndarray:
     """Place holder, updated dynamically."""
     cell_points = mesh.points[mesh.cells]
     diff = cell_points - np.roll(cell_points, shift=1, axis=1)
@@ -226,7 +226,7 @@ for descriptor in _metric_dispatch.values():
 
 Parameters
 ----------
-mesh : MeshContainer
+mesh : BaseMesh
     Input mesh
 
 Returns
@@ -236,15 +236,15 @@ quality : np.ndarray
     """
 
 
-def calculate_all_metrics(mesh: MeshContainer, inplace: bool = False) -> dict:
+def calculate_all_metrics(mesh: BaseMesh, inplace: bool = False) -> dict:
     """Calculate all available metrics.
 
     Parameters
     ----------
-    mesh : MeshContainer
+    mesh : BaseMesh
         Input mesh
     inplace : bool, optional
-        Updates the `metadata` attribute on the mesh with the metrics.
+        Updates the `cell_data` attribute on the mesh with the metrics.
 
     Returns
     -------
@@ -257,13 +257,13 @@ def calculate_all_metrics(mesh: MeshContainer, inplace: bool = False) -> dict:
         metrics[metric] = quality
 
         if inplace:
-            mesh.metadata[metric] = quality
+            mesh.cell_data[metric] = quality
 
     return metrics
 
 
 def histogram(
-    mesh: MeshContainer,
+    mesh: BaseMesh,
     *,
     metric: str,
     ax: plt.Axes = None,
@@ -273,7 +273,7 @@ def histogram(
 
     Parameters
     ----------
-    mesh : MeshContainer
+    mesh : BaseMesh
         Input mesh
     metric : str
         Metric to calculate.
@@ -313,7 +313,7 @@ def histogram(
 
 
 def plot2d(
-    mesh: MeshContainer,
+    mesh: BaseMesh,
     *,
     metric: str,
     ax: plt.Axes = None,
@@ -323,7 +323,7 @@ def plot2d(
 
     Parameters
     ----------
-    mesh : MeshContainer
+    mesh : BaseMesh
         Input mesh
     metric : str
         Metric to calculate.

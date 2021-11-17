@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import meshio
 
-from .mesh import BaseMesh, LineMesh, TetraMesh, TriangleMesh
+from .mesh import BaseMesh
 
 
 class MeshContainer(meshio.Mesh):
@@ -41,7 +41,7 @@ class MeshContainer(meshio.Mesh):
             raise KeyError(msg) from e
 
         points = self.points
-        return TriangleMesh(cells=cells, points=points)
+        return BaseMesh.create(cells=cells, points=points)
 
     def plot(self, cell_type: str = None, **kwargs):
         """Plot data."""

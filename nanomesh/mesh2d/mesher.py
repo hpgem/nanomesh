@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import logging
-from typing import Any, List
+from typing import TYPE_CHECKING, Any, List
 
 import matplotlib.pyplot as plt
 import meshio
@@ -7,11 +9,13 @@ import numpy as np
 from skimage import measure
 
 from nanomesh._mesh_shared import BaseMesher
-from nanomesh.mesh import TriangleMesh
 
 from .helpers import simple_triangulate
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from nanomesh.mesh import TriangleMesh
 
 
 def _legend_with_triplot_fix(ax: plt.Axes):

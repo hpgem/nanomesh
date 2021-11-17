@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class BaseMesh:
-    _element_type: str = 'base'
+    _cell_type: str = 'base'
 
     def __init__(self, points: np.ndarray, cells: np.ndarray, **cell_data):
         self._label_key = 'labels'
@@ -33,7 +33,7 @@ class BaseMesh:
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
         cells = [
-            (self._element_type, self.cells),
+            (self._cell_type, self.cells),
         ]
 
         mesh = meshio.Mesh(self.points, cells)
@@ -138,11 +138,11 @@ class BaseMesh:
 
 
 class LineMesh(BaseMesh):
-    _element_type = 'line'
+    _cell_type = 'line'
 
 
 class TriangleMesh(BaseMesh):
-    _element_type = 'triangle'
+    _cell_type = 'triangle'
 
     def drop_third_dimension(self):
         """Drop third dimension coordinates if present.
@@ -384,7 +384,7 @@ class TriangleMesh(BaseMesh):
 
 
 class TetraMesh(BaseMesh):
-    _element_type = 'tetra'
+    _cell_type = 'tetra'
 
     def to_open3d(self):
         """Return instance of `open3d.geometry.TetraMesh`."""

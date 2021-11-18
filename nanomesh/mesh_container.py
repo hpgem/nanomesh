@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import meshio
+import numpy as np
 
 from .mesh import BaseMesh
 
@@ -163,3 +164,48 @@ class MeshContainer(meshio.Mesh):
         return cls(points=meshio_mesh.points,
                    cells=meshio_mesh.cells,
                    cell_data=meshio_mesh.cell_data)
+
+    @classmethod
+    def from_triangle_dict(cls, triangle_dict: dict):
+        """Return instance of `MeshContainer` from triangle results dict.
+
+        Parameters
+        ----------
+        triangle_dict : dict
+            Triangle triangulate output dictionary.
+
+        Returns
+        -------
+        mesh : MeshContainer
+        """
+        points = triangle_dict['vertices']
+
+        cell_data = {}
+        cells = {}
+
+        cells['triangle'] = triangle_dict['triangles']
+
+        point_data = {}
+        try:
+            point_data['gmsh-physical'] = triangle_dict[
+                'vertex_markers'].squeeze()
+        except KeyError:
+            pass
+
+        try:
+            cells['line'] = triangle_dict['edges']
+            cell_data['gmsh-physical'] = [
+                np.zeros(len(cells['triangle'])),
+                triangle_dict['edge_markers'],
+            ]
+        except KeyError:
+            pass
+
+        mesh = cls(
+            points=points,
+            cells=cells,
+            cell_data=cell_data,
+            point_data=point_data,
+        )
+
+        return mesh

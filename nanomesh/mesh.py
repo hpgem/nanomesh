@@ -316,21 +316,7 @@ class TriangleMesh(BaseMesh):
         """Return instance of `TriangleMesh` from triangle results dict."""
         points = dct['vertices']
         cells = dct['triangles']
-
-        # TODO: Add this to `.point_data`
-        # metadata = {}
-        # try:
-        #     metadata['is_boundary_point'] = dct['vertex_markers'].squeeze()
-        # except KeyError:
-        #     pass
-
         mesh = cls(points=points, cells=cells)
-
-        try:
-            mesh.edges = dct['edges']
-            mesh.edge_markers = dct['edge_markers']
-        except KeyError:
-            pass
 
         return mesh
 

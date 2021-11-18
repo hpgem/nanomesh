@@ -4,8 +4,29 @@ import meshio
 
 from .mesh import BaseMesh
 
+DIM_NAMES = [None, 'line', 'triangle', 'tetra']
+
 
 class MeshContainer(meshio.Mesh):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._init_field_data()
+
+    def _init_field_data(self):
+        """Set up mappings from field<->number from .field_data."""
+        from collections import defaultdict
+
+        number_to_field = defaultdict(dict)
+        field_to_number = defaultdict(dict)
+
+        for field, (number, dimension) in self.field_data.items():
+            dim_name = DIM_NAMES[dimension]
+            field_to_number[dim_name][field] = number
+            number_to_field[dim_name][number] = field
+
+        self.number_to_field = number_to_field
+        self.field_to_number = field_to_number
+
     def get_default_type(self) -> str:
         """Try to return highest dimension type.
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import meshio
@@ -149,7 +149,7 @@ class LineMesh(BaseMesh):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  label: str = None,
-                 fields: dict = None,
+                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple line mesh plot using `matplotlib`.
 
@@ -190,11 +190,10 @@ class LineMesh(BaseMesh):
                 label=name,
             )
 
-        ax.set_title(self._cell_type)
+        ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
 
-        if fields:
-            ax.legend()
+        ax.legend()
 
         return ax
 
@@ -228,8 +227,8 @@ class TriangleMesh(BaseMesh):
 
     def plot_mpl(self,
                  ax: plt.Axes = None,
-                 label: str = None,
-                 fields: dict = None,
+                 label: str = 'labels',
+                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
 
@@ -238,7 +237,8 @@ class TriangleMesh(BaseMesh):
         ax : plt.Axes, optional
             Axes to use for plotting.
         label : str, optional
-            Label of cell data item to plot.
+            Label of cell data item to plot, defaults to 'labels'.
+        field_data : dict
         **kwargs
             Extra keyword arguments passed to `ax.triplot`
 
@@ -257,7 +257,7 @@ class TriangleMesh(BaseMesh):
         for label in np.unique(labels):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(label, None)
+            name = fields.get(label, label)
 
             ax.triplot(vert_y,
                        vert_x,
@@ -265,12 +265,10 @@ class TriangleMesh(BaseMesh):
                        mask=labels != label,
                        label=name)
 
-        ax.set_title(self._cell_type)
+        ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
 
-        if fields:
-            ax.legend()
-            _legend_with_triplot_fix(ax)
+        _legend_with_triplot_fix(ax)
 
         return ax
 

@@ -120,10 +120,15 @@ class BaseMesh:
         return self.points[self.cells].mean(axis=1)
 
     @property
+    def zero_labels(self):
+        """Return zero labels as fallback."""
+        return np.zeros(len(self.cells), dtype=int)
+
+    @property
     def labels(self):
         """Shortcut for cell labels."""
         if not self.cell_data:
-            return np.zeros(len(self.cells), dtype=int)
+            return self.zero_labels
 
         return self.cell_data[self._label_key]
 
@@ -133,11 +138,6 @@ class BaseMesh:
         self.cell_data[self._label_key] = data
 
     @property
-    def unique_labels(self):
-        """Return unique labels."""
-        return np.unique(self.labels)
-
-    @property
     def dimensions(self):
         """Return number of dimensions for point data."""
         return self.points.shape[1]
@@ -145,6 +145,58 @@ class BaseMesh:
 
 class LineMesh(BaseMesh):
     _cell_type = 'line'
+
+    def plot_mpl(self,
+                 ax: plt.Axes = None,
+                 label: str = None,
+                 fields: dict = None,
+                 **kwargs) -> plt.Axes:
+        """Simple line mesh plot using `matplotlib`.
+
+        Parameters
+        ----------
+        ax : plt.Axes, optional
+            Axes to use for plotting.
+        label : str, optional
+            Label of cell data item to plot.
+        **kwargs
+            Extra keyword arguments passed to `.mpl.lineplot`
+
+        Returns
+        -------
+        plt.Axes
+        """
+        from .mpl.lineplot import lineplot
+
+        if not ax:
+            fig, ax = plt.subplots()
+
+        if fields is None:
+            fields = {}
+
+        labels = self.cell_data.get(label, self.zero_labels)
+
+        for label in np.unique(labels):
+            vert_x, vert_y = self.points.T
+
+            name = fields.get(label, None)
+
+            lineplot(
+                ax,
+                x=vert_y,
+                y=vert_x,
+                lines=self.cells,
+                mask=labels != label,
+                label=name,
+            )
+
+        ax.set_title(self._cell_type)
+        ax.axis('equal')
+
+        if fields:
+            ax.legend()
+
+        return ax
 
 
 class TriangleMesh(BaseMesh):
@@ -174,32 +226,51 @@ class TriangleMesh(BaseMesh):
         else:
             self.plot_itk(**kwargs)
 
-    def plot_mpl(self, ax: plt.Axes = None, **kwargs) -> plt.Axes:
+    def plot_mpl(self,
+                 ax: plt.Axes = None,
+                 label: str = None,
+                 fields: dict = None,
+                 **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
 
         Parameters
         ----------
-        ax : matplotlib.Axes, optional
+        ax : plt.Axes, optional
             Axes to use for plotting.
+        label : str, optional
+            Label of cell data item to plot.
         **kwargs
             Extra keyword arguments passed to `ax.triplot`
 
         Returns
         -------
-        ax : matplotlib.Axes
+        plt.Axes
         """
         if not ax:
             fig, ax = plt.subplots()
 
-        for label in self.unique_labels:
+        if fields is None:
+            fields = {}
+
+        labels = self.cell_data.get(label, self.zero_labels)
+
+        for label in np.unique(labels):
             vert_x, vert_y = self.points.T
+
+            name = fields.get(label, None)
+
             ax.triplot(vert_y,
                        vert_x,
                        triangles=self.cells,
-                       mask=self.labels != label,
-                       label=label)
+                       mask=labels != label,
+                       label=name)
 
+        ax.set_title(self._cell_type)
         ax.axis('equal')
+
+        if fields:
+            ax.legend()
+            _legend_with_triplot_fix(ax)
 
         return ax
 

@@ -11,6 +11,7 @@ import scipy
 import trimesh
 
 from . import mesh2d, mesh3d
+from .mpl.meshplot import _legend_with_triplot_fix
 
 if TYPE_CHECKING:
     import open3d

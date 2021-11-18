@@ -19,14 +19,6 @@ if TYPE_CHECKING:
     from nanomesh.mesh import TriangleMesh
 
 
-def _legend_with_triplot_fix(ax: plt.Axes):
-    """Add legend for triplot with fix that avoids duplicate labels."""
-    handles, labels = ax.get_legend_handles_labels()
-    # reverse to avoid blank line color
-    by_label = dict(zip(reversed(labels), reversed(handles)))
-    ax.legend(by_label.values(), by_label.keys())
-
-
 def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
     """Use rejection sampling to find point in contour.
 

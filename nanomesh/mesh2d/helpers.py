@@ -6,10 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import triangle as tr
 
-from ..mpl.meshplot import _legend_with_triplot_fix
-
 if TYPE_CHECKING:
     from nanomesh.mesh import TriangleMesh
+    from nanomesh.mesh_container import MeshContainer
 
 
 def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
@@ -42,7 +41,7 @@ def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
                        regions: np.ndarray = None,
-                       opts: str = '') -> TriangleMesh:
+                       opts: str = '') -> MeshContainer:
     """Simple triangulation using `triangle`.
 
     Parameters
@@ -64,10 +63,10 @@ def simple_triangulate(points: np.ndarray,
 
     Returns
     -------
-    mesh : TriangleMesh
+    mesh : MeshContainer
         Triangle mesh
     """
-    from nanomesh.mesh import TriangleMesh
+    from nanomesh.mesh_container import MeshContainer
 
     triangle_dict_in = {'vertices': points}
 
@@ -79,7 +78,7 @@ def simple_triangulate(points: np.ndarray,
 
     triangle_dict_out = tr.triangulate(triangle_dict_in, opts=opts)
 
-    mesh = TriangleMesh.from_triangle_dict(triangle_dict_out)
+    mesh = MeshContainer.from_triangle_dict(triangle_dict_out)
 
     return mesh
 

@@ -16,7 +16,7 @@ from .helpers import simple_triangulate
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from nanomesh.mesh import TriangleMesh
+    from nanomesh.mesh_container import MeshContainer
 
 
 def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
@@ -295,7 +295,7 @@ class Mesher2D(BaseMesher):
             (0, y - 1),
         ))
 
-    def triangulate(self, **kwargs):
+    def triangulate(self, **kwargs) -> MeshContainer:
         """Triangulate contours.
 
         Parameters
@@ -305,7 +305,7 @@ class Mesher2D(BaseMesher):
 
         Returns
         -------
-        mesh : TriangleMesh
+        mesh : MeshContainer
             Output 2D mesh with domain labels
         """
         # ensure edges get returned
@@ -332,32 +332,27 @@ class Mesher2D(BaseMesher):
             number = segment_markers[i]
             markers_dict[frozenset(segment)] = number
 
-        edges = mesh.edges
-        edge_markers = mesh.edge_markers
-
-        for i, edge in enumerate(edges):
-            segment = frozenset(edge)
+        for i, line in enumerate(mesh.cells_dict['line']):
+            segment = frozenset(line)
             try:
-                edge_markers[i] = markers_dict[segment]
+                mesh.cell_data['gmsh-physical'][1][i] = markers_dict[segment]
             except KeyError:
                 pass
 
-        mesh.edge_markers = edge_markers
-
         labels = self.generate_domain_mask_from_contours(mesh)
-        mesh.labels = labels
+        mesh.cell_data['gmsh-physical'][0] = labels
 
         return mesh
 
     def generate_domain_mask_from_contours(
         self,
-        mesh: TriangleMesh,
+        mesh: MeshContainer,
     ) -> np.ndarray:
         """Generate domain mask from contour.
 
         Parameters
         ----------
-        mesh : TriangleMesh
+        mesh : MeshContainer
             Input mesh
 
         Returns
@@ -365,7 +360,7 @@ class Mesher2D(BaseMesher):
         labels : (n,) np.array
             Array cell labels.
         """
-        centers = mesh.cell_centers
+        centers = mesh.get('triangle').cell_centers
 
         labels = np.zeros(len(centers), dtype=int)
 

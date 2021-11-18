@@ -167,8 +167,9 @@ def pad(mesh: TriangleMesh,
     # mapping for the cell indices cells in `pad_mesh` to the source mesh.
     mapping = np.hstack([edge_mapping, pad_mapping])
 
-    shape = pad_mesh.cells.shape
-    pad_cells = pad_mesh.cells.copy().ravel()
+    cells = pad_mesh.cells_dict['triangle'].copy()
+    shape = cells.shape
+    pad_cells = cells.ravel()
 
     mask = np.in1d(pad_cells, mapping[0, :])
     pad_cells[mask] = mapping[1,

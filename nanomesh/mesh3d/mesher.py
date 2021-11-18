@@ -160,13 +160,14 @@ def close_side(mesh: TriangleMesh,
     coords = all_points[is_edge][:, keep_cols]
 
     edge_mesh = simple_triangulate(points=coords, opts='')
+    cells = edge_mesh.cells_dict['triangle'].copy()
+
+    shape = cells.shape
+    new_cells = cells.ravel()
 
     mesh_edge_index = np.argwhere(is_edge).flatten()
     new_edge_index = np.arange(len(mesh_edge_index))
     mapping = np.vstack([new_edge_index, mesh_edge_index])
-
-    shape = edge_mesh.cells.shape
-    new_cells = edge_mesh.cells.copy().ravel()
 
     mask = np.in1d(new_cells, mapping[0, :])
     new_cells[mask] = mapping[1,

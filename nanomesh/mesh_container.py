@@ -194,9 +194,10 @@ class MeshContainer(meshio.Mesh):
 
         try:
             cells['line'] = triangle_dict['edges']
+            # Order must match order of cell_data
             cell_data['gmsh-physical'] = [
                 np.zeros(len(cells['triangle'])),
-                triangle_dict['edge_markers'],
+                triangle_dict['edge_markers'].squeeze(),
             ]
         except KeyError:
             pass
@@ -209,3 +210,20 @@ class MeshContainer(meshio.Mesh):
         )
 
         return mesh
+
+    @classmethod
+    def read(cls, *args, **kwargs):
+        """Wrapper for meshio.read."""
+        from meshio import read
+        mesh = read(*args, **kwargs)
+        return cls(
+            mesh.points,
+            mesh.cells,
+            point_data=mesh.point_data,
+            cell_data=mesh.cell_data,
+            field_data=mesh.field_data,
+            point_sets=mesh.point_sets,
+            cell_sets=mesh.cell_sets,
+            gmsh_periodic=mesh.gmsh_periodic,
+            info=mesh.info,
+        )

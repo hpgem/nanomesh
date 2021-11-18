@@ -329,18 +329,20 @@ class Mesher2D(BaseMesher):
 
         markers_dict = {}
         for i, segment in enumerate(segments):
-            number = segment_markers[i]
-            markers_dict[frozenset(segment)] = number
+            markers_dict[frozenset(segment)] = segment_markers[i]
 
-        for i, line in enumerate(mesh.cells_dict['line']):
+        line_data = mesh.cell_data_dict['gmsh-physical']['line']
+        cells = mesh.cells_dict['line']
+
+        for i, line in enumerate(cells):
             segment = frozenset(line)
             try:
-                mesh.cell_data['gmsh-physical'][1][i] = markers_dict[segment]
+                line_data[i] = markers_dict[segment]
             except KeyError:
                 pass
 
         labels = self.generate_domain_mask_from_contours(mesh)
-        mesh.cell_data['gmsh-physical'][0] = labels
+        mesh.cell_data_dict['gmsh-physical']['triangle'] = labels
 
         return mesh
 

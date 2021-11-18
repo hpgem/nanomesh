@@ -41,11 +41,37 @@ class MeshContainer(meshio.Mesh):
             cells = self.cells_dict[cell_type]
         except KeyError as e:
             msg = (f'No such cell type: {cell_type!r}. '
-                   f'Must be one of {tuple(self.cell_data.keys())!r}')
+                   f'Must be one of {tuple(self.cells_dict.keys())!r}')
             raise KeyError(msg) from e
 
         points = self.points
-        return BaseMesh.create(cells=cells, points=points)
+
+        cell_data = self.get_all_cell_data(cell_type)
+
+        return BaseMesh.create(cells=cells, points=points, **cell_data)
+
+    def get_all_cell_data(self, cell_type: str = None) -> dict:
+        """Get all cell data for given `cell_type`.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Element type, such as line, triangle, tetra, etc.
+
+        Returns
+        -------
+        data_dict : dict
+            Dictionary with cell data
+        """
+        if not cell_type:
+            cell_type = self.get_default_type()
+
+        data_dict = {}
+        for key in self.cell_data:
+            new_key = key.replace(':', '-')
+            data_dict[new_key] = self.get_cell_data(key, cell_type)
+
+        return data_dict
 
     def plot(self, cell_type: str = None, **kwargs):
         """Plot data.

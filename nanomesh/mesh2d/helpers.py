@@ -36,7 +36,7 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
 
     ax.set_title('Mesh')
 
-    mesh.plot(ax)
+    mesh.plot_mpl(ax=ax)
 
     _legend_with_triplot_fix(ax)
 

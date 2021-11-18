@@ -25,9 +25,6 @@ class BaseMesh:
         self.points = points
         self.cells = cells
         self.region_markers: List[Tuple[int, np.ndarray]] = []
-
-        cell_data.setdefault(self._label_key,
-                             np.zeros(len(self.cells), dtype=int))
         self.cell_data = cell_data
 
     def to_meshio(self) -> 'meshio.Mesh':
@@ -60,12 +57,12 @@ class BaseMesh:
     @classmethod
     def create(cls, points, cells, **cell_data):
         """Class dispatcher."""
-        n = cells.shape[1]
-        if n == 2:
+        cell_dimensions = cells.shape[1]
+        if cell_dimensions == 2:
             item_class = LineMesh
-        elif n == 3:
+        elif cell_dimensions == 3:
             item_class = TriangleMesh
-        elif n == 4:
+        elif cell_dimensions == 4:
             item_class = TetraMesh
         else:
             item_class = cls
@@ -124,6 +121,9 @@ class BaseMesh:
     @property
     def labels(self):
         """Shortcut for cell labels."""
+        if not self.cell_data:
+            return np.zeros(len(self.cells), dtype=int)
+
         return self.cell_data[self._label_key]
 
     @labels.setter
@@ -135,6 +135,11 @@ class BaseMesh:
     def unique_labels(self):
         """Return unique labels."""
         return np.unique(self.labels)
+
+    @property
+    def dimensions(self):
+        """Return number of dimensions for point data."""
+        return self.points.shape[1]
 
 
 class LineMesh(BaseMesh):
@@ -150,13 +155,23 @@ class TriangleMesh(BaseMesh):
         For compatibility, sometimes a column with zeroes is added. This
         method drops that column.
         """
-        has_third_dimension = self.points.shape[1] == 3
-        if has_third_dimension:
-            self.points = self.points[:, 0:2]
+        TOL = 1e-9
 
-    def plot(self, *args, **kwargs):
+        if self.dimensions < 3:
+            return
+
+        if not np.all(np.abs(self.points[:, 1]) < TOL):
+            raise ValueError(
+                'Coordinates in third dimension are not all equal to zero.')
+
+        self.points = self.points[:, 0:2]
+
+    def plot(self, **kwargs):
         """Shortcut for `.plot_mpl`."""
-        self.plot_mpl(*args, **kwargs)
+        if self.dimensions == 2:
+            self.plot_mpl(**kwargs)
+        else:
+            self.plot_itk(**kwargs)
 
     def plot_mpl(self, ax: plt.Axes = None, **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.

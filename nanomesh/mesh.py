@@ -212,7 +212,7 @@ class TriangleMesh(BaseMesh):
         if self.dimensions < 3:
             return
 
-        if not np.all(np.abs(self.points[:, 1]) < TOL):
+        if not np.all(np.abs(self.points[:, 2]) < TOL):
             raise ValueError(
                 'Coordinates in third dimension are not all equal to zero.')
 

@@ -340,9 +340,10 @@ class Mesher2D(BaseMesher):
                 line_data[i] = markers_dict[segment]
             except KeyError:
                 pass
+        mesh.set_cell_data('line', key='gmsh-physical', value=line_data)
 
         labels = self.generate_domain_mask_from_contours(mesh)
-        mesh.cell_data_dict['gmsh-physical']['triangle'] = labels
+        mesh.set_cell_data('triangle', key='gmsh-physical', value=labels)
 
         return mesh
 

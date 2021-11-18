@@ -28,6 +28,17 @@ class MeshContainer(meshio.Mesh):
         self.number_to_field = number_to_field
         self.field_to_number = field_to_number
 
+    @property
+    def cell_types(self):
+        """Return cell types in order."""
+        return tuple(cell.type for cell in self.cells)
+
+    def set_cell_data(self, cell_type: str, key: str, value):
+        """Set `key` to `value` for `cell_type` in `.cell_data_dict`."""
+        index = self.cell_types.index(cell_type)
+        assert len(value) == len(self.cells_dict[cell_type])
+        self.cell_data[key][index] = value
+
     def get_default_type(self) -> str:
         """Try to return highest dimension type.
 

@@ -6,6 +6,7 @@ from nanomesh.mesh import BaseMesh, TetraMesh, TriangleMesh
 
 
 @pytest.mark.parametrize('n_points,n_cells,expected', (
+    (2, 2, 'line'),
     (2, 3, 'triangle'),
     (3, 3, 'triangle'),
     (3, 4, 'tetra'),

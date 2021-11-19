@@ -10,4 +10,4 @@ from nanomesh.mpl.meshplot import plot_line_triangle
     savefig_kwarg={'bbox_inches': 'tight'},
 )
 def test_triangle_mesh_plot(mesh_square2d):
-    plot_line_triangle(mesh_square2d, label=None)
+    plot_line_triangle(mesh_square2d, label='data')

@@ -180,7 +180,7 @@ class LineMesh(BaseMesh):
         for label in np.unique(labels):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(label, None)
+            name = fields.get(label, label)
 
             lineplot(
                 ax,

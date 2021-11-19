@@ -103,7 +103,7 @@ def test_drop_third_dimension(triangle_mesh_3d):
 )
 def test_line_mesh_plot(mesh_square2d):
     lines = mesh_square2d.get('line')
-    lines.plot_mpl()
+    lines.plot_mpl(label='data')
 
 
 @image_comparison(
@@ -114,4 +114,4 @@ def test_line_mesh_plot(mesh_square2d):
 )
 def test_triangle_mesh_plot(mesh_square2d):
     lines = mesh_square2d.get('triangle')
-    lines.plot_mpl()
+    lines.plot_mpl(label='data')

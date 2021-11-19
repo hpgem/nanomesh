@@ -69,8 +69,27 @@ def mesh_square2d():
 
     triangles = np.array([[1, 0, 3], [3, 2, 1]])
 
+    LINE = 1
+    TRIANGLE = 2
+
+    field_data = {
+        'Triangle A': [1, TRIANGLE],
+        'Triangle B': [2, TRIANGLE],
+        'Line A': [0, LINE],
+        'Line B': [1, LINE],
+    }
+
+    cell_data = {
+        'data': [
+            [0, 0, 0, 0, 1],
+            [1, 2],
+        ]
+    }
+
     return MeshContainer(points=points,
                          cells={
                              'line': lines,
                              'triangle': triangles
-                         })
+                         },
+                         field_data=field_data,
+                         cell_data=cell_data)

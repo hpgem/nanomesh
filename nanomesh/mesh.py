@@ -174,7 +174,8 @@ class LineMesh(BaseMesh):
         if fields is None:
             fields = {}
 
-        labels = self.cell_data.get(label, self.zero_labels)
+        # https://github.com/python/mypy/issues/9430
+        labels = self.cell_data.get(label, self.zero_labels)  # type: ignore
 
         for label in np.unique(labels):
             vert_x, vert_y = self.points.T

@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import pyvista as pv
+from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh import BaseMesh, TetraMesh, TriangleMesh
 
@@ -92,3 +93,25 @@ def test_drop_third_dimension(triangle_mesh_3d):
 
     assert triangle_mesh_3d.points.shape[1] == 2
     np.testing.assert_equal(triangle_mesh_3d.points, expected_points)
+
+
+@image_comparison(
+    baseline_images=['line_mesh'],
+    remove_text=True,
+    extensions=['png'],
+    savefig_kwarg={'bbox_inches': 'tight'},
+)
+def test_line_mesh_plot(mesh_square2d):
+    lines = mesh_square2d.get('line')
+    lines.plot_mpl()
+
+
+@image_comparison(
+    baseline_images=['triangle_mesh'],
+    remove_text=True,
+    extensions=['png'],
+    savefig_kwarg={'bbox_inches': 'tight'},
+)
+def test_triangle_mesh_plot(mesh_square2d):
+    lines = mesh_square2d.get('triangle')
+    lines.plot_mpl()

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections import defaultdict
+from types import MappingProxyType
+
 import meshio
 import numpy as np
 
@@ -9,24 +12,27 @@ DIM_NAMES = [None, 'line', 'triangle', 'tetra']
 
 
 class MeshContainer(meshio.Mesh):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._init_field_data()
-
-    def _init_field_data(self):
-        """Set up mappings from field<->number from .field_data."""
-        from collections import defaultdict
-
+    @property
+    def number_to_field(self):
+        """Mapping from numbers to fields, proxy to `.field_data`."""
         number_to_field = defaultdict(dict)
+
+        for field, (number, dimension) in self.field_data.items():
+            dim_name = DIM_NAMES[dimension]
+            number_to_field[dim_name][number] = field
+
+        return MappingProxyType(number_to_field)
+
+    @property
+    def field_to_number(self):
+        """Mapping from fields to numbers, proxy to `.field_data`."""
         field_to_number = defaultdict(dict)
 
         for field, (number, dimension) in self.field_data.items():
             dim_name = DIM_NAMES[dimension]
             field_to_number[dim_name][field] = number
-            number_to_field[dim_name][number] = field
 
-        self.number_to_field = number_to_field
-        self.field_to_number = field_to_number
+        return MappingProxyType(field_to_number)
 
     @property
     def cell_types(self):
@@ -37,7 +43,21 @@ class MeshContainer(meshio.Mesh):
         """Set `key` to `value` for `cell_type` in `.cell_data_dict`."""
         index = self.cell_types.index(cell_type)
         assert len(value) == len(self.cells_dict[cell_type])
-        self.cell_data[key][index] = value
+
+        try:
+            self.cell_data[key][index] = value
+        except KeyError:
+            new_cell_data = []
+
+            # set missing cells to 0
+            for i, _ in enumerate(self.cell_types):
+                if i == index:
+                    new_cell_data.append(value)
+                else:
+                    new_cell_data.append(
+                        np.zeros(len(self.cells[0].data), dtype=int))
+
+            self.cell_data[key] = new_cell_data
 
     def get_default_type(self) -> str:
         """Try to return highest dimension type.

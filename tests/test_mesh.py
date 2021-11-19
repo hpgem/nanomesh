@@ -72,3 +72,23 @@ def test_plot_submesh(tetra_mesh):
     plotter = tetra_mesh.plot_submesh(show=False)
     assert isinstance(plotter, pv.Plotter)
     plotter.close()
+
+
+def test_drop_third_dimension_fail(triangle_mesh_3d):
+    assert triangle_mesh_3d.points.shape[1] == 3
+
+    with pytest.raises(ValueError):
+        triangle_mesh_3d.drop_third_dimension()
+
+    assert triangle_mesh_3d.points.shape[1] == 3
+
+
+def test_drop_third_dimension(triangle_mesh_3d):
+    assert triangle_mesh_3d.points.shape[1] == 3
+    expected_points = triangle_mesh_3d.points[:, :2]
+
+    triangle_mesh_3d.points[:, 2] = 0.0
+    triangle_mesh_3d.drop_third_dimension()
+
+    assert triangle_mesh_3d.points.shape[1] == 2
+    np.testing.assert_equal(triangle_mesh_3d.points, expected_points)

@@ -200,7 +200,7 @@ class LineMesh(BaseMesh):
         ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
 
-        ax.legend()
+        ax.legend(title=key)
 
         return ax
 

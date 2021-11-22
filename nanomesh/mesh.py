@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import meshio
@@ -11,6 +11,7 @@ import scipy
 import trimesh
 
 from . import mesh2d, mesh3d
+from .mpl.meshplot import _legend_with_triplot_fix
 
 if TYPE_CHECKING:
     import open3d
@@ -25,9 +26,6 @@ class BaseMesh:
         self.points = points
         self.cells = cells
         self.region_markers: List[Tuple[int, np.ndarray]] = []
-
-        cell_data.setdefault(self._label_key,
-                             np.zeros(len(self.cells), dtype=int))
         self.cell_data = cell_data
 
     def to_meshio(self) -> 'meshio.Mesh':
@@ -60,12 +58,12 @@ class BaseMesh:
     @classmethod
     def create(cls, points, cells, **cell_data):
         """Class dispatcher."""
-        n = cells.shape[1]
-        if n == 2:
+        cell_dimensions = cells.shape[1]
+        if cell_dimensions == 2:
             item_class = LineMesh
-        elif n == 3:
+        elif cell_dimensions == 3:
             item_class = TriangleMesh
-        elif n == 4:
+        elif cell_dimensions == 4:
             item_class = TetraMesh
         else:
             item_class = cls
@@ -122,8 +120,16 @@ class BaseMesh:
         return self.points[self.cells].mean(axis=1)
 
     @property
+    def zero_labels(self):
+        """Return zero labels as fallback."""
+        return np.zeros(len(self.cells), dtype=int)
+
+    @property
     def labels(self):
         """Shortcut for cell labels."""
+        if not self.cell_data:
+            return self.zero_labels
+
         return self.cell_data[self._label_key]
 
     @labels.setter
@@ -132,13 +138,71 @@ class BaseMesh:
         self.cell_data[self._label_key] = data
 
     @property
-    def unique_labels(self):
-        """Return unique labels."""
-        return np.unique(self.labels)
+    def dimensions(self):
+        """Return number of dimensions for point data."""
+        return self.points.shape[1]
 
 
 class LineMesh(BaseMesh):
     _cell_type = 'line'
+
+    def plot_mpl(self,
+                 ax: plt.Axes = None,
+                 key: str = None,
+                 fields: Dict[int, str] = None,
+                 **kwargs) -> plt.Axes:
+        """Simple line mesh plot using `matplotlib`.
+
+        Parameters
+        ----------
+        ax : plt.Axes, optional
+            Axes to use for plotting.
+        label : str, optional
+            Label of cell data item to plot.
+        **kwargs
+            Extra keyword arguments passed to `.mpl.lineplot`
+
+        Returns
+        -------
+        plt.Axes
+        """
+        from .mpl.lineplot import lineplot
+
+        if not ax:
+            fig, ax = plt.subplots()
+
+        if fields is None:
+            fields = {}
+
+        if key is None:
+            try:
+                key = tuple(self.cell_data.keys())[0]
+            except IndexError:
+                pass
+
+        # https://github.com/python/mypy/issues/9430
+        cell_data = self.cell_data.get(key, self.zero_labels)  # type: ignore
+
+        for cell_data_val in np.unique(cell_data):
+            vert_x, vert_y = self.points.T
+
+            name = fields.get(cell_data_val, cell_data_val)
+
+            lineplot(
+                ax,
+                x=vert_y,
+                y=vert_x,
+                lines=self.cells,
+                mask=cell_data != cell_data_val,
+                label=name,
+            )
+
+        ax.set_title(f'{self._cell_type} mesh')
+        ax.axis('equal')
+
+        ax.legend()
+
+        return ax
 
 
 class TriangleMesh(BaseMesh):
@@ -150,40 +214,77 @@ class TriangleMesh(BaseMesh):
         For compatibility, sometimes a column with zeroes is added. This
         method drops that column.
         """
-        has_third_dimension = self.points.shape[1] == 3
-        if has_third_dimension:
-            self.points = self.points[:, 0:2]
+        TOL = 1e-9
 
-    def plot(self, *args, **kwargs):
+        if self.dimensions < 3:
+            return
+
+        if not np.all(np.abs(self.points[:, 2]) < TOL):
+            raise ValueError(
+                'Coordinates in third dimension are not all equal to zero.')
+
+        self.points = self.points[:, 0:2]
+
+    def plot(self, **kwargs):
         """Shortcut for `.plot_mpl`."""
-        self.plot_mpl(*args, **kwargs)
+        if self.dimensions == 2:
+            self.plot_mpl(**kwargs)
+        else:
+            self.plot_itk(**kwargs)
 
-    def plot_mpl(self, ax: plt.Axes = None, **kwargs) -> plt.Axes:
+    def plot_mpl(self,
+                 ax: plt.Axes = None,
+                 key: str = None,
+                 fields: Dict[int, str] = None,
+                 **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
 
         Parameters
         ----------
-        ax : matplotlib.Axes, optional
+        ax : plt.Axes, optional
             Axes to use for plotting.
+        key : str, optional
+            Label of cell data item to plot, defaults to the
+            first key in `.cell_data`.
+        fields : dict
+            Maps cell data value to string for legend.
         **kwargs
             Extra keyword arguments passed to `ax.triplot`
 
         Returns
         -------
-        ax : matplotlib.Axes
+        plt.Axes
         """
         if not ax:
             fig, ax = plt.subplots()
 
-        for label in self.unique_labels:
+        if fields is None:
+            fields = {}
+
+        if key is None:
+            try:
+                key = tuple(self.cell_data.keys())[0]
+            except IndexError:
+                pass
+
+        # https://github.com/python/mypy/issues/9430
+        cell_data = self.cell_data.get(key, self.zero_labels)  # type: ignore
+
+        for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
+
+            name = fields.get(cell_data_val, cell_data_val)
+
             ax.triplot(vert_y,
                        vert_x,
                        triangles=self.cells,
-                       mask=self.labels != label,
-                       label=label)
+                       mask=cell_data != cell_data_val,
+                       label=name)
 
+        ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
+
+        _legend_with_triplot_fix(ax, title=key)
 
         return ax
 
@@ -228,10 +329,12 @@ class TriangleMesh(BaseMesh):
 
     @classmethod
     def from_triangle_dict(cls, dct: dict) -> TriangleMesh:
-        """Return instance of `TriangleMesh` from trimesh results dict."""
+        """Return instance of `TriangleMesh` from triangle results dict."""
         points = dct['vertices']
         cells = dct['triangles']
-        return cls(points=points, cells=cells)
+        mesh = cls(points=points, cells=cells)
+
+        return mesh
 
     def simplify(self, n_cells: int) -> TriangleMesh:
         """Simplify triangular mesh using `open3d`.

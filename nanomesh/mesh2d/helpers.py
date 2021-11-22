@@ -8,14 +8,7 @@ import triangle as tr
 
 if TYPE_CHECKING:
     from nanomesh.mesh import TriangleMesh
-
-
-def _legend_with_triplot_fix(ax: plt.Axes):
-    """Add legend for triplot with fix that avoids duplicate labels."""
-    handles, labels = ax.get_legend_handles_labels()
-    # reverse to avoid blank line color
-    by_label = dict(zip(reversed(labels), reversed(handles)))
-    ax.legend(by_label.values(), by_label.keys())
+    from nanomesh.mesh_container import MeshContainer
 
 
 def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
@@ -34,11 +27,7 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
     """
     fig, ax = plt.subplots()
 
-    ax.set_title('Mesh')
-
-    mesh.plot(ax)
-
-    _legend_with_triplot_fix(ax)
+    mesh.plot_mpl(ax=ax)
 
     ax.imshow(image)
     ax.axis('image')
@@ -52,7 +41,7 @@ def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
                        regions: np.ndarray = None,
-                       opts: str = '') -> TriangleMesh:
+                       opts: str = '') -> MeshContainer:
     """Simple triangulation using `triangle`.
 
     Parameters
@@ -74,10 +63,10 @@ def simple_triangulate(points: np.ndarray,
 
     Returns
     -------
-    mesh : TriangleMesh
+    mesh : MeshContainer
         Triangle mesh
     """
-    from nanomesh.mesh import TriangleMesh
+    from nanomesh.mesh_container import MeshContainer
 
     triangle_dict_in = {'vertices': points}
 
@@ -88,7 +77,8 @@ def simple_triangulate(points: np.ndarray,
         triangle_dict_in['regions'] = regions
 
     triangle_dict_out = tr.triangulate(triangle_dict_in, opts=opts)
-    mesh = TriangleMesh.from_triangle_dict(triangle_dict_out)
+
+    mesh = MeshContainer.from_triangle_dict(triangle_dict_out)
 
     return mesh
 
@@ -128,7 +118,7 @@ def pad(mesh: TriangleMesh,
     from nanomesh.mesh import TriangleMesh
 
     if label is None:
-        label = mesh.unique_labels.max() + 1
+        label = mesh.labels.max() + 1
 
     if width == 0:
         return mesh
@@ -177,8 +167,9 @@ def pad(mesh: TriangleMesh,
     # mapping for the cell indices cells in `pad_mesh` to the source mesh.
     mapping = np.hstack([edge_mapping, pad_mapping])
 
-    shape = pad_mesh.cells.shape
-    pad_cells = pad_mesh.cells.copy().ravel()
+    cells = pad_mesh.cells_dict['triangle'].copy()
+    shape = cells.shape
+    pad_cells = cells.ravel()
 
     mask = np.in1d(pad_cells, mapping[0, :])
     pad_cells[mask] = mapping[1,

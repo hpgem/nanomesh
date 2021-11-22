@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, List
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
+from scipy.spatial.distance import cdist
 from skimage import measure
 
 from nanomesh._mesh_shared import BaseMesher
@@ -15,15 +16,7 @@ from .helpers import simple_triangulate
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from nanomesh.mesh import TriangleMesh
-
-
-def _legend_with_triplot_fix(ax: plt.Axes):
-    """Add legend for triplot with fix that avoids duplicate labels."""
-    handles, labels = ax.get_legend_handles_labels()
-    # reverse to avoid blank line color
-    by_label = dict(zip(reversed(labels), reversed(handles)))
-    ax.legend(by_label.values(), by_label.keys())
+    from nanomesh.mesh_container import MeshContainer
 
 
 def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
@@ -36,7 +29,7 @@ def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    point : np.array
+    point : np.ndarray
         Coordinate of point in the contour
     """
     # start with guess in center of contour
@@ -48,6 +41,30 @@ def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
         point = np.random.uniform(xmin, xmax), np.random.uniform(ymin, ymax)
 
     return point
+
+
+def generate_points(contours: List[np.ndarray],
+                    bbox: np.ndarray) -> np.ndarray:
+    """Generate points from contours and surrounding bbox. The contours are
+    stacked and missing corners are obtained from the bounding box coordinates.
+
+    Parameters
+    ----------
+    contours : List[np.ndarray]
+        List of contours.
+    bbox : (n, 2) np.ndarray
+        Coordinates for the bounding box. These define the convex hull
+        of the meshing area.
+
+    Returns
+    -------
+    points : (m,2) np.ndarray
+        List of points.
+    """
+    idx = ~np.any(cdist(bbox, np.vstack(contours)) == 0, axis=1)
+    missing_corners = bbox[idx]
+
+    return np.vstack([*contours, missing_corners])
 
 
 def generate_regions(contours: List[np.ndarray]) -> np.ndarray:
@@ -200,6 +217,22 @@ def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
     return new_contour
 
 
+def remove_duplicate_points(contour):
+    """Remove duplicate points from contour.
+
+    For a contour it is implied that the last point connects to the
+    first point. In case the first point equals the last point, this
+    results in errors down the line.
+    """
+    first = contour[0]
+    last = contour[-1]
+
+    if np.all(first == last):
+        contour = contour[:-1]
+
+    return contour
+
+
 class Mesher2D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
@@ -242,6 +275,7 @@ class Mesher2D(BaseMesher):
             close_corner_contour(contour, self.image.shape)
             for contour in contours
         ]
+        contours = [remove_duplicate_points(contour) for contour in contours]
         self.contours = contours
 
     @property
@@ -261,45 +295,82 @@ class Mesher2D(BaseMesher):
             (0, y - 1),
         ))
 
-    def triangulate(self, **kwargs):
+    def triangulate(self,
+                    clip_line_data: bool = True,
+                    **kwargs) -> MeshContainer:
         """Triangulate contours.
 
         Parameters
         ----------
+        clip_line_data: bool
+            If set, clips the line data to 0: body, 
+            1: external boundary, 2: internal boundary
+            instead of individual numbers for each segment
+
         **kwargs
             Keyword arguments passed to `triangle.triangulate`
 
         Returns
         -------
-        mesh : TriangleMesh
+        mesh : MeshContainer
             Output 2D mesh with domain labels
         """
-        bbox = self.image_bbox
+        # ensure edges get returned
+        opts = kwargs.get('opts', 'e')
+        if 'e' not in opts:
+            kwargs['opts'] = f'{opts}e'
 
-        contours = [bbox, *self.contours]
+        contours = self.contours
 
         regions = generate_regions(contours)
         segments = generate_segments(contours)
-        points = np.vstack(contours)
+        points = generate_points(contours, bbox=self.image_bbox)
 
         mesh = simple_triangulate(points=points,
                                   segments=segments,
                                   regions=regions,
                                   **kwargs)
 
+        segment_markers = np.hstack([[i + 2] * len(contour)
+                                     for i, contour in enumerate(contours)])
+
+        markers_dict = {}
+        for i, segment in enumerate(segments):
+            markers_dict[frozenset(segment)] = segment_markers[i]
+
+        line_data = mesh.cell_data_dict['physical']['line']
+
+        cells = mesh.cells_dict['line']
+
+        for i, line in enumerate(cells):
+            segment = frozenset(line)
+            try:
+                line_data[i] = markers_dict[segment]
+            except KeyError:
+                pass
+
+        if clip_line_data:
+            line_data = np.clip(line_data, a_min=0, a_max=2)
+
+        mesh.set_cell_data('line', key='physical', value=line_data)
+
         labels = self.generate_domain_mask_from_contours(mesh)
-        mesh.labels = labels
+        mesh.set_cell_data('triangle', key='physical', value=labels)
+
+        mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
+        mesh.set_field_data('line', {0: 'body', 1: 'external', 2: 'internal'})
+
         return mesh
 
     def generate_domain_mask_from_contours(
         self,
-        mesh: TriangleMesh,
+        mesh: MeshContainer,
     ) -> np.ndarray:
         """Generate domain mask from contour.
 
         Parameters
         ----------
-        mesh : TriangleMesh
+        mesh : MeshContainer
             Input mesh
 
         Returns
@@ -307,7 +378,7 @@ class Mesher2D(BaseMesher):
         labels : (n,) np.array
             Array cell labels.
         """
-        centers = mesh.cell_centers
+        centers = mesh.get('triangle').cell_centers
 
         labels = np.zeros(len(centers), dtype=int)
 
@@ -334,8 +405,10 @@ class Mesher2D(BaseMesher):
 
         ax.set_title('Contours')
         for contour in self.contours:
+            contour = np.vstack([contour, contour[0]])
             cont_x, cont_y = contour.T
-            ax.plot(cont_y, cont_x)
+
+            ax.plot(cont_y, cont_x, marker='.')
 
         ax.imshow(self.image)
         ax.axis('image')

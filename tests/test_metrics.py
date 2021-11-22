@@ -1,4 +1,3 @@
-import pickle
 from pathlib import Path
 
 import numpy as np
@@ -6,13 +5,15 @@ import pytest
 from matplotlib.testing.decorators import image_comparison
 
 from nanomesh import metrics
+from nanomesh.mesh_container import MeshContainer
 
 
 @pytest.fixture
 def sample_mesh():
-    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.pickle'
-    with open(expected_fn, 'rb') as f:
-        sample_mesh = pickle.load(f)
+    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.msh'
+    mesh = MeshContainer.read(expected_fn)
+
+    sample_mesh = mesh.get('triangle')
 
     return sample_mesh
 

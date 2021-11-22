@@ -68,9 +68,11 @@ def test_simple_triangulate(simple_mesh):
     points = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
     mesh = simple_triangulate(points, opts='q30a1')
 
-    np.testing.assert_equal(mesh.points, simple_mesh.points)
-    np.testing.assert_equal(mesh.cells, simple_mesh.cells)
-    np.testing.assert_equal(mesh.labels, simple_mesh.labels)
+    tri_mesh = mesh.get('triangle')
+
+    np.testing.assert_equal(tri_mesh.points, simple_mesh.points)
+    np.testing.assert_equal(tri_mesh.cells, simple_mesh.cells)
+    np.testing.assert_equal(tri_mesh.labels, simple_mesh.labels)
 
 
 @pytest.mark.parametrize('side,shape', (

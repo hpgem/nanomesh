@@ -42,7 +42,7 @@ def pad(mesh: TriangleMesh,
         When the value of `side` is invalid.
     """
     if label is None:
-        label = mesh.unique_labels.max() + 1
+        label = mesh.labels.max() + 1
 
     if width == 0:
         return mesh

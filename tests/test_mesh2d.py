@@ -1,5 +1,4 @@
 import os
-import pickle
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +7,7 @@ from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh2d import Mesher2D, generate_2d_mesh
 from nanomesh.mesh2d.mesher import close_corner_contour, subdivide_contour
+from nanomesh.mesh_container import MeshContainer
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
@@ -38,24 +38,39 @@ def segmented():
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_generate_2d_mesh(segmented):
     """Test 2D mesh generation and plot."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.pickle'
+    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.msh'
 
     np.random.seed(1234)  # set seed for reproducible clustering
     mesh = generate_2d_mesh(segmented, max_contour_dist=4, plot=True)
 
     if expected_fn.exists():
-        with open(expected_fn, 'rb') as f:
-            expected_mesh = pickle.load(f)
+        expected_mesh = MeshContainer.read(expected_fn)
+        expected_mesh.prune_z_0()  # gmsh pads 0-column on save
     else:
-        with open(expected_fn, 'wb') as f:
-            pickle.dump(mesh, f)
+        mesh.write(expected_fn, file_format='gmsh22', binary=False)
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
     assert mesh.points.shape == expected_mesh.points.shape
-    assert mesh.cells.shape == expected_mesh.cells.shape
     np.testing.assert_allclose(mesh.points, expected_mesh.points)
-    np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
+
+    cell_types = mesh.cells_dict.keys()
+    assert cell_types == expected_mesh.cells_dict.keys()
+
+    for cell_type in cell_types:
+        cells = mesh.cells_dict[cell_type]
+        expected_cells = expected_mesh.cells_dict[cell_type]
+
+        assert cells.shape == expected_cells.shape
+        np.testing.assert_allclose(cells, expected_cells)
+
+    data_keys = mesh.cell_data_dict.keys()
+    for data_key in data_keys:
+        for cell_type in cell_types:
+            data = mesh.cell_data_dict[data_key][cell_type]
+            expected_data = expected_mesh.cell_data_dict[data_key][cell_type]
+
+            np.testing.assert_allclose(data, expected_data)
 
 
 def test_subdivide_contour():

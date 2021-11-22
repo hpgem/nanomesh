@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from enum import Enum
 from types import MappingProxyType
+from typing import Dict, List
 
 import meshio
 import numpy as np
 
 from .mesh import BaseMesh
 
-DIM_NAMES = [None, 'line', 'triangle', 'tetra']
+
+class CellType(Enum):
+    NULL = 0
+    LINE = 1
+    TRIANGLE = 2
+    TETRA = 3
 
 
 class MeshContainer(meshio.Mesh):
@@ -18,10 +25,10 @@ class MeshContainer(meshio.Mesh):
         number_to_field = defaultdict(dict)
 
         for field, (number, dimension) in self.field_data.items():
-            dim_name = DIM_NAMES[dimension]
+            dim_name = CellType(dimension).name.lower()
             number_to_field[dim_name][number] = field
 
-        return MappingProxyType(number_to_field)
+        return MappingProxyType(dict(number_to_field))
 
     @property
     def field_to_number(self):
@@ -29,10 +36,46 @@ class MeshContainer(meshio.Mesh):
         field_to_number = defaultdict(dict)
 
         for field, (number, dimension) in self.field_data.items():
-            dim_name = DIM_NAMES[dimension]
+            dim_name = CellType(dimension).name.lower()
             field_to_number[dim_name][field] = number
 
-        return MappingProxyType(field_to_number)
+        return MappingProxyType(dict(field_to_number))
+
+    def set_field_data(self, cell_type: str, field_data: Dict[int, str]):
+        """Update the values in `.field_data`.
+
+        Parameters
+        ----------
+        cell_type : str
+            Cell type to update the values ofr.
+        field_data : dict
+            Dictionary with key-to-number mapping, i.e.
+            `field_data={0: 'green', 1: 'blue', 2: 'red'}`
+            maps `0` to `green`, etc.
+        """
+        try:
+            input_field_data = dict(self.number_to_field)[cell_type]
+        except KeyError:
+            input_field_data = {}
+
+        input_field_data.update(field_data)
+
+        new_field_data = self.field_data.copy()
+
+        remove_me = []
+
+        for field, (value, field_cell_type) in new_field_data.items():
+            if CellType(field_cell_type) == CellType[cell_type.upper()]:
+                remove_me.append(field)
+
+        for field in remove_me:
+            new_field_data.pop(field)
+
+        for value, field in input_field_data.items():
+            CELL_TYPE = CellType[cell_type.upper()].value
+            new_field_data[field] = [value, CELL_TYPE]
+
+        self.field_data: Dict[str, List[int]] = new_field_data
 
     @property
     def cell_types(self):
@@ -150,7 +193,8 @@ class MeshContainer(meshio.Mesh):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot_mpl(**kwargs)
+        fields = self.number_to_field.get(mesh._cell_type, None)
+        mesh.plot_mpl(fields=fields, **kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
         """Plot data using itk.
@@ -218,15 +262,14 @@ class MeshContainer(meshio.Mesh):
 
         point_data = {}
         try:
-            point_data['gmsh-physical'] = triangle_dict[
-                'vertex_markers'].squeeze()
+            point_data['physical'] = triangle_dict['vertex_markers'].squeeze()
         except KeyError:
             pass
 
         try:
             cells['line'] = triangle_dict['edges']
             # Order must match order of cell_data
-            cell_data['gmsh-physical'] = [
+            cell_data['physical'] = [
                 np.zeros(len(cells['triangle'])),
                 triangle_dict['edge_markers'].squeeze(),
             ]

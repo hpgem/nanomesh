@@ -148,7 +148,7 @@ class LineMesh(BaseMesh):
 
     def plot_mpl(self,
                  ax: plt.Axes = None,
-                 label: str = None,
+                 key: str = None,
                  fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple line mesh plot using `matplotlib`.
@@ -174,20 +174,26 @@ class LineMesh(BaseMesh):
         if fields is None:
             fields = {}
 
-        # https://github.com/python/mypy/issues/9430
-        labels = self.cell_data.get(label, self.zero_labels)  # type: ignore
+        if key is None:
+            try:
+                key = tuple(self.cell_data.keys())[0]
+            except IndexError:
+                pass
 
-        for label in np.unique(labels):
+        # https://github.com/python/mypy/issues/9430
+        cell_data = self.cell_data.get(key, self.zero_labels)  # type: ignore
+
+        for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(label, label)
+            name = fields.get(cell_data_val, cell_data_val)
 
             lineplot(
                 ax,
                 x=vert_y,
                 y=vert_x,
                 lines=self.cells,
-                mask=labels != label,
+                mask=cell_data != cell_data_val,
                 label=name,
             )
 
@@ -228,7 +234,7 @@ class TriangleMesh(BaseMesh):
 
     def plot_mpl(self,
                  ax: plt.Axes = None,
-                 label: str = 'labels',
+                 key: str = None,
                  fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
@@ -237,9 +243,11 @@ class TriangleMesh(BaseMesh):
         ----------
         ax : plt.Axes, optional
             Axes to use for plotting.
-        label : str, optional
-            Label of cell data item to plot, defaults to 'labels'.
-        field_data : dict
+        key : str, optional
+            Label of cell data item to plot, defaults to the
+            first key in `.cell_data`.
+        fields : dict
+            Maps cell data value to string for legend.
         **kwargs
             Extra keyword arguments passed to `ax.triplot`
 
@@ -253,23 +261,30 @@ class TriangleMesh(BaseMesh):
         if fields is None:
             fields = {}
 
-        labels = self.cell_data.get(label, self.zero_labels)
+        if key is None:
+            try:
+                key = tuple(self.cell_data.keys())[0]
+            except IndexError:
+                pass
 
-        for label in np.unique(labels):
+        # https://github.com/python/mypy/issues/9430
+        cell_data = self.cell_data.get(key, self.zero_labels)  # type: ignore
+
+        for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(label, label)
+            name = fields.get(cell_data_val, cell_data_val)
 
             ax.triplot(vert_y,
                        vert_x,
                        triangles=self.cells,
-                       mask=labels != label,
+                       mask=cell_data != cell_data_val,
                        label=name)
 
         ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
 
-        _legend_with_triplot_fix(ax)
+        _legend_with_triplot_fix(ax, title=key)
 
         return ax
 

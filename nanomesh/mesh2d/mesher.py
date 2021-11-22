@@ -295,11 +295,18 @@ class Mesher2D(BaseMesher):
             (0, y - 1),
         ))
 
-    def triangulate(self, **kwargs) -> MeshContainer:
+    def triangulate(self,
+                    clip_line_data: bool = True,
+                    **kwargs) -> MeshContainer:
         """Triangulate contours.
 
         Parameters
         ----------
+        clip_line_data: bool
+            If set, clips the line data to 0: body, 
+            1: external boundary, 2: internal boundary
+            instead of individual numbers for each segment
+
         **kwargs
             Keyword arguments passed to `triangle.triangulate`
 
@@ -331,7 +338,8 @@ class Mesher2D(BaseMesher):
         for i, segment in enumerate(segments):
             markers_dict[frozenset(segment)] = segment_markers[i]
 
-        line_data = mesh.cell_data_dict['gmsh-physical']['line']
+        line_data = mesh.cell_data_dict['physical']['line']
+
         cells = mesh.cells_dict['line']
 
         for i, line in enumerate(cells):
@@ -340,10 +348,17 @@ class Mesher2D(BaseMesher):
                 line_data[i] = markers_dict[segment]
             except KeyError:
                 pass
-        mesh.set_cell_data('line', key='gmsh-physical', value=line_data)
+
+        if clip_line_data:
+            line_data = np.clip(line_data, a_min=0, a_max=2)
+
+        mesh.set_cell_data('line', key='physical', value=line_data)
 
         labels = self.generate_domain_mask_from_contours(mesh)
-        mesh.set_cell_data('triangle', key='gmsh-physical', value=labels)
+        mesh.set_cell_data('triangle', key='physical', value=labels)
+
+        mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
+        mesh.set_field_data('line', {0: 'body', 1: 'external', 2: 'internal'})
 
         return mesh
 

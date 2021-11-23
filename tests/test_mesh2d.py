@@ -45,7 +45,6 @@ def test_generate_2d_mesh(segmented):
 
     if expected_fn.exists():
         expected_mesh = MeshContainer.read(expected_fn)
-        expected_mesh.prune_z_0()  # gmsh pads 0-column on save
     else:
         mesh.write(expected_fn, file_format='gmsh22', binary=False)
 

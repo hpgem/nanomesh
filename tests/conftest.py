@@ -80,7 +80,7 @@ def mesh_square2d():
     }
 
     cell_data = {
-        'data': [
+        'physical': [
             [0, 0, 0, 0, 1],
             [1, 2],
         ]

@@ -208,8 +208,9 @@ class LineMesh(BaseMesh):
 class TriangleMesh(BaseMesh):
     _cell_type = 'triangle'
 
-    def drop_third_dimension(self):
-        """Drop third dimension coordinates if present.
+    def prune_z_0(self):
+        """Drop third dimension (z) coordinates if present and all values are
+        equal to 0 (within tolerance).
 
         For compatibility, sometimes a column with zeroes is added. This
         method drops that column.

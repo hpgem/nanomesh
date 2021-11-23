@@ -82,3 +82,34 @@ def test_mesh_container_set_cell_data(mesh_square2d):
     data_dict = mesh_square2d.cell_data_dict
     np.testing.assert_equal(data_dict[new_key]['triangle'], new_data)
     np.testing.assert_equal(data_dict[new_key]['line'], 0)
+
+
+def test_read_write(mesh_square2d, tmp_path):
+    def asserts(mesh):
+        assert mesh.points.shape[1] == 2
+        assert 'physical' in mesh.cell_data
+        assert 'gmsh:physical' not in mesh.cell_data
+        assert 'gmsh:geometrical' not in mesh.cell_data
+
+    filename = tmp_path / 'out.msh'
+
+    asserts(mesh_square2d)
+
+    mesh_square2d.write(filename, file_format='gmsh22')
+    asserts(mesh_square2d)
+
+    new_mesh = MeshContainer.read(filename)
+    asserts(new_mesh)
+
+    np.testing.assert_equal(mesh_square2d.points, new_mesh.points)
+
+    assert len(mesh_square2d.cells) == len(new_mesh.cells)
+
+    for (left, right) in zip(mesh_square2d.cells, new_mesh.cells):
+        np.testing.assert_equal(left.data, right.data)
+
+    for key, arrays in mesh_square2d.cell_data.items():
+        new_arrays = new_mesh.cell_data[key]
+
+        for left, right in zip(arrays, new_arrays):
+            np.testing.assert_equal(left, right)

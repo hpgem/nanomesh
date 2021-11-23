@@ -287,17 +287,95 @@ class MeshContainer(meshio.Mesh):
 
     @classmethod
     def read(cls, *args, **kwargs):
-        """Wrapper for meshio.read."""
+        """Wrapper for `meshio.read`.
+
+        For gmsh:
+        - remaps `gmsh:physical` -> `physical`
+        - remaps `gmsh:geometrical` -> `geometrical`
+        """
         from meshio import read
         mesh = read(*args, **kwargs)
+        mesh.prune_z_0()
+
+        cell_data = {}
+        for key, value in mesh.cell_data.items():
+            if key in ('gmsh:physical', 'gmsh:geometrical'):
+                key = key.replace('gmsh:', '')
+
+            cell_data[key] = value
+
+        point_data = {}
+        for key, value in mesh.point_data.items():
+            if key in ('gmsh:physical', 'gmsh:geometrical'):
+                key = key.replace('gmsh:', '')
+
+            point_data[key] = value
+
         return cls(
             mesh.points,
             mesh.cells,
-            point_data=mesh.point_data,
-            cell_data=mesh.cell_data,
+            point_data=point_data,
+            cell_data=cell_data,
             field_data=mesh.field_data,
             point_sets=mesh.point_sets,
             cell_sets=mesh.cell_sets,
             gmsh_periodic=mesh.gmsh_periodic,
             info=mesh.info,
         )
+
+    def write(self, filename, file_format: str = None, **kwargs):
+        """Thin wrapper of `meshio.write` to avoid altering class.
+
+        For gmsh:
+        - remaps `physical` -> `gmsh:physical`
+        - remaps `geometrical` -> `gmsh:geometrical`
+
+        Parameters
+        ----------
+        filename : str
+            File to write to.
+        file_format : str, optional
+            Specify file format. By default, this is guessed from the
+            extension.
+        **kwargs
+            Extra keyword arguments passed to `meshio.write`.
+        """
+        from pathlib import Path
+
+        from meshio import write
+        from meshio._helpers import _filetype_from_path
+
+        if file_format is None:
+            file_format = _filetype_from_path(Path(filename))
+
+        if file_format.startswith('gmsh'):
+            cell_data = {}
+            for key, value in self.cell_data.items():
+                if key in ('physical', 'geometrical'):
+                    key = f'gmsh:{key}'
+
+                cell_data[key] = value
+
+            point_data = {}
+            for key, value in self.point_data.items():
+                if key in ('physical', 'geometrical'):
+                    key = f'gmsh:{key}'
+
+                point_data[key] = value
+        else:
+            cell_data = self.cell_data
+            point_data = self.point_data
+
+        out_mesh = meshio.Mesh(
+            self.points,
+            self.cells,
+            point_data=point_data,
+            cell_data=cell_data,
+            field_data=self.field_data,
+            point_sets=self.point_sets,
+            cell_sets=self.cell_sets,
+            gmsh_periodic=self.gmsh_periodic,
+            info=self.info,
+        )
+
+        write(filename, mesh=out_mesh, file_format=file_format, **kwargs)

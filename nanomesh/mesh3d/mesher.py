@@ -12,7 +12,7 @@ from nanomesh._mesh_shared import BaseMesher
 from nanomesh.mesh2d import simple_triangulate
 from nanomesh.volume import Volume
 
-from ..region_markers import RegionMarker
+from ..region_markers import RegionMarker, RegionMarkerLike
 from .bounding_box import BoundingBox
 
 logger = logging.getLogger(__name__)
@@ -281,6 +281,19 @@ class Mesher3D(BaseMesher):
         """
         self.contour.plot_pyvista(**kwargs)
 
+    def set_region_markers(self, region_markers: List[RegionMarkerLike]):
+        """Sets custom region markers for tetrahedralization.
+
+        Parameters
+        ----------
+        region_markers : List[RegionMarkerLike]
+            List of `RegionMarker` objects or `(int, np.ndarray)` tuples.
+        """
+        self.contour.region_markers.clear()
+
+        for region_marker in region_markers:
+            self.contour.add_region_marker(region_marker)
+
     def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
         """Tetrahedralize a surface contour mesh.
 
@@ -288,6 +301,7 @@ class Mesher3D(BaseMesher):
         ----------
         generate_region_markers : bool, optional
             Attempt to automatically generate region markers.
+            Overwrites existing region_markers.
         **kwargs
             Keyword arguments passed to
             `nanomesh.mesh_container.TriangleMesh.tetrahedralize`

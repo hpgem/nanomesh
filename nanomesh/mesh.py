@@ -11,7 +11,7 @@ import trimesh
 
 from . import mesh2d, mesh3d
 from .mpl.meshplot import _legend_with_triplot_fix
-from .region_markers import RegionMarker
+from .region_markers import RegionMarker, RegionMarkerLike
 
 if TYPE_CHECKING:
     import open3d
@@ -20,26 +20,48 @@ if TYPE_CHECKING:
 class BaseMesh:
     _cell_type: str = 'base'
 
-    def __init__(self, points: np.ndarray, cells: np.ndarray, **cell_data):
+    def __init__(self,
+                 points: np.ndarray,
+                 cells: np.ndarray,
+                 region_markers: List[RegionMarker] = None,
+                 **cell_data):
+        """Summary.
+
+        Parameters
+        ----------
+        points : (m, n) np.ndarray[float]
+            Array with points.
+        cells : (i, j) np.ndarray[int]
+            Index array describing the cells of the mesh.
+        region_markers : List[RegionMarker], optional
+            List of region markers used for assigning labels to regions.
+            Defaults to an empty list.
+        **cell_data
+            Additional cell data. Argument must be a 1D numpy array
+            matching the number of cells defined by `i`.
+        """
         self._label_key = 'labels'
 
         self.points = points
         self.cells = cells
-        self.region_markers: List[RegionMarker] = []
+        self.region_markers = [] if region_markers is None else region_markers
         self.cell_data = cell_data
 
-    def add_region_marker(self, label: int, coordinates: np.ndarray):
+    def add_region_marker(self, region_marker: RegionMarkerLike):
         """Add marker to list of region markers.
 
         Parameters
         ----------
-        label : int
-            Label of the region.
-        coordinates : np.ndarray
-            Coordinates of the region.
+        region_marker : RegionMarkerLike
+            Either a `RegionMarker` object or `(label, coordinates)` tuple,
+            where the label must be an `int` and the coordinates a 2- or
+            3-element numpy array.
         """
-        marker = RegionMarker(label, coordinates)
-        self.region_markers.append(marker)
+        if not isinstance(region_marker, RegionMarker):
+            label, coordinates = region_marker
+            region_marker = RegionMarker(label, coordinates)
+
+        self.region_markers.append(region_marker)
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Tuple, Union
 
 import numpy.typing as npt
 
@@ -7,3 +8,6 @@ import numpy.typing as npt
 class RegionMarker:
     label: int
     coordinates: npt.NDArray
+
+
+RegionMarkerLike = Union[RegionMarker, Tuple[int, npt.NDArray]]

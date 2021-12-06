@@ -97,8 +97,8 @@ def test_generate_3d_mesh(triangle_mesh):
 
     np.random.seed(1234)  # set seed for reproducible clustering
 
-    triangle_mesh.add_region_marker(10, np.array([0.5, 0.5, 0.5]))
-    triangle_mesh.add_region_marker(20, np.array([0.0, 2.0, 2.0]))
+    triangle_mesh.add_region_marker((10, np.array([0.5, 0.5, 0.5])))
+    triangle_mesh.add_region_marker((20, np.array([0.0, 2.0, 2.0])))
 
     tetra_mesh = triangle_mesh.tetrahedralize()
 

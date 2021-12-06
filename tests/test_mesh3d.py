@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
-from nanomesh.mesh3d.mesher import get_region_markers
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
@@ -54,7 +53,8 @@ def test_generate_3d_mesh(segmented_image):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
 
-    tetra_mesh = generate_3d_mesh(segmented_image)
+    tetra_mesh = generate_3d_mesh(segmented_image,
+                                  generate_region_markers=False)
     compare_mesh_results(tetra_mesh, expected_fn)
 
 
@@ -67,10 +67,8 @@ def test_generate_3d_mesh_region_markers(segmented_image):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d_markers.pickle'
 
-    region_markers = get_region_markers(segmented_image)
-
     tetra_mesh = generate_3d_mesh(segmented_image,
-                                  region_markers=region_markers)
+                                  generate_region_markers=True)
     compare_mesh_results(tetra_mesh, expected_fn)
 
 

@@ -150,6 +150,7 @@ def pad(mesh: TriangleMesh,
     center[col] = (center[col] + edge_value) / 2
     # Next line introduces a BUG: https://github.com/hpgem/nanomesh/issues/137
     # new_mesh.region_markers.extend(mesh.region_markers)
-    new_mesh.region_markers.append((label, center))
+
+    new_mesh.add_region_marker(label, coordinates=center)
 
     return new_mesh

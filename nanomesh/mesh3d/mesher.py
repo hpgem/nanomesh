@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Union
 
 import matplotlib.pyplot as plt
 import meshio
@@ -12,6 +12,7 @@ from nanomesh._mesh_shared import BaseMesher
 from nanomesh.mesh2d import simple_triangulate
 from nanomesh.volume import Volume
 
+from ..region_markers import RegionMarker
 from .bounding_box import BoundingBox
 
 logger = logging.getLogger(__name__)
@@ -45,8 +46,7 @@ def get_point_in_prop(
     return point
 
 
-def get_region_markers(
-        vol: Union[Volume, np.ndarray]) -> List[Tuple[int, np.ndarray]]:
+def get_region_markers(vol: Union[Volume, np.ndarray]) -> List[RegionMarker]:
     """Get region markers describing the featuers in the volume.
 
     The array will be labeled, and points inside the labeled region
@@ -81,7 +81,9 @@ def get_region_markers(
         point = get_point_in_prop(prop)
         i, j, k = point.astype(int)
         label = image[i, j, k]
-        region_markers.append((label, point))
+
+        region_marker = RegionMarker(label=label, coordinates=point)
+        region_markers.append(region_marker)
 
     return region_markers
 
@@ -305,7 +307,7 @@ class Mesher3D(BaseMesher):
 
         if generate_region_markers:
             region_markers = get_region_markers(self.image)
-            kwargs['region_markers'] = region_markers
+            self.contour.region_markers = region_markers
 
         contour = self.contour
         volume_mesh = contour.tetrahedralize(**kwargs)

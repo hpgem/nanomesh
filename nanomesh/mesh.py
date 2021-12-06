@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List
 
 import matplotlib.pyplot as plt
 import meshio
@@ -12,6 +11,7 @@ import trimesh
 
 from . import mesh2d, mesh3d
 from .mpl.meshplot import _legend_with_triplot_fix
+from .region_markers import RegionMarker
 
 if TYPE_CHECKING:
     import open3d
@@ -25,8 +25,21 @@ class BaseMesh:
 
         self.points = points
         self.cells = cells
-        self.region_markers: List[Tuple[int, np.ndarray]] = []
+        self.region_markers: List[RegionMarker] = []
         self.cell_data = cell_data
+
+    def add_region_marker(self, label: int, coordinates: np.ndarray):
+        """Add marker to list of region markers.
+
+        Parameters
+        ----------
+        label : int
+            Label of the region.
+        coordinates : np.ndarray
+            Coordinates of the region.
+        """
+        marker = RegionMarker(label, coordinates)
+        self.region_markers.append(marker)
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
@@ -434,37 +447,22 @@ class TriangleMesh(BaseMesh):
         points, cells = remesh.subdivide(self.points, self.cells)
         return TriangleMesh(points=points, cells=cells)
 
-    def tetrahedralize(self,
-                       region_markers: List[Tuple[int, np.ndarray]] = None,
-                       **kwargs) -> 'TetraMesh':
+    def tetrahedralize(self, **kwargs) -> 'TetraMesh':
         """Tetrahedralize a contour.
 
         Parameters
         ----------
-        region_markers : list, optional
-            List of region markers. If not defined, automatically
-            generate regions.
         **kwargs
             Keyword arguments passed to `nanomesh.tetgen.tetrahedralize`.
 
         Returns
         -------
-        TetraMesh
+        mesh : TetraMesh
+            Tetrahedralized mesh.
         """
-        import tempfile
-
-        if region_markers is None:
-            region_markers = []
-
-        region_markers.extend(self.region_markers)
-
         from nanomesh import tetgen
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp, 'nanomesh.smesh')
-            tetgen.write_smesh(path, self, region_markers=region_markers)
-            tetgen.tetrahedralize(path, **kwargs)
-            ele_path = path.with_suffix('.1.ele')
-            return TetraMesh.read(ele_path)
+        mesh = tetgen.tetrahedralize(self, **kwargs)
+        return mesh
 
     def pad(self, **kwargs) -> TriangleMesh:
         """Pad a mesh.

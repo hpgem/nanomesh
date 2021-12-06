@@ -1,15 +1,15 @@
 import os
+import tempfile
 from pathlib import Path
 from typing import Any, List, Tuple
 
-import numpy as np
-
-from .mesh import TriangleMesh
+from .mesh import TetraMesh, TriangleMesh
+from .region_markers import RegionMarker
 
 
 def write_smesh(filename: os.PathLike,
                 mesh: TriangleMesh,
-                region_markers: List[Tuple[int, np.ndarray]] = None):
+                region_markers: List[RegionMarker] = None):
     """Save a mesh to a `.smesh` format (Tetgen). http://wias-
     berlin.de/software/tetgen/1.5/doc/manual/manual006.html#ff_smesh.
 
@@ -19,11 +19,11 @@ def write_smesh(filename: os.PathLike,
         Filename to save the data to.
     mesh : TriangleMesh
         Mesh data to be saved.
-    region_markers : list, optional
-        Coordinates of region markers.
+    region_markers : List[RegionMarker], optional
+        Override region markers from input mesh.
     """
     if region_markers is None:
-        region_markers = []
+        region_markers = mesh.region_markers
 
     path = Path(filename)
     with path.open('w') as f:
@@ -60,36 +60,72 @@ def write_smesh(filename: os.PathLike,
         for i, hole in enumerate(holes):
             print(hole_fmt.format(i + 1, *hole), file=f)
 
-        # TODO, store regions in TriangleMesh?
         n_regions = len(region_markers)
         region_dim = 3
 
         print(f'{n_regions}', file=f)
 
         region_fmt = '{:4d}' + ' {:8.2f}' * region_dim + ' {label:8}'
-        # Define region numer, region attributes
 
-        for i, (label, coord) in enumerate(region_markers):
-            print(region_fmt.format(i + 1, *coord, label=label), file=f)
+        for i, marker in enumerate(region_markers):
+            print(region_fmt.format(i + 1,
+                                    *marker.coordinates,
+                                    label=marker.label),
+                  file=f)
 
 
-def tetrahedralize(fname: os.PathLike, opts: str = '-pAq1.2'):
-    """Tetrahedralize a surface mesh.
+def call_tetgen(fname: os.PathLike, opts: str = '-pAq1.2'):
+    """Call tetgen via subprocess.
 
     Parameters
     ----------
     fname : os.PathLike
-        Description
+        Location of tetgen input file ('.smesh')
     opts : str
         Command-line options passed to `tetgen`.
 
         More info:
         http://wias-berlin.de/software/tetgen/1.5/doc/manual/manual005.html
-    """
-    # -A: Assigns attributes to tetrahedra in different regions.
-    # -p: Tetrahedralizes a piecewise linear complex (PLC).
-    # -q: Refines mesh (to improve mesh quality).
-    # -a: Applies a maximum tetrahedron volume constraint.
 
+        Some useful flags:
+
+        -A: Assigns attributes to tetrahedra in different regions.
+        -p: Tetrahedralizes a piecewise linear complex (PLC).
+        -q: Refines mesh (to improve mesh quality).
+        -a: Applies a maximum tetrahedron volume constraint.
+    """
     import subprocess as sp
     sp.run(['tetgen', opts, fname])
+
+
+def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> TetraMesh:
+    """Tetrahedralize a surface mesh.
+
+    Parameters
+    ----------
+    mesh : TriangleMesh
+        Input contour mesh
+    opts : str, optional
+        Command-line options passed to `tetgen`.
+
+        More info:
+        http://wias-berlin.de/software/tetgen/1.5/doc/manual/manual005.html
+
+        Some useful flags:
+
+        -A: Assigns attributes to tetrahedra in different regions.
+        -p: Tetrahedralizes a piecewise linear complex (PLC).
+        -q: Refines mesh (to improve mesh quality).
+        -a: Applies a maximum tetrahedron volume constraint.
+
+    Returns
+    -------
+    TetraMesh
+        Tetrahedralized mesh.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp, 'nanomesh.smesh')
+        write_smesh(path, mesh)
+        call_tetgen(path, opts)
+        ele_path = path.with_suffix('.1.ele')
+        return TetraMesh.read(ele_path)

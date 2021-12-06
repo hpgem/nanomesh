@@ -6,6 +6,7 @@ import numpy as np
 
 from nanomesh.utils import pairwise
 
+from ..region_markers import RegionMarker
 from .bounding_box import BoundingBox
 
 if TYPE_CHECKING:
@@ -144,12 +145,16 @@ def pad(mesh: TriangleMesh,
 
     cells = np.vstack([mesh.cells, new_triangles])
 
-    new_mesh = mesh.__class__(points=points, cells=cells)
+    new_mesh = mesh.__class__(
+        points=points,
+        cells=cells,
+        region_markers=mesh.region_markers,
+    )
 
+    # add marker for new region
     center = extra_coords.mean(axis=0)
     center[col] = (center[col] + edge_value) / 2
-    # Next line introduces a BUG: https://github.com/hpgem/nanomesh/issues/137
-    # new_mesh.region_markers.extend(mesh.region_markers)
-    new_mesh.region_markers.append((label, center))
+
+    new_mesh.add_region_marker(RegionMarker(label, center))
 
     return new_mesh

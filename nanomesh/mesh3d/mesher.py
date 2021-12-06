@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Union
 
 import matplotlib.pyplot as plt
 import meshio
@@ -12,6 +12,7 @@ from nanomesh._mesh_shared import BaseMesher
 from nanomesh.mesh2d import simple_triangulate
 from nanomesh.volume import Volume
 
+from ..region_markers import RegionMarker, RegionMarkerLike
 from .bounding_box import BoundingBox
 
 logger = logging.getLogger(__name__)
@@ -45,8 +46,7 @@ def get_point_in_prop(
     return point
 
 
-def get_region_markers(
-        vol: Union[Volume, np.ndarray]) -> List[Tuple[int, np.ndarray]]:
+def get_region_markers(vol: Union[Volume, np.ndarray]) -> List[RegionMarker]:
     """Get region markers describing the featuers in the volume.
 
     The array will be labeled, and points inside the labeled region
@@ -81,7 +81,9 @@ def get_region_markers(
         point = get_point_in_prop(prop)
         i, j, k = point.astype(int)
         label = image[i, j, k]
-        region_markers.append((label, point))
+
+        region_marker = RegionMarker(label=label, coordinates=point)
+        region_markers.append(region_marker)
 
     return region_markers
 
@@ -279,6 +281,19 @@ class Mesher3D(BaseMesher):
         """
         self.contour.plot_pyvista(**kwargs)
 
+    def set_region_markers(self, region_markers: List[RegionMarkerLike]):
+        """Sets custom region markers for tetrahedralization.
+
+        Parameters
+        ----------
+        region_markers : List[RegionMarkerLike]
+            List of `RegionMarker` objects or `(int, np.ndarray)` tuples.
+        """
+        self.contour.region_markers.clear()
+
+        for region_marker in region_markers:
+            self.contour.add_region_marker(region_marker)
+
     def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
         """Tetrahedralize a surface contour mesh.
 
@@ -286,6 +301,7 @@ class Mesher3D(BaseMesher):
         ----------
         generate_region_markers : bool, optional
             Attempt to automatically generate region markers.
+            Overwrites existing region_markers.
         **kwargs
             Keyword arguments passed to
             `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
@@ -305,7 +321,7 @@ class Mesher3D(BaseMesher):
 
         if generate_region_markers:
             region_markers = get_region_markers(self.image)
-            kwargs['region_markers'] = region_markers
+            self.contour.region_markers = region_markers
 
         contour = self.contour
         volume_mesh = contour.tetrahedralize(**kwargs)

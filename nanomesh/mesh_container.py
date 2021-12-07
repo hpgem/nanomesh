@@ -1,438 +1,381 @@
-from pathlib import Path
+from __future__ import annotations
 
-import matplotlib.pyplot as plt
+from collections import defaultdict
+from enum import Enum
+from types import MappingProxyType
+from typing import Dict, List
+
 import meshio
 import numpy as np
-import open3d
-import pyvista as pv
-import scipy
-import trimesh
-from trimesh import remesh
+
+from .mesh import BaseMesh
 
 
-class MeshContainer:
-    _element_type: str = ''
+class CellType(Enum):
+    NULL = 0
+    LINE = 1
+    TRIANGLE = 2
+    TETRA = 3
 
-    def __init__(self, points: np.ndarray, cells: np.ndarray, **metadata):
-        self._label_key = 'labels'
 
-        self.points = points
-        self.cells = cells
+class MeshContainer(meshio.Mesh):
+    @property
+    def number_to_field(self):
+        """Mapping from numbers to fields, proxy to `.field_data`."""
+        number_to_field = defaultdict(dict)
 
-        metadata.setdefault(self._label_key,
-                            np.zeros(len(self.cells), dtype=int))
-        self.metadata = metadata
+        for field, (number, dimension) in self.field_data.items():
+            dim_name = CellType(dimension).name.lower()
+            number_to_field[dim_name][number] = field
 
-    def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
-        cells = [
-            (self._element_type, self.cells),
-        ]
+        return MappingProxyType(dict(number_to_field))
 
-        mesh = meshio.Mesh(self.points, cells)
+    @property
+    def field_to_number(self):
+        """Mapping from fields to numbers, proxy to `.field_data`."""
+        field_to_number = defaultdict(dict)
 
-        for key, value in self.metadata.items():
-            mesh.cell_data[key] = [value]
+        for field, (number, dimension) in self.field_data.items():
+            dim_name = CellType(dimension).name.lower()
+            field_to_number[dim_name][field] = number
+
+        return MappingProxyType(dict(field_to_number))
+
+    def set_field_data(self, cell_type: str, field_data: Dict[int, str]):
+        """Update the values in `.field_data`.
+
+        Parameters
+        ----------
+        cell_type : str
+            Cell type to update the values ofr.
+        field_data : dict
+            Dictionary with key-to-number mapping, i.e.
+            `field_data={0: 'green', 1: 'blue', 2: 'red'}`
+            maps `0` to `green`, etc.
+        """
+        try:
+            input_field_data = dict(self.number_to_field)[cell_type]
+        except KeyError:
+            input_field_data = {}
+
+        input_field_data.update(field_data)
+
+        new_field_data = self.field_data.copy()
+
+        remove_me = []
+
+        for field, (value, field_cell_type) in new_field_data.items():
+            if CellType(field_cell_type) == CellType[cell_type.upper()]:
+                remove_me.append(field)
+
+        for field in remove_me:
+            new_field_data.pop(field)
+
+        for value, field in input_field_data.items():
+            CELL_TYPE = CellType[cell_type.upper()].value
+            new_field_data[field] = [value, CELL_TYPE]
+
+        self.field_data: Dict[str, List[int]] = new_field_data
+
+    @property
+    def cell_types(self):
+        """Return cell types in order."""
+        return tuple(cell.type for cell in self.cells)
+
+    def set_cell_data(self, cell_type: str, key: str, value):
+        """Set `key` to `value` for `cell_type` in `.cell_data_dict`."""
+        index = self.cell_types.index(cell_type)
+        assert len(value) == len(self.cells_dict[cell_type])
+
+        try:
+            self.cell_data[key][index] = value
+        except KeyError:
+            new_cell_data = []
+
+            # set missing cells to 0
+            for i, _ in enumerate(self.cell_types):
+                if i == index:
+                    new_cell_data.append(value)
+                else:
+                    new_cell_data.append(
+                        np.zeros(len(self.cells[0].data), dtype=int))
+
+            self.cell_data[key] = new_cell_data
+
+    def get_default_type(self) -> str:
+        """Try to return highest dimension type.
+
+        Default to first type `cells_dict`.
+
+        Returns
+        -------
+        cell_type : str
+        """
+        for type_ in ('tetra', 'triangle', 'line'):
+            if type_ in self.cells_dict:
+                return type_
+
+        return list(self.cells_dict.keys())[0]
+
+    def get(self, cell_type: str = None) -> BaseMesh:
+        """Extract mesh with points/cells of `cell_type`.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Element type, such as line, triangle, tetra, etc.
+
+        Returns
+        -------
+        BaseMesh
+            Dataclass with `points`/`cells` attributes
+        """
+        if not cell_type:
+            cell_type = self.get_default_type()
+
+        try:
+            cells = self.cells_dict[cell_type]
+        except KeyError as e:
+            msg = (f'No such cell type: {cell_type!r}. '
+                   f'Must be one of {tuple(self.cells_dict.keys())!r}')
+            raise KeyError(msg) from e
+
+        points = self.points
+
+        cell_data = self.get_all_cell_data(cell_type)
+
+        return BaseMesh.create(cells=cells, points=points, **cell_data)
+
+    def get_all_cell_data(self, cell_type: str = None) -> dict:
+        """Get all cell data for given `cell_type`.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Element type, such as line, triangle, tetra, etc.
+
+        Returns
+        -------
+        data_dict : dict
+            Dictionary with cell data
+        """
+        if not cell_type:
+            cell_type = self.get_default_type()
+
+        data_dict = {}
+        for key in self.cell_data:
+            new_key = key.replace(':', '-')
+            data_dict[new_key] = self.get_cell_data(key, cell_type)
+
+        return data_dict
+
+    def plot(self, cell_type: str = None, **kwargs):
+        """Plot data.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
+        mesh = self.get(cell_type)
+        mesh.plot(**kwargs)
+
+    def plot_mpl(self, cell_type: str = None, **kwargs):
+        """Plot data using matplotlib.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
+        mesh = self.get(cell_type)
+        fields = self.number_to_field.get(mesh._cell_type, None)
+        mesh.plot_mpl(fields=fields, **kwargs)
+
+    def plot_itk(self, cell_type: str = None, **kwargs):
+        """Plot data using itk.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
+        mesh = self.get(cell_type)
+        mesh.plot_itk(**kwargs)
+
+    def plot_pyvista(self, cell_type: str = None, **kwargs):
+        """Plot data using pyvista.
+
+        Parameters
+        ----------
+        cell_type : str, optional
+            Cell type to plot.
+        **kwargs
+            Extra keyword arguments passed to plotting method.
+        """
+        mesh = self.get(cell_type)
+        mesh.plot_pyvista(**kwargs)
+
+    @classmethod
+    def from_mesh(cls, mesh: BaseMesh):
+        """Convert from `BaseMesh` to `MeshContainer`.
+
+        Parameters
+        ----------
+        mesh : BaseMesh
+            Input mesh, must be a subclass of `BaseMesh`.
+
+        Returns
+        -------
+        MeshContainer
+        """
+        meshio_mesh = mesh.to_meshio()
+        return cls(points=meshio_mesh.points,
+                   cells=meshio_mesh.cells,
+                   cell_data=meshio_mesh.cell_data)
+
+    @classmethod
+    def from_triangle_dict(cls, triangle_dict: dict):
+        """Return instance of `MeshContainer` from triangle results dict.
+
+        Parameters
+        ----------
+        triangle_dict : dict
+            Triangle triangulate output dictionary.
+
+        Returns
+        -------
+        mesh : MeshContainer
+        """
+        points = triangle_dict['vertices']
+
+        cell_data = {}
+        cells = {}
+
+        cells['triangle'] = triangle_dict['triangles']
+
+        point_data = {}
+        try:
+            point_data['physical'] = triangle_dict['vertex_markers'].squeeze()
+        except KeyError:
+            pass
+
+        try:
+            cells['line'] = triangle_dict['edges']
+            # Order must match order of cell_data
+            cell_data['physical'] = [
+                np.zeros(len(cells['triangle'])),
+                triangle_dict['edge_markers'].squeeze(),
+            ]
+        except KeyError:
+            pass
+
+        mesh = cls(
+            points=points,
+            cells=cells,
+            cell_data=cell_data,
+            point_data=point_data,
+        )
 
         return mesh
 
     @classmethod
-    def from_meshio(cls, mesh: 'meshio.Mesh'):
-        """Return `MeshContainer` from meshio object."""
-        points = mesh.points
-        cells = mesh.cells[0].data
-        metadata = {}
+    def read(cls, *args, **kwargs):
+        """Wrapper for `meshio.read`.
 
+        For gmsh:
+        - remaps `gmsh:physical` -> `physical`
+        - remaps `gmsh:geometrical` -> `geometrical`
+        """
+        from meshio import read
+        mesh = read(*args, **kwargs)
+        mesh.prune_z_0()
+
+        cell_data = {}
         for key, value in mesh.cell_data.items():
-            # PyVista chokes on ':ref' in metadata
-            key = key.replace(':ref', 'Ref')
-            metadata[key] = value[0]
+            if key in ('gmsh:physical', 'gmsh:geometrical'):
+                key = key.replace('gmsh:', '')
 
-        return MeshContainer.create(points=points, cells=cells, **metadata)
+            cell_data[key] = value
 
-    @classmethod
-    def create(cls, points, cells, **metadata):
-        """Class dispatcher."""
-        n = cells.shape[1]
-        if n == 3:
-            item_class = TriangleMesh
-        elif n == 4:
-            item_class = TetraMesh
-        else:
-            item_class = cls
-        return item_class(points=points, cells=cells, **metadata)
+        point_data = {}
+        for key, value in mesh.point_data.items():
+            if key in ('gmsh:physical', 'gmsh:geometrical'):
+                key = key.replace('gmsh:', '')
 
-    def write(self, *args, **kwargs):
-        """Simple wrapper around `meshio.write`."""
-        self.to_meshio().write(*args, **kwargs)
+            point_data[key] = value
 
-    @classmethod
-    def read(cls, filename, **kwargs):
-        """Simple wrapper around `meshio.read`."""
-        mesh = meshio.read(filename, **kwargs)
-        return cls.from_meshio(mesh)
-
-    def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
-        """Return instance of `pyvista.UnstructuredGrid`.
-
-        References
-        ----------
-        https://docs.pyvista.org/core/point-grids.html#pv-unstructured-grid-class-methods
-        """
-        return pv.from_meshio(self.to_meshio())
-
-    def plot_itk(self):
-        """Wrapper for `pyvista.plot_itk`."""
-        pv.plot_itk(self.to_meshio())
-
-    def plot_pyvista(self, **kwargs):
-        """Wrapper for `pyvista.plot`.
-
-        Parameters
-        ----------
-        **kwargs
-            Extra keyword arguments passed to `pyvista.plot`
-        """
-        pv.plot(self.to_meshio(), **kwargs)
-
-    @property
-    def cell_centers(self):
-        """Return centers of cells (mean of corner points)."""
-        return self.points[self.cells].mean(axis=1)
-
-    @property
-    def labels(self):
-        """Shortcut for cell labels."""
-        return self.metadata[self._label_key]
-
-    @labels.setter
-    def labels(self, data: np.array):
-        """Shortcut for setting cell labels."""
-        self.metadata[self._label_key] = data
-
-    @property
-    def unique_labels(self):
-        """Return unique labels."""
-        return np.unique(self.labels)
-
-
-class TriangleMesh(MeshContainer):
-    _element_type = 'triangle'
-
-    def drop_third_dimension(self):
-        """Drop third dimension coordinates if present.
-
-        For compatibility, sometimes a column with zeroes is added. This
-        method drops that column.
-        """
-        has_third_dimension = self.points.shape[1] == 3
-        if has_third_dimension:
-            self.points = self.points[:, 0:2]
-
-    def plot(self, ax: plt.Axes = None) -> plt.Axes:
-        """Simple mesh plot using `matplotlib`.
-
-        Parameters
-        ----------
-        ax : matplotlib.Axes, optional
-            Axes to use for plotting.
-
-        Returns
-        -------
-        ax : matplotlib.Axes
-        """
-        if not ax:
-            fig, ax = plt.subplots()
-
-        for label in self.unique_labels:
-            vert_x, vert_y = self.points.T
-            ax.triplot(vert_y,
-                       vert_x,
-                       triangles=self.cells,
-                       mask=self.labels != label,
-                       label=label)
-
-        ax.axis('equal')
-
-        return ax
-
-    def to_trimesh(self) -> 'trimesh.Trimesh':
-        """Return instance of `trimesh.Trimesh`."""
-        return trimesh.Trimesh(vertices=self.points, faces=self.cells)
-
-    def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
-        """Return instance of `open3d.geometry.TriangleMesh`."""
-        import open3d
-        return open3d.geometry.TriangleMesh(
-            vertices=open3d.utility.Vector3dVector(self.points),
-            triangles=open3d.utility.Vector3iVector(self.cells))
-
-    def to_polydata(self) -> 'pv.PolyData':
-        """Return instance of `pyvista.Polydata`."""
-        points = self.points
-        cells = self.cells
-        # preprend 3 to indicate number of points per cell
-        stacked_cells = np.hstack(np.insert(cells, 0, values=3, axis=1))
-        return pv.PolyData(points, stacked_cells, n_faces=len(cells))
-
-    @classmethod
-    def from_open3d(cls,
-                    mesh: 'open3d.geometry.TriangleMesh') -> 'TriangleMesh':
-        """Return instance of `TriangleMesh` from open3d."""
-        points = np.asarray(mesh.vertices)
-        cells = np.asarray(mesh.triangles)
-        return cls(points=points, cells=cells)
-
-    @classmethod
-    def from_scipy(cls,
-                   mesh: 'scipy.spatial.qhull.Delaunay') -> 'TriangleMesh':
-        """Return instance of `TriangleMesh` from `scipy.spatial.Delaunay`
-        object."""
-        points = mesh.points
-        cells = mesh.simplices
-        return cls(points=points, cells=cells)
-
-    @classmethod
-    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> 'TriangleMesh':
-        """Return instance of `TriangleMesh` from trimesh."""
-        return cls(points=mesh.vertices, cells=mesh.faces)
-
-    @classmethod
-    def from_triangle_dict(cls, dct: dict) -> 'TriangleMesh':
-        """Return instance of `TriangleMesh` from trimesh results dict."""
-        points = dct['vertices']
-        cells = dct['triangles']
-        return cls(points=points, cells=cells)
-
-    def simplify(self, n_cells: int) -> 'TriangleMesh':
-        """Simplify triangular mesh using `open3d`.
-
-        Parameters
-        ----------
-        n_cells : int
-            Simplify mesh until this number of cells is reached.
-
-        Returns
-        -------
-        TriangleMesh
-        """
-        mesh_o3d = self.to_open3d()
-        simplified_o3d = mesh_o3d.simplify_quadric_decimation(int(n_cells))
-        return TriangleMesh.from_open3d(simplified_o3d)
-
-    def simplify_by_point_clustering(self,
-                                     voxel_size: float = 1.0
-                                     ) -> 'TriangleMesh':
-        """Simplify mesh geometry using point clustering.
-
-        Parameters
-        ----------
-        voxel_size : float, optional
-            Size of the target voxel within which points are grouped.
-
-        Returns
-        -------
-        TriangleMesh
-        """
-        mesh_in = self.to_open3d()
-        mesh_smp = mesh_in.simplify_vertex_clustering(
-            voxel_size=voxel_size,
-            contraction=open3d.geometry.SimplificationContraction.Average)
-
-        return TriangleMesh.from_open3d(mesh_smp)
-
-    def smooth(self, iterations: int = 50) -> 'TriangleMesh':
-        """Smooth mesh using the Taubin filter in `trimesh`.
-
-        The advantage of the Taubin algorithm is that it avoids
-        shrinkage of the object.
-
-        Parameters
-        ----------
-        iterations : int, optional
-            Number of smoothing operations to apply
-
-        Returns
-        -------
-        TriangleMesh
-        """
-        mesh_tri = self.to_trimesh()
-        smoothed_tri = trimesh.smoothing.filter_taubin(mesh_tri,
-                                                       iterations=iterations)
-        return TriangleMesh.from_trimesh(smoothed_tri)
-
-    def optimize(self,
-                 *,
-                 method='CVT (block-diagonal)',
-                 tol: float = 1.0e-3,
-                 max_num_steps: int = 10,
-                 **kwargs) -> 'TriangleMesh':
-        """Optimize mesh using `optimesh`.
-
-        Parameters
-        ----------
-        method : str, optional
-            Method name
-        tol : float, optional
-            Tolerance
-        max_num_steps : int, optional
-            Maximum number of optimization steps.
-        **kwargs
-            Arguments to pass to `optimesh.optimize_points_cells`
-
-        Returns
-        -------
-        TriangleMesh
-        """
-        import optimesh
-        points, cells = optimesh.optimize_points_cells(
-            X=self.points,
-            cells=self.cells,
-            method=method,
-            tol=tol,
-            max_num_steps=max_num_steps,
-            **kwargs,
+        return cls(
+            mesh.points,
+            mesh.cells,
+            point_data=point_data,
+            cell_data=cell_data,
+            field_data=mesh.field_data,
+            point_sets=mesh.point_sets,
+            cell_sets=mesh.cell_sets,
+            gmsh_periodic=mesh.gmsh_periodic,
+            info=mesh.info,
         )
-        return TriangleMesh(points=points, cells=cells)
 
-    def subdivide(self, max_edge: int = 10, iters: int = 10) -> 'TriangleMesh':
-        """Subdivide triangles."""
-        points, cells = remesh.subdivide(self.points, self.cells)
-        return TriangleMesh(points=points, cells=cells)
+    def write(self, filename, file_format: str = None, **kwargs):
+        """Thin wrapper of `meshio.write` to avoid altering class.
 
-    def tetrahedralize(self,
-                       region_markers: dict = None,
-                       **kwargs) -> 'TetraMesh':
-        """Tetrahedralize a contour.
+        For gmsh:
+        - remaps `physical` -> `gmsh:physical`
+        - remaps `geometrical` -> `gmsh:geometrical`
 
         Parameters
         ----------
-        region_markers : dict, optional
-            Dictionary of region markers. If not defined, automatically
-            generate regions.
+        filename : str
+            File to write to.
+        file_format : str, optional
+            Specify file format. By default, this is guessed from the
+            extension.
         **kwargs
-            Keyword arguments passed to `nanomesh.tetgen.tetrahedralize`.
-
-        Returns
-        -------
-        TetraMesh
+            Extra keyword arguments passed to `meshio.write`.
         """
-        import tempfile
+        from pathlib import Path
 
-        if region_markers is None:
-            region_markers = {}
+        from meshio import write
+        from meshio._helpers import _filetype_from_path
 
-        from nanomesh import tetgen
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp, 'nanomesh.smesh')
-            tetgen.write_smesh(path, self, region_markers=region_markers)
-            tetgen.tetrahedralize(path, **kwargs)
-            ele_path = path.with_suffix('.1.ele')
-            return TetraMesh.read(ele_path)
+        if file_format is None:
+            file_format = _filetype_from_path(Path(filename))
 
-    def pad(self, **kwargs) -> 'TriangleMesh':
-        """Pad a mesh.
+        if file_format.startswith('gmsh'):
+            cell_data = {}
+            for key, value in self.cell_data.items():
+                if key in ('physical', 'geometrical'):
+                    key = f'gmsh:{key}'
 
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to `nanomesh.mesh_utils.pad`
-        """
-        from nanomesh.mesh_utils import pad
-        return pad(self, **kwargs)
+                cell_data[key] = value
 
+            point_data = {}
+            for key, value in self.point_data.items():
+                if key in ('physical', 'geometrical'):
+                    key = f'gmsh:{key}'
 
-class TetraMesh(MeshContainer):
-    _element_type = 'tetra'
+                point_data[key] = value
+        else:
+            cell_data = self.cell_data
+            point_data = self.point_data
 
-    def to_open3d(self):
-        """Return instance of `open3d.geometry.TetraMesh`."""
-        import open3d
-        return open3d.geometry.TetraMesh(
-            vertices=open3d.utility.Vector3dVector(self.points),
-            tetras=open3d.utility.Vector4iVector(self.cells))
+        out_mesh = meshio.Mesh(
+            self.points,
+            self.cells,
+            point_data=point_data,
+            cell_data=cell_data,
+            field_data=self.field_data,
+            point_sets=self.point_sets,
+            cell_sets=self.cell_sets,
+            gmsh_periodic=self.gmsh_periodic,
+            info=self.info,
+        )
 
-    @classmethod
-    def from_open3d(cls, mesh):
-        """Return instance of `TetraMesh` from open3d."""
-        points = np.asarray(mesh.vertices)
-        cells = np.asarray(mesh.tetras)
-        return cls(points=points, cells=cells)
-
-    @classmethod
-    def from_pyvista_unstructured_grid(cls, grid: 'pv.UnstructuredGrid'):
-        """Return infance of `TetraMesh` from `pyvista.UnstructuredGrid`."""
-        assert grid.cells[0] == 4
-        cells = grid.cells.reshape(grid.n_cells, 5)[:, 1:]
-        points = np.array(grid.points)
-        return cls(points=points, cells=cells)
-
-    def plot(self, **kwargs):
-        """Show grid using `pyvista`.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to `pyvista.Plotter().add_mesh`.
-        """
-        self.to_pyvista_unstructured_grid().plot(**kwargs)
-
-    def plot_submesh(
-        self,
-        index: int = None,
-        along: str = 'x',
-        invert: bool = False,
-        show: bool = True,
-        backend: str = None,
-        **kwargs,
-    ):
-        """Show submesh using `pyvista`.
-
-        Parameters
-        ----------
-        index : int, optional
-            Index of where to cut the mesh. Shows all tetrahedra
-            with cell center < index. Picks the half-way
-            point along the axis by default.
-        along : str, optional
-            Direction along which to cut.
-        invert : bool, optional
-            Invert the cutting operation, and show all tetrahedra with
-            cell center > index.
-        show : bool, optional
-            If true, show the plot
-        **kwargs:
-            Keyword arguments passed to `pyvista.Plotter().add_mesh`.
-
-        plotter : `pyvista.Plotter`
-            Return plotter instance.
-        """
-        grid = self.to_pyvista_unstructured_grid()
-
-        # get cell centroids
-        cells = grid.cells.reshape(-1, 5)[:, 1:]
-        cell_center = grid.points[cells].mean(1)
-
-        # extract cells below index
-        axis = 'zyx'.index(along)
-
-        if index is None:
-            # pick half-way point
-            i, j = axis * 2, axis * 2 + 2
-            index = np.mean(grid.bounds[i:j])
-
-        mask = cell_center[:, axis] < index
-
-        if invert:
-            mask = ~mask
-
-        cell_ind = mask.nonzero()[0]
-        subgrid = grid.extract_cells(cell_ind)
-
-        plotter = pv.Plotter()
-        plotter.add_mesh(subgrid, **kwargs)
-
-        if show:
-            plotter.show(jupyter_backend=backend)
-
-        return plotter
+        write(filename, mesh=out_mesh, file_format=file_format, **kwargs)

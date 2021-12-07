@@ -3,8 +3,8 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
-from nanomesh.mesh_container import TriangleMesh
-from nanomesh.mesh_utils import simple_triangulate
+from nanomesh.mesh import TriangleMesh
+from nanomesh.mesh2d import simple_triangulate
 from nanomesh.utils import SliceViewer, show_image
 
 
@@ -68,9 +68,11 @@ def test_simple_triangulate(simple_mesh):
     points = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
     mesh = simple_triangulate(points, opts='q30a1')
 
-    np.testing.assert_equal(mesh.points, simple_mesh.points)
-    np.testing.assert_equal(mesh.cells, simple_mesh.cells)
-    np.testing.assert_equal(mesh.labels, simple_mesh.labels)
+    tri_mesh = mesh.get('triangle')
+
+    np.testing.assert_equal(tri_mesh.points, simple_mesh.points)
+    np.testing.assert_equal(tri_mesh.cells, simple_mesh.cells)
+    np.testing.assert_equal(tri_mesh.labels, simple_mesh.labels)
 
 
 @pytest.mark.parametrize('side,shape', (
@@ -121,3 +123,11 @@ def test_pad_label(simple_mesh, label, expected_labels):
     assert isinstance(res, TriangleMesh)
 
     np.testing.assert_equal(res.labels, expected_labels)
+
+
+def test_pairwise():
+    """Test pairwise function."""
+    from nanomesh.utils import pairwise
+    inp = range(3)
+    out = pairwise(inp)
+    assert list(out) == [(0, 1), (1, 2)]

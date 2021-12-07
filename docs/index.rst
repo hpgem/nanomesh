@@ -3,7 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. include:: README.rst
+
+|Documentation Status| |Linux| |MacOS| |Windows|
+
+.. figure:: _static/banner.png
+   :alt: Nanomesh banner
+
+
+Welcome to the nanomesh documentation!
 
 
 Getting started
@@ -13,6 +20,7 @@ Getting started
    :caption: Getting Started
 
    install
+   development
 
 
 Examples
@@ -32,14 +40,19 @@ API Reference
    :maxdepth: 1
    :caption: API reference
 
+   nanomesh.base_image.rst
    nanomesh.io.rst
    nanomesh.mesh2d.rst
    nanomesh.mesh3d.rst
    nanomesh.mesh_container.rst
    nanomesh.mesh_utils.rst
+   nanomesh.mesh_utils_3d.rst
+   nanomesh.metrics.rst
    nanomesh.plane.rst
    nanomesh.roi2d.rst
+   nanomesh.tetgen.rst
    nanomesh.utils.rst
+   nanomesh.volume.rst
 
 
 Links
@@ -57,3 +70,13 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+.. |Documentation Status| image:: https://readthedocs.org/projects/nanomesh/badge/?version=latest
+   :target: https://nanomesh.readthedocs.io/en/latest/?badge=latest
+.. |Linux| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml/badge.svg
+   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml
+.. |MacOS| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg
+   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml
+.. |Windows| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg
+   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml

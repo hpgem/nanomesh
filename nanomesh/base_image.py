@@ -1,7 +1,25 @@
+import operator
 import os
 from typing import Callable, Union
 
 import numpy as np
+
+
+def normalize_values(image: np.ndarray):
+    """Rescale values to 0.0 to 1.0.
+
+    Parameters
+    ----------
+    image : (m, n) np.ndarray
+        Input image.
+
+    Returns
+    -------
+    out : (m, n) np.ndarray
+        Normalized image
+    """
+    out = (image - image.min()) / (image.max() - image.min())
+    return out
 
 
 class BaseImage:
@@ -25,6 +43,38 @@ class BaseImage:
             return np.all(other == self.image)
         else:
             return False
+
+    def __gt__(self, other):
+        return self._compare(other, op=operator.gt)
+
+    def __lt__(self, other):
+        return self._compare(other, op=operator.lt)
+
+    def __ge__(self, other):
+        return self._compare(other, op=operator.ge)
+
+    def __le__(self, other):
+        return self._compare(other, op=operator.le)
+
+    def _compare(self, other, *, op: Callable):
+        """Helper function to implement overload functions.
+
+        Parameters
+        ----------
+        other :
+            Other instance, can be a numpy array.
+        op : callable
+            Operator (see operator module).
+
+        Returns
+        -------
+        BaseImage
+            Image with boolean data.
+        """
+        this = self.image
+        if isinstance(other, self.__class__):
+            other = other.image
+        return self.__class__(op(this, other))
 
     def to_sitk_image(self):
         """Return instance of `SimpleITK.Image` from `.image`."""
@@ -121,6 +171,16 @@ class BaseImage:
             New instance of `BaseImage`.
         """
         return self.apply(np.digitize, bins=bins, **kwargs)
+
+    def normalize_values(self):
+        """Rescale values to 0.0 to 1.0.
+
+        Returns
+        -------
+        out : BaseImage
+            Normalized image
+        """
+        return self.apply(normalize_values)
 
     def binary_digitize(self, threshold: Union[float, str] = None):
         """Convert into a binary image.

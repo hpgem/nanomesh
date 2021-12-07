@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
-from nanomesh import Plane
-from nanomesh.mesh_container import TriangleMesh
+from nanomesh.mesh import TriangleMesh
+from nanomesh.plane import Plane
 
 
 @pytest.fixture
@@ -91,13 +91,6 @@ def test_crop(plane):
     assert cropped.image.shape == (2, 3)
 
 
-def test_equal(plane):
-    """Test equivalency."""
-    assert plane == plane
-    assert plane == plane.image
-    assert plane != 123
-
-
 @image_comparison(
     baseline_images=['compare_with_digitized'],
     remove_text=True,
@@ -155,3 +148,38 @@ def test_clear_border():
     assert isinstance(out, Plane)
     assert np.all(out.image[0, 0:2] == [5, 5])
     assert np.all(out.image[2, 1:3] == [2, 2])
+
+
+def test_equal(plane):
+    """Test equivalency."""
+    assert plane == plane
+    assert plane == plane.image
+    assert plane != 123
+
+
+def test_gt(plane):
+    lesser_plane = Plane(plane.image - 1)
+    assert np.all((plane > lesser_plane).image)
+    assert not np.all((lesser_plane > plane).image)
+    assert not np.all((plane > plane).image)
+
+
+def test_ge(plane):
+    lesser_plane = Plane(plane.image - 1)
+    assert np.all((plane >= lesser_plane).image)
+    assert not np.all((lesser_plane >= plane).image)
+    assert np.all((plane >= plane).image)
+
+
+def test_lt(plane):
+    greater_plane = Plane(plane.image + 1)
+    assert np.all((plane < greater_plane).image)
+    assert not np.all((greater_plane < plane).image)
+    assert not np.all((plane < plane).image)
+
+
+def test_le(plane):
+    greater_plane = Plane(plane.image + 1)
+    assert np.all((plane <= greater_plane).image)
+    assert not np.all((greater_plane <= plane).image)
+    assert np.all((plane <= plane).image)

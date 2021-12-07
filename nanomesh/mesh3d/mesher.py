@@ -1,41 +1,24 @@
+from __future__ import annotations
+
 import logging
-from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import TYPE_CHECKING, List, Union
 
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 from skimage import measure, morphology
 
-from nanomesh import Volume
-from nanomesh.mesh_utils import simple_triangulate
+from nanomesh._mesh_shared import BaseMesher
+from nanomesh.mesh2d import simple_triangulate
+from nanomesh.volume import Volume
 
-from ._mesh_shared import BaseMesher
-from .mesh_container import TriangleMesh
+from ..region_markers import RegionMarker, RegionMarkerLike
+from .bounding_box import BoundingBox
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class BoundingBox:
-    """Container for bounding box coordinates."""
-    xmin: float
-    xmax: float
-    ymin: float
-    ymax: float
-    zmin: float
-    zmax: float
-
-    @classmethod
-    def from_shape(cls, shape):
-        xmin, ymin, zmin = 0, 0, 0
-        xmax, ymax, zmax = np.array(shape) - 1
-        return cls(xmin=xmin,
-                   ymin=ymin,
-                   zmin=zmin,
-                   xmax=xmax,
-                   ymax=ymax,
-                   zmax=zmax)
+if TYPE_CHECKING:
+    from nanomesh.mesh import TriangleMesh
 
 
 def get_point_in_prop(
@@ -63,8 +46,7 @@ def get_point_in_prop(
     return point
 
 
-def get_region_markers(
-        vol: Union[Volume, np.ndarray]) -> List[Tuple[int, np.ndarray]]:
+def get_region_markers(vol: Union[Volume, np.ndarray]) -> List[RegionMarker]:
     """Get region markers describing the featuers in the volume.
 
     The array will be labeled, and points inside the labeled region
@@ -99,7 +81,9 @@ def get_region_markers(
         point = get_point_in_prop(prop)
         i, j, k = point.astype(int)
         label = image[i, j, k]
-        region_markers.append((label, point))
+
+        region_marker = RegionMarker(label=label, coordinates=point)
+        region_markers.append(region_marker)
 
     return region_markers
 
@@ -114,21 +98,15 @@ def add_corner_points(mesh: TriangleMesh, bbox: BoundingBox) -> None:
     bbox : BoundingBox
         Container for the bounding box coordinates.
     """
-    corners = np.array([
-        [bbox.xmin, bbox.ymin, bbox.zmin],
-        [bbox.xmin, bbox.ymin, bbox.zmax],
-        [bbox.xmin, bbox.ymax, bbox.zmin],
-        [bbox.xmin, bbox.ymax, bbox.zmax],
-        [bbox.xmax, bbox.ymin, bbox.zmin],
-        [bbox.xmax, bbox.ymin, bbox.zmax],
-        [bbox.xmax, bbox.ymax, bbox.zmin],
-        [bbox.xmax, bbox.ymax, bbox.zmax],
-    ])
-
+    corners = bbox.to_points()
     mesh.points = np.vstack([mesh.points, corners])
 
 
-def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
+def close_side(mesh: TriangleMesh,
+               *,
+               side: str,
+               bbox: BoundingBox,
+               ax: plt.Axes = None):
     """Fill a side of the bounding box with triangles.
 
     Parameters
@@ -153,6 +131,7 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
     ValueError
         When the value of `side` is invalid.
     """
+    from nanomesh.mesh import TriangleMesh
     all_points = mesh.points
 
     if side == 'top':
@@ -183,20 +162,21 @@ def close_side(mesh, *, side: str, bbox: BoundingBox, ax: plt.Axes = None):
     coords = all_points[is_edge][:, keep_cols]
 
     edge_mesh = simple_triangulate(points=coords, opts='')
+    cells = edge_mesh.cells_dict['triangle'].copy()
+
+    shape = cells.shape
+    new_cells = cells.ravel()
 
     mesh_edge_index = np.argwhere(is_edge).flatten()
     new_edge_index = np.arange(len(mesh_edge_index))
     mapping = np.vstack([new_edge_index, mesh_edge_index])
-
-    shape = edge_mesh.cells.shape
-    new_cells = edge_mesh.cells.copy().ravel()
 
     mask = np.in1d(new_cells, mapping[0, :])
     new_cells[mask] = mapping[1,
                               np.searchsorted(mapping[0, :], new_cells[mask])]
     new_cells = new_cells.reshape(shape)
 
-    new_labels = np.ones(len(new_cells)) * 123
+    new_labels = np.ones(len(new_cells))
 
     points = all_points
     cells = np.vstack([mesh.cells, new_cells])
@@ -264,6 +244,8 @@ class Mesher3D(BaseMesher):
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to `Mesher3D`.
         """
+        from nanomesh.mesh import TriangleMesh
+
         points, cells, *_ = measure.marching_cubes(
             self.image,
             level=level,
@@ -279,6 +261,39 @@ class Mesher3D(BaseMesher):
 
         self.contour = mesh
 
+    def pad_contour(self, **kwargs):
+        """Pad the contour. See `nanomesh.TriangleMesh.pad3d` for info.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for `nanomesh.TriangleMesh.pad3d`.
+        """
+        self.contour = self.contour.pad3d(**kwargs)
+
+    def show_contour(self, **kwargs):
+        """Pad the contour. See `nanomesh.BaseMesh.plot_pyvista` for info.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for `nanomesh.BaseMesh.plot_pyvista`.
+        """
+        self.contour.plot_pyvista(**kwargs)
+
+    def set_region_markers(self, region_markers: List[RegionMarkerLike]):
+        """Sets custom region markers for tetrahedralization.
+
+        Parameters
+        ----------
+        region_markers : List[RegionMarkerLike]
+            List of `RegionMarker` objects or `(int, np.ndarray)` tuples.
+        """
+        self.contour.region_markers.clear()
+
+        for region_marker in region_markers:
+            self.contour.add_region_marker(region_marker)
+
     def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
         """Tetrahedralize a surface contour mesh.
 
@@ -286,6 +301,7 @@ class Mesher3D(BaseMesher):
         ----------
         generate_region_markers : bool, optional
             Attempt to automatically generate region markers.
+            Overwrites existing region_markers.
         **kwargs
             Keyword arguments passed to
             `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
@@ -305,7 +321,7 @@ class Mesher3D(BaseMesher):
 
         if generate_region_markers:
             region_markers = get_region_markers(self.image)
-            kwargs['region_markers'] = region_markers
+            self.contour.region_markers = region_markers
 
         contour = self.contour
         volume_mesh = contour.tetrahedralize(**kwargs)

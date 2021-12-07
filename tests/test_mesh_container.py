@@ -1,106 +1,115 @@
+from types import MappingProxyType
+
+import meshio
 import numpy as np
-import pytest
-import pyvista as pv
 
-from nanomesh.mesh_container import MeshContainer, TetraMesh, TriangleMesh
-
-
-@pytest.mark.parametrize('n_points,n_cells,expected', (
-    (2, 3, 'triangle'),
-    (3, 3, 'triangle'),
-    (3, 4, 'tetra'),
-))
-def test_create(n_points, n_cells, expected):
-    points = np.arange(5 * n_points).reshape(5, n_points)
-    cells = np.zeros((5, n_cells))
-
-    mesh = MeshContainer.create(points=points, cells=cells)
-
-    assert mesh._element_type == expected
+from nanomesh.mesh import TetraMesh, TriangleMesh
+from nanomesh.mesh_container import MeshContainer
 
 
-@pytest.fixture
-def triangle_mesh_2d():
-    points = np.arange(10).reshape(5, 2)
-    cells = np.zeros((5, 3), dtype=int)
-    metadata = {'labels': np.arange(5)}
-
-    mesh = TriangleMesh.create(cells=cells, points=points, **metadata)
-    assert isinstance(mesh, TriangleMesh)
-    return mesh
+def test_mesh_container_triangle_2d(triangle_mesh_2d):
+    mesh = MeshContainer.from_mesh(triangle_mesh_2d)
+    assert isinstance(mesh, MeshContainer)
+    assert isinstance(mesh.get('triangle'), TriangleMesh)
+    assert isinstance(mesh.get(), TriangleMesh)
+    assert isinstance(mesh, meshio.Mesh)
 
 
-@pytest.fixture
-def triangle_mesh_3d():
-    points = np.arange(15).reshape(5, 3)
-    cells = np.zeros((5, 3), dtype=int)
-    metadata = {'labels': np.arange(5)}
-
-    mesh = TriangleMesh.create(cells=cells, points=points, **metadata)
-    assert isinstance(mesh, TriangleMesh)
-    return mesh
+def test_mesh_container_triangle_3d(triangle_mesh_2d):
+    mesh = MeshContainer.from_mesh(triangle_mesh_2d)
+    assert isinstance(mesh, MeshContainer)
+    assert isinstance(mesh.get('triangle'), TriangleMesh)
+    assert isinstance(mesh.get(), TriangleMesh)
+    assert isinstance(mesh, meshio.Mesh)
 
 
-@pytest.fixture
-def tetra_mesh():
-    points = np.arange(15).reshape(5, 3)
-    cells = np.zeros((5, 4), dtype=int)
-    metadata = {'labels': np.arange(5)}
-
-    mesh = TetraMesh.create(cells=cells, points=points, **metadata)
-    assert isinstance(mesh, TetraMesh)
-    return mesh
+def test_mesh_container_tetra(tetra_mesh):
+    mesh = MeshContainer.from_mesh(tetra_mesh)
+    assert isinstance(mesh, MeshContainer)
+    assert isinstance(mesh.get('tetra'), TetraMesh)
+    assert isinstance(mesh.get(), TetraMesh)
+    assert isinstance(mesh, meshio.Mesh)
 
 
-def test_meshio_interface(triangle_mesh_2d):
-    meshio_mesh = triangle_mesh_2d.to_meshio()
-    new_mesh = TriangleMesh.from_meshio(meshio_mesh)
-
-    np.testing.assert_allclose(new_mesh.points, triangle_mesh_2d.points)
-    np.testing.assert_allclose(new_mesh.cells, triangle_mesh_2d.cells)
-    np.testing.assert_allclose(new_mesh.metadata['labels'],
-                               triangle_mesh_2d.metadata['labels'])
-
-
-def test_open3d_interface_triangle(triangle_mesh_3d):
-    mesh_o3d = triangle_mesh_3d.to_open3d()
-    new_mesh = TriangleMesh.from_open3d(mesh_o3d)
-
-    np.testing.assert_allclose(new_mesh.points, triangle_mesh_3d.points)
-    np.testing.assert_allclose(new_mesh.cells, triangle_mesh_3d.cells)
+def test_mesh_container_field_to_number(mesh_square2d):
+    assert mesh_square2d.field_to_number == {
+        'triangle': {
+            'Triangle A': 1,
+            'Triangle B': 2
+        },
+        'line': {
+            'Line A': 0,
+            'Line B': 1
+        }
+    }
+    assert isinstance(mesh_square2d.field_to_number, MappingProxyType)
 
 
-def test_open3d_interface_tetra(tetra_mesh):
-    mesh_o3d = tetra_mesh.to_open3d()
-    new_mesh = TetraMesh.from_open3d(mesh_o3d)
-
-    np.testing.assert_allclose(new_mesh.points, tetra_mesh.points)
-    np.testing.assert_allclose(new_mesh.cells, tetra_mesh.cells)
-
-
-def test_simplify(triangle_mesh_3d):
-    n_cells = 10
-    new = triangle_mesh_3d.simplify(n_cells=n_cells)
-    assert len(new.cells) <= n_cells
-    assert isinstance(new, TriangleMesh)
-
-
-def test_simplify_by_point_clustering(triangle_mesh_3d):
-    new = triangle_mesh_3d.simplify_by_point_clustering(voxel_size=1.0)
-    assert isinstance(new, TriangleMesh)
+def test_mesh_container_number_to_field(mesh_square2d):
+    assert mesh_square2d.number_to_field == {
+        'triangle': {
+            1: 'Triangle A',
+            2: 'Triangle B'
+        },
+        'line': {
+            0: 'Line A',
+            1: 'Line B'
+        }
+    }
+    assert isinstance(mesh_square2d.number_to_field, MappingProxyType)
 
 
-def test_smooth(triangle_mesh_3d):
-    new = triangle_mesh_3d.smooth(iterations=1)
-    assert isinstance(new, TriangleMesh)
+def test_mesh_container_cell_types(mesh_square2d):
+    assert set(mesh_square2d.cell_types) == {'line', 'triangle'}
+    assert isinstance(mesh_square2d.cell_types, tuple)
 
 
-def test_subdivide(triangle_mesh_3d):
-    new = triangle_mesh_3d.subdivide()
-    assert isinstance(new, TriangleMesh)
+def test_mesh_container_get_default_types(mesh_square2d):
+    assert mesh_square2d.get_default_type() == 'triangle'
 
 
-def test_plot_submesh(tetra_mesh):
-    plotter = tetra_mesh.plot_submesh(show=False)
-    assert isinstance(plotter, pv.Plotter)
-    plotter.close()
+def test_mesh_container_set_cell_data(mesh_square2d):
+    cell_type = 'triangle'
+    new_key = 'new_data'
+    new_data = np.array([5, 6])
+
+    assert new_key not in mesh_square2d.cell_data
+    mesh_square2d.set_cell_data(cell_type, new_key, new_data)
+
+    assert new_key in mesh_square2d.cell_data
+    assert isinstance(mesh_square2d.cell_data[new_key], list)
+
+    data_dict = mesh_square2d.cell_data_dict
+    np.testing.assert_equal(data_dict[new_key]['triangle'], new_data)
+    np.testing.assert_equal(data_dict[new_key]['line'], 0)
+
+
+def test_read_write(mesh_square2d, tmp_path):
+    def asserts(mesh):
+        assert mesh.points.shape[1] == 2
+        assert 'physical' in mesh.cell_data
+        assert 'gmsh:physical' not in mesh.cell_data
+        assert 'gmsh:geometrical' not in mesh.cell_data
+
+    filename = tmp_path / 'out.msh'
+
+    asserts(mesh_square2d)
+
+    mesh_square2d.write(filename, file_format='gmsh22')
+    asserts(mesh_square2d)
+
+    new_mesh = MeshContainer.read(filename)
+    asserts(new_mesh)
+
+    np.testing.assert_equal(mesh_square2d.points, new_mesh.points)
+
+    assert len(mesh_square2d.cells) == len(new_mesh.cells)
+
+    for (left, right) in zip(mesh_square2d.cells, new_mesh.cells):
+        np.testing.assert_equal(left.data, right.data)
+
+    for key, arrays in mesh_square2d.cell_data.items():
+        new_arrays = new_mesh.cell_data[key]
+
+        for left, right in zip(arrays, new_arrays):
+            np.testing.assert_equal(left, right)

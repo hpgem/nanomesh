@@ -57,7 +57,7 @@ The sections below outline the steps in each case.
     [here](https://help.github.com/articles/configuring-a-remote-for-a-fork/)
     and [here](https://help.github.com/articles/syncing-a-fork/));
 4.  make sure the existing tests still work by running
-    `python setup.py test`;
+    `pytest`;
 5.  add your own tests (if necessary);
 6.  update or expand the documentation;
 7.  [push](http://rogerdudler.github.io/git-guide/) your feature branch

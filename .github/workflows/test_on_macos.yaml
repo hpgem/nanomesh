@@ -43,6 +43,14 @@ jobs:
         run: |
           python -m pip install  -c constraints.txt -e .[develop]
 
+      - name: Install tetgen
+        shell: bash
+        run: |
+          wget -O tetgen.zip https://github.com/hpgem/tetgen/releases/download/1.6.0/tetgen-${{ runner.os }}.zip
+          unzip tetgen.zip
+          mv tetgen /usr/local/bin/
+          which tetgen
+
       - name: Test with pytest
         shell: bash
         run: python -m pytest --disable-warnings

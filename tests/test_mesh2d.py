@@ -1,17 +1,18 @@
 import os
-import pickle
 from pathlib import Path
 
 import numpy as np
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
-from nanomesh.mesh2d import (Mesher2D, close_corner_contour, generate_2d_mesh,
-                             subdivide_contour)
+from nanomesh.mesh2d import Mesher2D, generate_2d_mesh
+from nanomesh.mesh2d.mesher import close_corner_contour, subdivide_contour
+from nanomesh.mesh_container import MeshContainer
 
 # There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux). Allow some deviation if the platforms do not match.
-# windows: nt, linux/mac: posix
+# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
+# Update the variable below for the platform on which the testing data
+# have been generated, windows: nt, linux/mac: posix
 GENERATED_ON = 'nt'
 
 
@@ -32,31 +33,43 @@ def segmented():
     return image
 
 
-@pytest.mark.xfail(
-    os.name != GENERATED_ON,
-    raises=AssertionError,
-    reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
-            'are exactly the same.'))
+@pytest.mark.xfail(os.name != GENERATED_ON,
+                   raises=AssertionError,
+                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_generate_2d_mesh(segmented):
     """Test 2D mesh generation and plot."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.pickle'
+    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.msh'
 
     np.random.seed(1234)  # set seed for reproducible clustering
     mesh = generate_2d_mesh(segmented, max_contour_dist=4, plot=True)
 
     if expected_fn.exists():
-        with open(expected_fn, 'rb') as f:
-            expected_mesh = pickle.load(f)
+        expected_mesh = MeshContainer.read(expected_fn)
     else:
-        with open(expected_fn, 'wb') as f:
-            pickle.dump(mesh, f)
+        mesh.write(expected_fn, file_format='gmsh22', binary=False)
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
     assert mesh.points.shape == expected_mesh.points.shape
-    assert mesh.cells.shape == expected_mesh.cells.shape
     np.testing.assert_allclose(mesh.points, expected_mesh.points)
-    np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
+
+    cell_types = mesh.cells_dict.keys()
+    assert cell_types == expected_mesh.cells_dict.keys()
+
+    for cell_type in cell_types:
+        cells = mesh.cells_dict[cell_type]
+        expected_cells = expected_mesh.cells_dict[cell_type]
+
+        assert cells.shape == expected_cells.shape
+        np.testing.assert_allclose(cells, expected_cells)
+
+    data_keys = mesh.cell_data_dict.keys()
+    for data_key in data_keys:
+        for cell_type in cell_types:
+            data = mesh.cell_data_dict[data_key][cell_type]
+            expected_data = expected_mesh.cell_data_dict[data_key][cell_type]
+
+            np.testing.assert_allclose(data, expected_data)
 
 
 def test_subdivide_contour():
@@ -71,16 +84,19 @@ def test_subdivide_contour():
     assert np.all(ret == expected)
 
 
-@pytest.mark.parametrize('coords,is_corner', (
-    ([[0, 3], [5, 5], [0, 7]], False),
-    ([[0, 3], [5, 5], [3, 0]], True),
-    ([[3, 0], [5, 5], [0, 3]], True),
-    ([[9, 17], [5, 15], [17, 19]], True),
-    ([[9, 5], [7, 4], [4, 0]], True),
-    ([[0, 17], [5, 15], [3, 19]], True),
-    ([[5, 5], [5, 7], [6, 6]], False),
-))
-def test_close_contour(coords, is_corner):
+@pytest.mark.parametrize(
+    'coords,expected_corner',
+    (
+        ([[0, 3], [5, 5], [0, 7]], None),
+        ([[0, 3], [5, 5], [3, 0]], [0, 0]),  # bottom, left
+        ([[3, 0], [5, 5], [0, 3]], [0, 0]),  # bottom, left
+        ([[9, 17], [5, 15], [17, 19]], None),
+        ([[9, 5], [7, 4], [4, 0]], [9, 0]),  # bottom, right
+        ([[0, 17], [5, 15], [3, 19]], [0, 19]),  # top, left
+        ([[9, 17], [5, 15], [3, 19]], [9, 19]),  # top, right
+        ([[5, 5], [5, 7], [6, 6]], None),
+    ))
+def test_close_contour(coords, expected_corner):
     image_chape = 10, 20
     contour = np.array(coords)
 
@@ -88,17 +104,19 @@ def test_close_contour(coords, is_corner):
 
     ret = close_corner_contour(contour, image_chape)
 
+    is_corner = (expected_corner is not None)
+
     if is_corner:
         ret.shape[1] == n_rows + 1
+        corner = ret[-1]
+        np.testing.assert_equal(corner, expected_corner)
     else:
         ret.shape[1] == n_rows
 
 
-@pytest.mark.xfail(
-    os.name != GENERATED_ON,
-    raises=AssertionError,
-    reason=('No way of currently ensuring contours on OSX / Linux / Windows '
-            'are exactly the same.'))
+@pytest.mark.xfail(os.name != GENERATED_ON,
+                   raises=AssertionError,
+                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
 @image_comparison(
     baseline_images=['contour_plot'],
     remove_text=True,

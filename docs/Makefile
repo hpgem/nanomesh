@@ -12,11 +12,8 @@ BUILDDIR      = _build
 TEMPLATESDIR  = _templates
 STATICDIR     = _static
 
-html: conf.py nanomesh.rst README.rst install.rst
+html: conf.py nanomesh.rst install.rst
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-
-README.rst: ../README.md
-	pandoc --from=markdown --to=rst --output=README.rst ../README.md
 
 nanomesh.rst:
 	$(SPHINXGEN) -eTf -t "$(TEMPLATESDIR)" -o "$(SOURCEDIR)" ../nanomesh
@@ -28,4 +25,6 @@ install.rst:
 	touch install.rst
 
 clean:
-	rm -rvf "$(BUILDDIR)" "$(STATICDIR)/examples" nanomesh*.rst README.rst examples.*rst
+	rm -rvf "$(BUILDDIR)" "$(STATICDIR)/examples" "$(STATICDIR)/banner.png"
+	rm -rvf nanomesh*.rst examples.*rst
+	rm -rvf apidocs/*.rst

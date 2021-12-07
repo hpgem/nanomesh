@@ -19,6 +19,10 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
       - id: double-quote-string-fixer
+  - repo: https://github.com/stefsmeets/nbcheckorder/
+    rev: v0.1.2
+    hooks:
+      - id: nbcheckorder
   - repo: https://github.com/PyCQA/isort
     rev: '5.10.1'
     hooks:

@@ -167,7 +167,7 @@ class BaseMesh:
         return self.cell_data[self._label_key]
 
     @labels.setter
-    def labels(self, data: np.array):
+    def labels(self, data: np.ndarray):
         """Shortcut for setting cell labels."""
         self.cell_data[self._label_key] = data
 

@@ -36,7 +36,7 @@ class BoundingBox:
         )
 
     @classmethod
-    def from_points(cls, points: np.array):
+    def from_points(cls, points: np.ndarray):
         """Generate bounding box from set of points or coordinates."""
         xmax, ymax, zmax = np.max(points, axis=0)
         xmin, ymin, zmin = np.min(points, axis=0)

@@ -47,28 +47,6 @@ def test_open3d_interface_tetra(tetra_mesh):
     np.testing.assert_allclose(new_mesh.cells, tetra_mesh.cells)
 
 
-def test_simplify(triangle_mesh_3d):
-    n_cells = 10
-    new = triangle_mesh_3d.simplify(n_cells=n_cells)
-    assert len(new.cells) <= n_cells
-    assert isinstance(new, TriangleMesh)
-
-
-def test_simplify_by_point_clustering(triangle_mesh_3d):
-    new = triangle_mesh_3d.simplify_by_point_clustering(voxel_size=1.0)
-    assert isinstance(new, TriangleMesh)
-
-
-def test_smooth(triangle_mesh_3d):
-    new = triangle_mesh_3d.smooth(iterations=1)
-    assert isinstance(new, TriangleMesh)
-
-
-def test_subdivide(triangle_mesh_3d):
-    new = triangle_mesh_3d.subdivide()
-    assert isinstance(new, TriangleMesh)
-
-
 def test_plot_submesh(tetra_mesh):
     plotter = tetra_mesh.plot_submesh(show=False)
     assert isinstance(plotter, pv.Plotter)

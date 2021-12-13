@@ -303,7 +303,7 @@ class Mesher2D(BaseMesher):
         Parameters
         ----------
         clip_line_data: bool
-            If set, clips the line data to 0: body, 
+            If set, clips the line data to 0: body,
             1: external boundary, 2: internal boundary
             instead of individual numbers for each segment
 

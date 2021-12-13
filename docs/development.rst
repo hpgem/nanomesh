@@ -8,6 +8,11 @@ Install ``nanomesh`` using the development dependencies:
 
 ::
 
+::
+
+    conda create -n nanomesh-dev python=3.8
+    conda activate nanomesh-dev
+
     pip install -e .[develop] -c constraints.txt
 
 Running the tests:
@@ -68,3 +73,33 @@ Making a release
         bumpversion minor
 
 2. Make a new release. The github action to publish to pypi is triggered when a release is published.
+
+
+Updating constraints.txt
+------------------------
+
+1. On Windows:
+    - In a new environment
+
+::
+
+    pip freeze --exclude nanomesh > constraints.txt
+
+2. On Linux:
+    - In a new environment
+    - Using the produced ``constraints.txt`` file
+
+::
+
+    pip install -e .[develop] -c constraints.txt
+    pip freeze --exclude nanomesh >> constraints.txt
+    sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
+    mv constraints_tmp.txt constraints.txt
+
+
+Updating pre-commit
+-------------------
+
+::
+
+    pre-commit autoupdate

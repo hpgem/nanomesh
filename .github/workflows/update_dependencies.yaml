@@ -47,13 +47,6 @@ jobs:
           pip install -e .[develop]
           pip freeze --exclude nanomesh > constraints.txt
 
-      # - name: Commit changes
-      #   uses: EndBug/add-and-commit@v7
-      #   with:
-      #     default_author: github_actions
-      #     message: 'Update constraints.txt (windows)'
-      #     add: 'constraints.txt'
-
       - uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -82,14 +75,7 @@ jobs:
           pip install -e .[develop] -c constraints.txt
           pip freeze --exclude nanomesh >> constraints.txt
           sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
-          mv constraints_tmp.txt constraints.txtbash -l {0}
-
-      # - name: Commit changes
-      #   uses: EndBug/add-and-commit@v7
-      #   with:
-      #     default_author: github_actions
-      #     message: 'Update constraints.txt (linux)'
-      #     add: 'constraints.txt'
+          mv constraints_tmp.txt constraints.txt
 
       - uses: peter-evans/create-pull-request@v3
         with:

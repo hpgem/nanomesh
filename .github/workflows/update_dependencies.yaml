@@ -72,22 +72,23 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: update-deps
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
 
-      - name: Update constraints.txt
-        shell: bash -l {0}
+      # - uses: actions/setup-python@v2
+      #   with:
+      #     python-version: 3.8
+
+      # - name: Update constraints.txt
+      #   shell: bash -l {0}
+      #   run: |
+      #     pip install -e .[develop] -c constraints.txt
+      #     pip freeze --exclude nanomesh >> constraints.txt
+      #     sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
+      #     mv constraints_tmp.txt constraints.txt
+
+      - name: Push changes
+        shell: bash
         run: |
-          pip install -e .[develop] -c constraints.txt
-          pip freeze --exclude nanomesh >> constraints.txt
-          sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
-          mv constraints_tmp.txt constraints.txt
-
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v7
-        with:
-          default_author: github_actions
-          branch: update-deps
-          message: 'Update constraints.txt (linux)'
-          add: 'constraints.txt'
+          date > generated.txt
+          git add generated.txt
+          git commit -m "Update constraints.txt (linux)"
+          git push

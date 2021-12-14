@@ -7,7 +7,6 @@ import meshio
 import numpy as np
 import pyvista as pv
 import scipy
-import trimesh
 
 from . import mesh2d, mesh3d
 from .mpl.meshplot import _legend_with_triplot_fix
@@ -168,7 +167,7 @@ class BaseMesh:
         return self.cell_data[self._label_key]
 
     @labels.setter
-    def labels(self, data: np.array):
+    def labels(self, data: np.ndarray):
         """Shortcut for setting cell labels."""
         self.cell_data[self._label_key] = data
 
@@ -324,8 +323,9 @@ class TriangleMesh(BaseMesh):
 
         return ax
 
-    def to_trimesh(self) -> 'trimesh.Trimesh':
+    def to_trimesh(self):
         """Return instance of `trimesh.Trimesh`."""
+        import trimesh
         return trimesh.Trimesh(vertices=self.points, faces=self.cells)
 
     def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
@@ -359,7 +359,7 @@ class TriangleMesh(BaseMesh):
         return cls(points=points, cells=cells)
 
     @classmethod
-    def from_trimesh(cls, mesh: 'trimesh.Trimesh') -> TriangleMesh:
+    def from_trimesh(cls, mesh) -> TriangleMesh:
         """Return instance of `TriangleMesh` from trimesh."""
         return cls(points=mesh.vertices, cells=mesh.faces)
 
@@ -371,63 +371,6 @@ class TriangleMesh(BaseMesh):
         mesh = cls(points=points, cells=cells)
 
         return mesh
-
-    def simplify(self, n_cells: int) -> TriangleMesh:
-        """Simplify triangular mesh using `open3d`.
-
-        Parameters
-        ----------
-        n_cells : int
-            Simplify mesh until this number of cells is reached.
-
-        Returns
-        -------
-        TriangleMesh
-        """
-        mesh_o3d = self.to_open3d()
-        simplified_o3d = mesh_o3d.simplify_quadric_decimation(int(n_cells))
-        return TriangleMesh.from_open3d(simplified_o3d)
-
-    def simplify_by_point_clustering(self,
-                                     voxel_size: float = 1.0) -> TriangleMesh:
-        """Simplify mesh geometry using point clustering.
-
-        Parameters
-        ----------
-        voxel_size : float, optional
-            Size of the target voxel within which points are grouped.
-
-        Returns
-        -------
-        TriangleMesh
-        """
-        import open3d
-        mesh_in = self.to_open3d()
-        mesh_smp = mesh_in.simplify_vertex_clustering(
-            voxel_size=voxel_size,
-            contraction=open3d.geometry.SimplificationContraction.Average)
-
-        return TriangleMesh.from_open3d(mesh_smp)
-
-    def smooth(self, iterations: int = 50) -> TriangleMesh:
-        """Smooth mesh using the Taubin filter in `trimesh`.
-
-        The advantage of the Taubin algorithm is that it avoids
-        shrinkage of the object.
-
-        Parameters
-        ----------
-        iterations : int, optional
-            Number of smoothing operations to apply
-
-        Returns
-        -------
-        TriangleMesh
-        """
-        mesh_tri = self.to_trimesh()
-        smoothed_tri = trimesh.smoothing.filter_taubin(mesh_tri,
-                                                       iterations=iterations)
-        return TriangleMesh.from_trimesh(smoothed_tri)
 
     def optimize(self,
                  *,
@@ -461,12 +404,6 @@ class TriangleMesh(BaseMesh):
             max_num_steps=max_num_steps,
             **kwargs,
         )
-        return TriangleMesh(points=points, cells=cells)
-
-    def subdivide(self, max_edge: int = 10, iters: int = 10) -> TriangleMesh:
-        """Subdivide triangles."""
-        from trimesh import remesh
-        points, cells = remesh.subdivide(self.points, self.cells)
         return TriangleMesh(points=points, cells=cells)
 
     def tetrahedralize(self, **kwargs) -> 'TetraMesh':
@@ -518,7 +455,7 @@ class TetraMesh(BaseMesh):
             tetras=open3d.utility.Vector4iVector(self.cells))
 
     @classmethod
-    def from_open3d(cls, mesh):
+    def from_open3d(cls, mesh) -> TetraMesh:
         """Return instance of `TetraMesh` from open3d."""
         points = np.asarray(mesh.vertices)
         cells = np.asarray(mesh.tetras)

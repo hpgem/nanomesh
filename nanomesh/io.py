@@ -86,6 +86,8 @@ def load_vol(filename: os.PathLike,
             f'Info file not found: {filename_info.name}, specify '
             'the volume shape using the `shape` parameter.') from None
 
+    result: np.ndarray
+
     if mmap_mode:
         result = np.memmap(filename, dtype=dtype, shape=shape, mode=mmap_mode)
     else:

@@ -122,9 +122,7 @@ nbsphinx_execute = 'never'
 autodoc_mock_imports = [
     'ipywidgets',
     'itkwidgets',
-    'open3d',
     'pyvista',
-    'trimesh',
 ]
 
 intersphinx_mapping = {

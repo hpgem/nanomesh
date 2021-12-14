@@ -5,6 +5,7 @@ from .mesher import Mesher3D, generate_3d_mesh, get_region_markers
 __all__ = [
     'BoundingBox',
     'generate_3d_mesh',
+    'get_region_markers',
     'Mesher3D',
     'pad',
 ]

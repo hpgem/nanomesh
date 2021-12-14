@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Tuple, Union
 
 import meshio
 import numpy as np
@@ -140,17 +140,19 @@ class Volume(BaseImage):
         ValueError
             If none of the `x`, `y`, or `z` arguments have been specified
         """
+        index: Tuple[Union[int, slice], ...]
+
         if x is not None:
-            slice = np.s_[:, :, x]
+            index = np.s_[:, :, x]
         elif y is not None:
-            slice = np.s_[:, y, :]
+            index = np.s_[:, y, :]
         elif z is not None:
-            slice = np.s_[z, ...]
+            index = np.s_[z, :, :]
         else:
             raise ValueError(
                 'One of the arguments `x`, `y`, or `z` must be specified.')
 
-        array = self.image[slice]
+        array = self.image[index]
         return Plane(array)
 
     def select_subvolume(self,

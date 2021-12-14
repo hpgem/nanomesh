@@ -1,0 +1,100 @@
+name: Update dependencies
+
+on:
+  # every month
+  schedule:
+    - cron: "* * 5 * *"
+  # on demand
+  workflow_dispatch:
+
+jobs:
+  pre-commit-hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+
+      - run: pip install pre-commit
+        shell: bash -l {0}
+
+      - run: pre-commit autoupdate
+        shell: bash -l {0}
+
+      - run: pre-commit run --all-files
+        shell: bash -l {0}
+
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: pre-commit-hooks
+          title: Update pre-commit hooks
+          commit-message: "Update pre-commit hooks"
+          body: Update pre-commit hooks to latest version and run on all files.
+
+
+  pre-commit-hooks-win:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Update constraints.txt
+        shell: pwsh
+        run: |
+          pip install -e .[develop]
+          pip freeze --exclude nanomesh > constraints.txt
+
+      # - name: Commit changes
+      #   uses: EndBug/add-and-commit@v7
+      #   with:
+      #     default_author: github_actions
+      #     message: 'Update constraints.txt (windows)'
+      #     add: 'constraints.txt'
+
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update-deps
+          title: Update dependencies
+          commit-message: "Update constraints.txt (windows)"
+          body: Update dependencies in constraints.txt
+
+
+  pre-commit-hooks-linux:
+    # wait for other job to finish
+    needs: pre-commit-hooks-win
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: update-deps
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Update constraints.txt
+        shell: bash -l {0}
+        run: |
+          pip install -e .[develop] -c constraints.txt
+          pip freeze --exclude nanomesh >> constraints.txt
+          sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
+          mv constraints_tmp.txt constraints.txtbash -l {0}
+
+      # - name: Commit changes
+      #   uses: EndBug/add-and-commit@v7
+      #   with:
+      #     default_author: github_actions
+      #     message: 'Update constraints.txt (linux)'
+      #     add: 'constraints.txt'
+
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update-deps
+          title: Update dependencies
+          commit-message: "Update constraints.txt (linux)"
+          body: Update dependencies in constraints.txt

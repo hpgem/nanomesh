@@ -32,7 +32,7 @@ jobs:
           body: Update pre-commit hooks to latest version and run on all files.
 
 
-  pre-commit-hooks-win:
+  dependencies-win:
     runs-on: windows-latest
 
     steps:
@@ -56,8 +56,8 @@ jobs:
           body: Update dependencies in constraints.txt
 
 
-  pre-commit-hooks-linux:
-    needs: pre-commit-hooks-win
+  dependencies-linux:
+    needs: dependencies-win
 
     runs-on: ubuntu-latest
     steps:
@@ -74,7 +74,7 @@ jobs:
         run: |
           pip install -e .[develop] -c constraints.txt
           pip freeze --exclude nanomesh >> constraints.txt
-          sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
+          sort --ignore-case constraints.txt | uniq > constraints_tmp.txt
           mv constraints_tmp.txt constraints.txt
 
       - name: Push changes

@@ -93,7 +93,7 @@ Updating constraints.txt
 
     pip install -e .[develop] -c constraints.txt
     pip freeze --exclude nanomesh >> constraints.txt
-    sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
+    sort --ignore-case constraints.txt | uniq > constraints_tmp.txt
     mv constraints_tmp.txt constraints.txt
 
 

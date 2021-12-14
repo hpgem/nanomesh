@@ -15,13 +15,13 @@ jobs:
       - uses: actions/setup-python@v2
 
       - run: pip install pre-commit
-        shell: bash -l {0}
+        shell: bash
 
       - run: pre-commit autoupdate
-        shell: bash -l {0}
+        shell: bash
 
       - run: pre-commit run --all-files
-        shell: bash -l {0}
+        shell: bash
 
       - uses: peter-evans/create-pull-request@v3
         with:
@@ -32,7 +32,7 @@ jobs:
           body: Update pre-commit hooks to latest version and run on all files.
 
 
-  pre-commit-hooks-win:
+  dependencies-win:
     runs-on: windows-latest
 
     steps:
@@ -56,31 +56,32 @@ jobs:
           body: Update dependencies in constraints.txt
 
 
-  pre-commit-hooks-linux:
-    # wait for other job to finish
-    needs: pre-commit-hooks-win
+  dependencies-linux:
+    needs: dependencies-win
 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           ref: update-deps
+
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
       - name: Update constraints.txt
-        shell: bash -l {0}
+        shell: bash
         run: |
           pip install -e .[develop] -c constraints.txt
           pip freeze --exclude nanomesh >> constraints.txt
-          sort --ignore-case constraints.txt | uniq | > constraints_tmp.txt
+          sort --ignore-case constraints.txt | uniq > constraints_tmp.txt
           mv constraints_tmp.txt constraints.txt
 
-      - uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: update-deps
-          title: Update dependencies
-          commit-message: "Update constraints.txt (linux)"
-          body: Update dependencies in constraints.txt
+      - name: Push changes
+        shell: bash
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add constraints.txt
+          git commit -m "Update constraints.txt (linux)"
+          git push

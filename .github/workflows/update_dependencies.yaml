@@ -1,0 +1,32 @@
+name: Update dependencies
+
+on:
+  # every month
+  schedule:
+    - cron: "* * 5 * *"
+  # on demand
+  workflow_dispatch:
+
+jobs:
+  pre-commit-hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+
+      - run: pip install pre-commit
+        shell: bash -l {0}
+
+      - run: pre-commit autoupdate
+        shell: bash -l {0}
+
+      - run: pre-commit run --all-files
+        shell: bash -l {0}
+
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: pre-commit-hooks
+          title: Update pre-commit hooks
+          commit-message: "Update pre-commit hooks"
+          body: Update pre-commit hooks to latest version and run on all files.

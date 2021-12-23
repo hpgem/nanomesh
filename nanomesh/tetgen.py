@@ -3,7 +3,10 @@ import tempfile
 from pathlib import Path
 from typing import Any, List, Tuple
 
-from .mesh import TetraMesh, TriangleMesh
+import numpy as np
+
+from .mesh import TriangleMesh
+from .mesh_container import MeshContainer
 from .region_markers import RegionMarker
 
 
@@ -98,7 +101,7 @@ def call_tetgen(fname: os.PathLike, opts: str = '-pAq1.2'):
     sp.run(['tetgen', opts, fname])
 
 
-def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> TetraMesh:
+def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> MeshContainer:
     """Tetrahedralize a surface mesh.
 
     Parameters
@@ -120,12 +123,23 @@ def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> TetraMesh:
 
     Returns
     -------
-    TetraMesh
+    MeshContainer
         Tetrahedralized mesh.
     """
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp, 'nanomesh.smesh')
         write_smesh(path, mesh)
         call_tetgen(path, opts)
-        ele_path = path.with_suffix('.1.ele')
-        return TetraMesh.read(ele_path)
+
+        tetras = MeshContainer.read(path.with_suffix('.1.ele'))
+        tris = MeshContainer.read(path.with_suffix('.1.face'))
+        lines = MeshContainer.read(path.with_suffix('.1.edge'))
+
+    assert np.all(tetras.points == tris.points), 'Point set is not equal'
+    assert np.all(tetras.points == lines.points), 'Point set is not equal'
+
+    key = 'tetgen:ref'
+    return MeshContainer(
+        tetras.points,
+        tetras.cells + tris.cells + lines.cells,
+        cell_data={key: [m.cell_data[key][0] for m in (tetras, tris, lines)]})

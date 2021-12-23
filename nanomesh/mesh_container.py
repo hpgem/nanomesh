@@ -295,7 +295,6 @@ class MeshContainer(meshio.Mesh):
         """
         from meshio import read
         mesh = read(*args, **kwargs)
-        mesh.prune_z_0()
 
         cell_data = {}
         for key, value in mesh.cell_data.items():

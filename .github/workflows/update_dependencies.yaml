@@ -3,7 +3,7 @@ name: Update dependencies
 on:
   # every month
   schedule:
-    - cron: "* * 5 * *"
+    - cron: "30 6 5 * *"
   # on demand
   workflow_dispatch:
 

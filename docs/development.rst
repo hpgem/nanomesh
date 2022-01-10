@@ -8,8 +8,6 @@ Install ``nanomesh`` using the development dependencies:
 
 ::
 
-::
-
     conda create -n nanomesh-dev python=3.8
     conda activate nanomesh-dev
 
@@ -103,3 +101,21 @@ Updating pre-commit
 ::
 
     pre-commit autoupdate
+
+
+Fixes for errors
+----------------
+
+If you get an error with pytest, like:
+
+::
+
+     from win32com.shell import shellcon, shell
+    E   ImportError: DLL load failed while importing shell: The specified procedure could not be found.
+    ImportError: DLL load failed while importing shell: The specified procedure could not be found.
+
+Try:
+
+::
+
+    conda install -c conda-forge pywin32

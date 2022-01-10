@@ -8,7 +8,7 @@ from typing import Dict, List
 import meshio
 import numpy as np
 
-from .mesh import BaseMesh
+from .mesh import BaseMesh, PruneZ0Mixin
 
 
 class CellType(Enum):
@@ -18,7 +18,7 @@ class CellType(Enum):
     TETRA = 3
 
 
-class MeshContainer(meshio.Mesh):
+class MeshContainer(meshio.Mesh, PruneZ0Mixin):
     @property
     def number_to_field(self):
         """Mapping from numbers to fields, proxy to `.field_data`."""
@@ -310,7 +310,7 @@ class MeshContainer(meshio.Mesh):
 
             point_data[key] = value
 
-        return cls(
+        ret = cls(
             mesh.points,
             mesh.cells,
             point_data=point_data,
@@ -321,6 +321,8 @@ class MeshContainer(meshio.Mesh):
             gmsh_periodic=mesh.gmsh_periodic,
             info=mesh.info,
         )
+        ret.prune_z_0()
+        return ret
 
     def write(self, filename, file_format: str = None, **kwargs):
         """Thin wrapper of `meshio.write` to avoid altering class.

@@ -16,6 +16,28 @@ if TYPE_CHECKING:
     import open3d
 
 
+class PruneZ0Mixin:
+    def prune_z_0(self):
+        """Drop third dimension (z) coordinates if present and all values are
+        equal to 0 (within tolerance).
+
+        For compatibility, sometimes a column with zeroes is added, for
+        example when exporting to gmsh2.2 format. This method drops that
+        column.
+        """
+        TOL = 1e-9
+
+        is_3_dimensional = self.points.shape[1] == 3
+        if not is_3_dimensional:
+            return
+
+        if not np.all(np.abs(self.points[:, 2]) < TOL):
+            raise ValueError(
+                'Coordinates in third dimension are not all equal to zero.')
+
+        self.points = self.points[:, 0:2]
+
+
 class BaseMesh:
     _cell_type: str = 'base'
 
@@ -239,26 +261,8 @@ class LineMesh(BaseMesh):
         return ax
 
 
-class TriangleMesh(BaseMesh):
+class TriangleMesh(BaseMesh, PruneZ0Mixin):
     _cell_type = 'triangle'
-
-    def prune_z_0(self):
-        """Drop third dimension (z) coordinates if present and all values are
-        equal to 0 (within tolerance).
-
-        For compatibility, sometimes a column with zeroes is added. This
-        method drops that column.
-        """
-        TOL = 1e-9
-
-        if self.dimensions < 3:
-            return
-
-        if not np.all(np.abs(self.points[:, 2]) < TOL):
-            raise ValueError(
-                'Coordinates in third dimension are not all equal to zero.')
-
-        self.points = self.points[:, 0:2]
 
     def plot(self, **kwargs):
         """Shortcut for `.plot_mpl`."""

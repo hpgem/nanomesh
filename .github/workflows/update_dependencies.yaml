@@ -3,7 +3,7 @@ name: Update dependencies
 on:
   # every month
   schedule:
-    - cron: "* * 5 * *"
+    - cron: "30 6 5 * *"
   # on demand
   workflow_dispatch:
 
@@ -16,7 +16,7 @@ jobs:
 
       - run: pip install pre-commit
       - run: pre-commit autoupdate
-      - run: pre-commit run --all-files
+      - run: pre-commit run --all-files || true
 
       - uses: peter-evans/create-pull-request@v3
         with:

@@ -50,6 +50,7 @@ def test_generate_2d_mesh(segmented):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
+    assert mesh.points.shape[1] == 2
     assert mesh.points.shape == expected_mesh.points.shape
     np.testing.assert_allclose(mesh.points, expected_mesh.points)
 

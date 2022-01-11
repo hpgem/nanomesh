@@ -1,11 +1,11 @@
 import os
-import pickle
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from nanomesh.mesh import TriangleMesh
+from nanomesh.mesh_container import MeshContainer
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
@@ -93,7 +93,7 @@ def triangle_mesh():
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_tetgen_generate_3d_mesh(triangle_mesh):
     """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'expected_tetra_mesh.pickle'
+    expected_fn = Path(__file__).parent / 'expected_tetra_mesh.msh'
 
     triangle_mesh.add_region_marker((10, np.array([0.5, 0.5, 0.5])))
     triangle_mesh.add_region_marker((20, np.array([0.0, 2.0, 2.0])))
@@ -101,11 +101,9 @@ def test_tetgen_generate_3d_mesh(triangle_mesh):
     mesh_container = triangle_mesh.tetrahedralize()
 
     if expected_fn.exists():
-        with open(expected_fn, 'rb') as f:
-            expected_mesh_container = pickle.load(f)
+        expected_mesh_container = MeshContainer.read(expected_fn)
     else:
-        with open(expected_fn, 'wb') as f:
-            pickle.dump(mesh_container, f)
+        mesh_container.write(expected_fn, file_format='gmsh22', binary=False)
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 

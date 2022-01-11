@@ -1,11 +1,11 @@
 import os
-import pickle
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
+from nanomesh.mesh_container import MeshContainer
 
 # There is a small disparity between the data generated on Windows / posix
 # platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
@@ -27,12 +27,9 @@ def compare_mesh_results(mesh_container, expected_fn):
     """`result_mesh` is an instance of TetraMesh, and `expected_fn` the
     filename of the mesh to compare to."""
     if expected_fn.exists():
-        with open(expected_fn, 'rb') as f:
-            expected_mesh_container = pickle.load(f)
+        expected_mesh_container = MeshContainer.read(expected_fn)
     else:
-        with open(expected_fn, 'wb') as f:
-            pickle.dump(mesh_container, f)
-
+        mesh_container.write(expected_fn, file_format='gmsh22', binary=False)
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
     for cell_type in ('line', 'triangle', 'tetra'):
@@ -48,9 +45,12 @@ def compare_mesh_results(mesh_container, expected_fn):
                                    expected_mesh.region_markers)
 
         for key in expected_mesh.cell_data:
-            assert key in mesh.cell_data
-            np.testing.assert_allclose(mesh.cell_data[key],
-                                       expected_mesh.cell_data[key])
+            try:
+                np.testing.assert_allclose(mesh.cell_data[key],
+                                           expected_mesh.cell_data[key])
+            except KeyError:
+                if key not in ('physical', 'geometrical'):
+                    raise
 
 
 @pytest.mark.xfail(
@@ -60,7 +60,7 @@ def compare_mesh_results(mesh_container, expected_fn):
             'are exactly the same.'))
 def test_generate_3d_mesh(segmented_image):
     """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
+    expected_fn = Path(__file__).parent / 'segmented_mesh_3d.msh'
 
     mesh_container = generate_3d_mesh(segmented_image,
                                       generate_region_markers=False)
@@ -77,7 +77,7 @@ def test_generate_3d_mesh(segmented_image):
             'are exactly the same.'))
 def test_generate_3d_mesh_region_markers(segmented_image):
     """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_3d_markers.pickle'
+    expected_fn = Path(__file__).parent / 'segmented_mesh_3d_markers.msh'
 
     mesh_container = generate_3d_mesh(segmented_image,
                                       generate_region_markers=True)

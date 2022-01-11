@@ -84,7 +84,7 @@ def test_mesh_container_set_cell_data(mesh_square2d):
     np.testing.assert_equal(data_dict[new_key]['line'], 0)
 
 
-def test_read_write(mesh_square2d, tmp_path):
+def test_write_read(mesh_square2d, tmp_path):
     def asserts(mesh):
         assert mesh.points.shape[1] == 2
         assert 'physical' in mesh.cell_data

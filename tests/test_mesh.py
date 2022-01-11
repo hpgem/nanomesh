@@ -37,12 +37,9 @@ def test_plot_submesh(tetra_mesh):
     plotter.close()
 
 
-def test_prune_z_0_fail(triangle_mesh_3d):
+def test_prune_z_0_no_op(triangle_mesh_3d):
     assert triangle_mesh_3d.points.shape[1] == 3
-
-    with pytest.raises(ValueError):
-        triangle_mesh_3d.prune_z_0()
-
+    triangle_mesh_3d.prune_z_0()
     assert triangle_mesh_3d.points.shape[1] == 3
 
 

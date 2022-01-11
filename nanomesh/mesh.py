@@ -31,11 +31,9 @@ class PruneZ0Mixin:
         if not is_3_dimensional:
             return
 
-        if not np.all(np.abs(self.points[:, 2]) < TOL):
-            raise ValueError(
-                'Coordinates in third dimension are not all equal to zero.')
-
-        self.points = self.points[:, 0:2]
+        z_close_to_0 = np.all(np.abs(self.points[:, 2]) < TOL)
+        if z_close_to_0:
+            self.points = self.points[:, 0:2]
 
 
 class BaseMesh:

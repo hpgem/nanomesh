@@ -23,25 +23,34 @@ def segmented_image():
     return image
 
 
-def compare_mesh_results(result_mesh, expected_fn):
+def compare_mesh_results(mesh_container, expected_fn):
     """`result_mesh` is an instance of TetraMesh, and `expected_fn` the
     filename of the mesh to compare to."""
     if expected_fn.exists():
         with open(expected_fn, 'rb') as f:
-            expected_mesh = pickle.load(f)
+            expected_mesh_container = pickle.load(f)
     else:
         with open(expected_fn, 'wb') as f:
-            pickle.dump(result_mesh, f)
+            pickle.dump(mesh_container, f)
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    assert result_mesh.points.shape == expected_mesh.points.shape
-    assert result_mesh.cells.shape == expected_mesh.cells.shape
-    np.testing.assert_allclose(result_mesh.points, expected_mesh.points)
-    np.testing.assert_allclose(result_mesh.cells, expected_mesh.cells)
+    for cell_type in ('line', 'triangle', 'tetra'):
+        mesh = mesh_container.get(cell_type)
+        expected_mesh = expected_mesh_container.get(cell_type)
 
-    np.testing.assert_allclose(result_mesh.cell_data['tetgenRef'],
-                               expected_mesh.cell_data['tetgenRef'])
+        assert mesh.points.shape == expected_mesh.points.shape
+        assert mesh.cells.shape == expected_mesh.cells.shape
+        np.testing.assert_allclose(mesh.points, expected_mesh.points)
+        np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
+
+        np.testing.assert_allclose(mesh.region_markers,
+                                   expected_mesh.region_markers)
+
+        for key in expected_mesh.cell_data:
+            assert key in mesh.cell_data
+            np.testing.assert_allclose(mesh.cell_data[key],
+                                       expected_mesh.cell_data[key])
 
 
 @pytest.mark.xfail(
@@ -53,9 +62,12 @@ def test_generate_3d_mesh(segmented_image):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.pickle'
 
-    tetra_mesh = generate_3d_mesh(segmented_image,
-                                  generate_region_markers=False)
-    compare_mesh_results(tetra_mesh, expected_fn)
+    mesh_container = generate_3d_mesh(segmented_image,
+                                      generate_region_markers=False)
+
+    assert 'tetgen:ref' in mesh_container.cell_data
+
+    compare_mesh_results(mesh_container, expected_fn)
 
 
 @pytest.mark.xfail(
@@ -67,9 +79,12 @@ def test_generate_3d_mesh_region_markers(segmented_image):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d_markers.pickle'
 
-    tetra_mesh = generate_3d_mesh(segmented_image,
-                                  generate_region_markers=True)
-    compare_mesh_results(tetra_mesh, expected_fn)
+    mesh_container = generate_3d_mesh(segmented_image,
+                                      generate_region_markers=True)
+
+    assert 'tetgen:ref' in mesh_container.cell_data
+
+    compare_mesh_results(mesh_container, expected_fn)
 
 
 def test_BoundingBox_center():

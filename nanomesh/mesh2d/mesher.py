@@ -326,12 +326,15 @@ class Mesher2D(BaseMesher):
         ))
 
     def triangulate(self,
+                    opts='q30a100',
                     clip_line_data: bool = True,
                     **kwargs) -> MeshContainer:
         """Triangulate contours.
 
         Parameters
         ----------
+        opts : str, optional
+            Options passed to `triangle.triangulate`
         clip_line_data: bool
             If set, clips the line data to 0: body,
             1: external boundary, 2: internal boundary
@@ -346,9 +349,8 @@ class Mesher2D(BaseMesher):
             Output 2D mesh with domain labels
         """
         # ensure edges get returned
-        opts = kwargs.get('opts', 'e')
         if 'e' not in opts:
-            kwargs['opts'] = f'{opts}e'
+            opts = f'{opts}e'
 
         mesh = self.contour.triangulate(**kwargs)
 

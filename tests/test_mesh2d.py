@@ -126,5 +126,5 @@ def test_close_contour(coords, expected_corner):
 )
 def test_contour_plot(segmented):
     mesher = Mesher2D(segmented)
-    mesher.generate_contours(max_contour_dist=5, level=0.5)
-    mesher.plot_contour()
+    mesher.generate_contour(max_contour_dist=5, level=0.5)
+    mesher.show_contour()

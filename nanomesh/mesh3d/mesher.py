@@ -14,6 +14,7 @@ from nanomesh.volume import Volume
 
 from ..region_markers import RegionMarker, RegionMarkerLike
 from .bounding_box import BoundingBox
+from .helpers import pad
 
 logger = logging.getLogger(__name__)
 
@@ -262,14 +263,14 @@ class Mesher3D(BaseMesher):
         self.contour = mesh
 
     def pad_contour(self, **kwargs):
-        """Pad the contour. See `nanomesh.TriangleMesh.pad3d` for info.
+        """Pad the contour. See `.helpers.pad` for info.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments for `nanomesh.TriangleMesh.pad3d`.
+            Keyword arguments for `.helpers.pad`.
         """
-        self.contour = self.contour.pad3d(**kwargs)
+        self.contour = pad(self.contour, **kwargs)
 
     def show_contour(self, **kwargs):
         """Pad the contour. See `nanomesh.BaseMesh.plot_pyvista` for info.

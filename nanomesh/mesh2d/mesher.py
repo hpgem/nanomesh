@@ -351,6 +351,7 @@ class Mesher2D(BaseMesher):
         # ensure edges get returned
         if 'e' not in opts:
             opts = f'{opts}e'
+        kwargs['opts'] = opts
 
         mesh = self.contour.triangulate(**kwargs)
 
@@ -411,6 +412,16 @@ class Mesher2D(BaseMesher):
             labels[mask] = 1
 
         return labels
+
+    def pad_contour(self, **kwargs):
+        """Pad the contour. See `.helpers.pad` for info.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for `.helpers.pad`.
+        """
+        self.contours = pad(self.contours, **kwargs)
 
     def show_contour(self, ax: plt.Axes = None):
         """Plot contours on image.

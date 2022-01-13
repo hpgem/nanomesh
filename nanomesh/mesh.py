@@ -8,8 +8,6 @@ import numpy as np
 import pyvista as pv
 import scipy
 
-from . import mesh2d, mesh3d
-from .mesh2d.helpers import simple_triangulate
 from .mpl.meshplot import _legend_with_triplot_fix
 from .region_markers import RegionMarker, RegionMarkerLike
 
@@ -460,26 +458,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         from nanomesh import tetgen
         mesh = tetgen.tetrahedralize(self, **kwargs)
         return mesh
-
-    def pad(self, **kwargs) -> TriangleMesh:
-        """Pad a mesh.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to `nanomesh.mesh2d.helpers.pad`
-        """
-        return mesh2d.pad(self, **kwargs)
-
-    def pad3d(self, **kwargs) -> TriangleMesh:
-        """Pad a 3d mesh.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to `nanomesh.mesh3d.helpers.pad`
-        """
-        return mesh3d.pad(self, **kwargs)
 
 
 class TetraMesh(BaseMesh):

@@ -84,6 +84,17 @@ class BaseMesh:
 
         self.region_markers.append(region_marker)
 
+    def add_region_markers(self, region_markers: List[RegionMarkerLike]):
+        """Add marker to list of region markers.
+
+        Parameters
+        ----------
+        region_markers : List(RegionMarkerLike)
+            List of region markers passed to `.add_region_marker`.
+        """
+        for region_marker in region_markers:
+            self.add_region_marker(region_marker)
+
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
         cells = [

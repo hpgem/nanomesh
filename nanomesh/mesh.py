@@ -264,6 +264,15 @@ class LineMesh(BaseMesh):
                 label=name,
             )
 
+        if self.region_markers:
+            mark_x, mark_y = np.array(
+                [m.coordinates for m in self.region_markers]).T
+            ax.scatter(mark_y,
+                       mark_x,
+                       marker='*',
+                       color='red',
+                       label='Region markers')
+
         ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
 

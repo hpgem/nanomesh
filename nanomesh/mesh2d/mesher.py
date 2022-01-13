@@ -42,15 +42,14 @@ def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
     return point
 
 
-def generate_points(contours: List[np.ndarray],
-                    bbox: np.ndarray) -> np.ndarray:
-    """Generate points from contours and surrounding bbox. The contours are
+def generate_mesh(polygons: List[np.ndarray], bbox: np.ndarray) -> LineMesh:
+    """Generate line-mesh from polygons and surrounding bbox. The polygons are
     stacked and missing corners are obtained from the bounding box coordinates.
 
     Parameters
     ----------
-    contours : List[np.ndarray]
-        List of contours.
+    polygons : List[np.ndarray]
+        List of polygons.
     bbox : (n, 2) np.ndarray
         Coordinates for the bounding box. These define the convex hull
         of the meshing area.
@@ -59,11 +58,29 @@ def generate_points(contours: List[np.ndarray],
     -------
     points : (m,2) np.ndarray
         List of points.
+    segments : (n,2) np.ndarray
+        List of segments.
     """
-    idx = ~np.any(cdist(bbox, np.vstack(contours)) == 0, axis=1)
-    missing_corners = bbox[idx]
+    from nanomesh import LineMesh
 
-    return np.vstack([*contours, missing_corners])
+    segments = generate_segments(polygons)
+
+    points = np.vstack(polygons)
+
+    corner_idx = np.argwhere(cdist(bbox, points) == 0)
+
+    if len(corner_idx) < len(bbox):
+        # Add missing corners and add them where necessary
+        missing_corners = np.delete(bbox, corner_idx[:, 0], axis=0)
+        points = np.vstack([*polygons, missing_corners])
+        corner_idx = np.argwhere(cdist(bbox, points) == 0)
+
+    R = corner_idx[:, 1].tolist()
+    additional_segments = list(zip(R, R[1:] + R[:1]))
+    segments = np.vstack([segments, additional_segments])
+
+    mesh = LineMesh(points=points, cells=segments)
+    return mesh
 
 
 def generate_regions(
@@ -268,30 +285,24 @@ class Mesher2D(BaseMesher):
             Divide long edges so that maximum distance between points does not
             exceed this value.
         """
-        from nanomesh import LineMesh
-
         polygons = measure.find_contours(self.image, level=level)
         polygons = [
-            measure.approximate_polygon(contour, contour_precision)
-            for contour in polygons
+            measure.approximate_polygon(polygon, contour_precision)
+            for polygon in polygons
         ]
         polygons = [
-            subdivide_contour(contour, max_dist=max_contour_dist)
-            for contour in polygons
+            subdivide_contour(polygon, max_dist=max_contour_dist)
+            for polygon in polygons
         ]
         polygons = [
-            close_corner_contour(contour, self.image.shape)
-            for contour in polygons
+            close_corner_contour(polygon, self.image.shape)
+            for polygon in polygons
         ]
-        polygons = [remove_duplicate_points(contour) for contour in polygons]
+        polygons = [remove_duplicate_points(polygon) for polygon in polygons]
 
-        points = generate_points(polygons, bbox=self.image_bbox)
-        segments = generate_segments(polygons)
         regions = generate_regions(polygons)
 
-        segments = np.vstack([segments, bbox_segments(len(points))])
-
-        contour = LineMesh(points=points, cells=segments)
+        contour = generate_mesh(polygons, self.image_bbox)
         contour.add_region_markers(regions)
 
         self.polygons = polygons

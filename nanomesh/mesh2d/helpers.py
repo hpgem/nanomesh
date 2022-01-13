@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import triangle as tr
 
+from nanomesh.utils import pairwise
+
+from ..region_markers import RegionMarker
+from .bounding_box import BoundingBox
+
 if TYPE_CHECKING:
     from nanomesh.mesh import TriangleMesh
     from nanomesh.mesh_container import MeshContainer
@@ -87,8 +92,96 @@ def pad(mesh: TriangleMesh,
         *,
         side: str,
         width: int,
-        opts: str = '',
         label: int = None) -> TriangleMesh:
+    """Pad a triangle mesh (2D).
+
+    Parameters
+    ----------
+    mesh : TriangleMesh
+        The mesh to pad.
+    side : str
+        Side to pad, must be one of `left`, `right`, `top`, `bottom`.
+    width : int
+        Width of the padded area.
+    label : int, optional
+        The label to assign to the padded area. If not defined, generates the
+        next unique label based on the existing ones.
+
+    Returns
+    -------
+    new_mesh : TriangleMesh
+        Padded tetrahedral mesh.
+
+    Raises
+    ------
+    ValueError
+        When the value of `side` is invalid.
+    """
+    if label is None:
+        label = mesh.labels.max() + 1
+
+    if width == 0:
+        return mesh
+
+    top_edge, right_edge = mesh.points.max(axis=0)
+    bottom_edge, left_edge = mesh.points.min(axis=0)
+
+    if side == 'bottom':
+        corners = [
+            [bottom_edge, right_edge],
+            [bottom_edge - width, right_edge],
+            [bottom_edge - width, left_edge],
+            [bottom_edge, left_edge],
+        ]
+    elif side == 'left':
+        corners = [
+            [bottom_edge, left_edge],
+            [bottom_edge, left_edge - width],
+            [top_edge, left_edge - width],
+            [top_edge, left_edge],
+        ]
+    elif side == 'top':
+        corners = [
+            [top_edge, right_edge],
+            [top_edge + width, right_edge],
+            [top_edge + width, left_edge],
+            [top_edge, left_edge],
+        ]
+    elif side == 'right':
+        corners = [
+            [bottom_edge, right_edge],
+            [bottom_edge, right_edge + width],
+            [top_edge, right_edge + width],
+            [top_edge, right_edge],
+        ]
+    else:
+        raise ValueError('Side must be one of `right`, `left`, `bottom`'
+                         f'`top`. Got {side=}')
+
+    segments = list(pairwise(corners))
+    new_points = corners[1:3]
+
+    center = np.mean(corners, axis=1)
+
+    # edges = ?
+
+    new_mesh = mesh.__class__(
+        points=np.vstack([mesh.points, corners]),
+        cells=mesh.cells,  # + edges
+        region_markers=mesh.region_markers,
+    )
+
+    new_mesh.add_region_marker(RegionMarker(label, center))
+
+    return new_mesh
+
+
+def pad_mesh(mesh: TriangleMesh,
+             *,
+             side: str,
+             width: int,
+             opts: str = '',
+             label: int = None) -> TriangleMesh:
     """Pad a triangle mesh.
 
     Parameters

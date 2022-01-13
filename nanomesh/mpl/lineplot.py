@@ -34,6 +34,8 @@ def lineplot(ax: plt.Axes,
     list of `matplotlib.lines.Line2D`
         A list of lines representing the plotted data.
     """
+    kwargs.setdefault('marker', '.')
+
     if mask is not None:
         lines = lines[~mask.squeeze()]
 

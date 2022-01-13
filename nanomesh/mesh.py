@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Sequence
 
 import matplotlib.pyplot as plt
 import meshio
@@ -9,11 +9,14 @@ import pyvista as pv
 import scipy
 
 from . import mesh2d, mesh3d
+from .mesh2d.helpers import simple_triangulate
 from .mpl.meshplot import _legend_with_triplot_fix
 from .region_markers import RegionMarker, RegionMarkerLike
 
 if TYPE_CHECKING:
     import open3d
+
+    from .mesh_container import MeshContainer
 
 
 class PruneZ0Mixin:
@@ -83,6 +86,17 @@ class BaseMesh:
             region_marker = RegionMarker(label, coordinates)
 
         self.region_markers.append(region_marker)
+
+    def add_region_markers(self, region_markers: Sequence[RegionMarkerLike]):
+        """Add marker to list of region markers.
+
+        Parameters
+        ----------
+        region_markers : List[RegionMarkerLike]
+            List of region markers passed to `.add_region_marker`.
+        """
+        for region_marker in region_markers:
+            self.add_region_marker(region_marker)
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
@@ -253,12 +267,32 @@ class LineMesh(BaseMesh):
                 label=name,
             )
 
+        if self.region_markers:
+            mark_x, mark_y = np.array(
+                [m.coordinates for m in self.region_markers]).T
+            ax.scatter(mark_y,
+                       mark_x,
+                       marker='*',
+                       color='red',
+                       label='Region markers')
+
         ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
 
         ax.legend(title=key)
 
         return ax
+
+    def triangulate(self, opts: str = 'q30a100') -> MeshContainer:
+        """Triangulate mesh using `triangle`."""
+        points = self.points
+        segments = self.cells
+        regions = [[*m.coordinates, m.label, 0] for m in self.region_markers]
+
+        return simple_triangulate(points=points,
+                                  segments=segments,
+                                  regions=regions,
+                                  opts=opts)
 
 
 class TriangleMesh(BaseMesh, PruneZ0Mixin):

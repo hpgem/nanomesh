@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Tuple
 
 import matplotlib.pyplot as plt
 import meshio
@@ -9,14 +9,13 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from skimage import measure
 
-from nanomesh._mesh_shared import BaseMesher
-
-from .helpers import simple_triangulate
+from .._mesh_shared import BaseMesher
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from nanomesh.mesh_container import MeshContainer
+    from ..mesh import LineMesh
+    from ..mesh_container import MeshContainer
 
 
 def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
@@ -43,15 +42,14 @@ def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
     return point
 
 
-def generate_points(contours: List[np.ndarray],
-                    bbox: np.ndarray) -> np.ndarray:
-    """Generate points from contours and surrounding bbox. The contours are
+def generate_mesh(polygons: List[np.ndarray], bbox: np.ndarray) -> LineMesh:
+    """Generate line-mesh from polygons and surrounding bbox. The polygons are
     stacked and missing corners are obtained from the bounding box coordinates.
 
     Parameters
     ----------
-    contours : List[np.ndarray]
-        List of contours.
+    polygons : List[np.ndarray]
+        List of polygons.
     bbox : (n, 2) np.ndarray
         Coordinates for the bounding box. These define the convex hull
         of the meshing area.
@@ -60,14 +58,33 @@ def generate_points(contours: List[np.ndarray],
     -------
     points : (m,2) np.ndarray
         List of points.
+    segments : (n,2) np.ndarray
+        List of segments.
     """
-    idx = ~np.any(cdist(bbox, np.vstack(contours)) == 0, axis=1)
-    missing_corners = bbox[idx]
+    from nanomesh import LineMesh
 
-    return np.vstack([*contours, missing_corners])
+    segments = generate_segments(polygons)
+
+    points = np.vstack(polygons)
+
+    corner_idx = np.argwhere(cdist(bbox, points) == 0)
+
+    if len(corner_idx) < len(bbox):
+        # Add missing corners and add them where necessary
+        missing_corners = np.delete(bbox, corner_idx[:, 0], axis=0)
+        points = np.vstack([*polygons, missing_corners])
+        corner_idx = np.argwhere(cdist(bbox, points) == 0)
+
+    R = corner_idx[:, 1].tolist()
+    additional_segments = list(zip(R, R[1:] + R[:1]))
+    segments = np.vstack([segments, additional_segments])
+
+    mesh = LineMesh(points=points, cells=segments)
+    return mesh
 
 
-def generate_regions(contours: List[np.ndarray]) -> np.ndarray:
+def generate_regions(
+        contours: List[np.ndarray]) -> List[Tuple[int, np.ndarray]]:
     """Generate regions for triangle.
 
     Parameters
@@ -82,13 +99,13 @@ def generate_regions(contours: List[np.ndarray]) -> np.ndarray:
     """
     regions = []
 
-    for j, contour in enumerate(contours):
+    for label, contour in enumerate(contours):
         point = find_point_in_contour(contour)
 
-        # in triangle format
-        regions.append([*point, j, 0])
+        # in LineMesh format
+        regions.append((label, point))
 
-    return np.array(regions)
+    return regions
 
 
 def generate_segments(contours: List[np.ndarray]) -> np.ndarray:
@@ -233,12 +250,18 @@ def remove_duplicate_points(contour):
     return contour
 
 
+def bbox_segments(N: int) -> list:
+    """Generate connected set of segments for outer boundary."""
+    R = list(range(N - 4, N))
+    return list(zip(R, R[1:] + R[:1]))
+
+
 class Mesher2D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
-        self.contours: List[np.ndarray] = []
+        self.contour: LineMesh
 
-    def generate_contours(
+    def generate_contour(
         self,
         level: float = None,
         contour_precision: int = 1,
@@ -262,21 +285,28 @@ class Mesher2D(BaseMesher):
             Divide long edges so that maximum distance between points does not
             exceed this value.
         """
-        contours = measure.find_contours(self.image, level=level)
-        contours = [
-            measure.approximate_polygon(contour, contour_precision)
-            for contour in contours
+        polygons = measure.find_contours(self.image, level=level)
+        polygons = [
+            measure.approximate_polygon(polygon, contour_precision)
+            for polygon in polygons
         ]
-        contours = [
-            subdivide_contour(contour, max_dist=max_contour_dist)
-            for contour in contours
+        polygons = [
+            subdivide_contour(polygon, max_dist=max_contour_dist)
+            for polygon in polygons
         ]
-        contours = [
-            close_corner_contour(contour, self.image.shape)
-            for contour in contours
+        polygons = [
+            close_corner_contour(polygon, self.image.shape)
+            for polygon in polygons
         ]
-        contours = [remove_duplicate_points(contour) for contour in contours]
-        self.contours = contours
+        polygons = [remove_duplicate_points(polygon) for polygon in polygons]
+
+        regions = generate_regions(polygons)
+
+        contour = generate_mesh(polygons, self.image_bbox)
+        contour.add_region_markers(regions)
+
+        self.polygons = polygons
+        self.contour = contour
 
     @property
     def image_bbox(self) -> np.ndarray:
@@ -320,22 +350,14 @@ class Mesher2D(BaseMesher):
         if 'e' not in opts:
             kwargs['opts'] = f'{opts}e'
 
-        contours = self.contours
+        mesh = self.contour.triangulate(**kwargs)
 
-        regions = generate_regions(contours)
-        segments = generate_segments(contours)
-        points = generate_points(contours, bbox=self.image_bbox)
-
-        mesh = simple_triangulate(points=points,
-                                  segments=segments,
-                                  regions=regions,
-                                  **kwargs)
-
-        segment_markers = np.hstack([[i + 2] * len(contour)
-                                     for i, contour in enumerate(contours)])
+        segment_markers = np.hstack([[i + 2] * len(polygon)
+                                     for i, polygon in enumerate(self.polygons)
+                                     ])
 
         markers_dict = {}
-        for i, segment in enumerate(segments):
+        for i, segment in enumerate(self.contour.cells[:-4]):
             markers_dict[frozenset(segment)] = segment_markers[i]
 
         line_data = mesh.cell_data_dict['physical']['line']
@@ -382,13 +404,13 @@ class Mesher2D(BaseMesher):
 
         labels = np.zeros(len(centers), dtype=int)
 
-        for contour in self.contours:
-            mask = measure.points_in_poly(centers, contour)
+        for polygon in self.polygons:
+            mask = measure.points_in_poly(centers, polygon)
             labels[mask] = 1
 
         return labels
 
-    def plot_contour(self, ax: plt.Axes = None):
+    def show_contour(self, ax: plt.Axes = None):
         """Plot contours on image.
 
         Parameters
@@ -404,11 +426,7 @@ class Mesher2D(BaseMesher):
             fig, ax = plt.subplots()
 
         ax.set_title('Contours')
-        for contour in self.contours:
-            contour = np.vstack([contour, contour[0]])
-            cont_x, cont_y = contour.T
-
-            ax.plot(cont_y, cont_x, marker='.')
+        self.contour.plot_mpl(ax=ax)
 
         ax.imshow(self.image)
         ax.axis('image')
@@ -443,5 +461,5 @@ def generate_2d_mesh(image: np.ndarray,
         Description of the mesh.
     """
     mesher = Mesher2D(image)
-    mesher.generate_contours(max_contour_dist=5, level=level)
+    mesher.generate_contour(max_contour_dist=5, level=level)
     return mesher.triangulate(opts=opts)

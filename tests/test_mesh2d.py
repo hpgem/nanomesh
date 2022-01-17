@@ -50,6 +50,7 @@ def test_generate_2d_mesh(segmented):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
+    assert mesh.points.shape[1] == 2
     assert mesh.points.shape == expected_mesh.points.shape
     np.testing.assert_allclose(mesh.points, expected_mesh.points)
 
@@ -124,6 +125,7 @@ def test_close_contour(coords, expected_corner):
     savefig_kwarg={'bbox_inches': 'tight'},
 )
 def test_contour_plot(segmented):
+    np.random.seed(1234)  # for region marker coords
     mesher = Mesher2D(segmented)
-    mesher.generate_contours(max_contour_dist=5, level=0.5)
-    mesher.plot_contour()
+    mesher.generate_contour(max_contour_dist=5, level=0.5)
+    mesher.show_contour()

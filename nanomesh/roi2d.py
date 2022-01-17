@@ -148,7 +148,7 @@ class ROISelector:
     def draw_bbox(self):
         """Draw bounding box as a patch on the image."""
         # remove existing patches in case the roi is modified
-        self.ax.patches = []
+        self.ax.patches.clear()
         polygon = Polygon(self.bbox, facecolor='red', alpha=0.3)
         self.ax.add_patch(polygon)
 

@@ -10,6 +10,7 @@ from scipy.spatial.distance import cdist
 from skimage import measure
 
 from .._mesh_shared import BaseMesher
+from .helpers import pad
 from .polygon import Polygon
 
 logger = logging.getLogger(__name__)
@@ -279,8 +280,7 @@ class Mesher2D(BaseMesher):
         **kwargs
             Keyword arguments for `.helpers.pad`.
         """
-        from .helpers import pad
-        self.contours = pad(self.contours, **kwargs)
+        self.contour = pad(self.contour, **kwargs)
 
     def show_contour(self, ax: plt.Axes = None):
         """Plot contours on image.

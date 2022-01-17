@@ -6,10 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import triangle as tr
 
-from nanomesh.utils import pairwise
-
 from ..region_markers import RegionMarker
-from .bounding_box import BoundingBox
 
 if TYPE_CHECKING:
     from nanomesh.mesh import TriangleMesh
@@ -127,51 +124,61 @@ def pad(mesh: TriangleMesh,
     bottom_edge, left_edge = mesh.points.min(axis=0)
 
     if side == 'bottom':
-        corners = [
+        corners = np.array([
             [bottom_edge, right_edge],
             [bottom_edge - width, right_edge],
             [bottom_edge - width, left_edge],
             [bottom_edge, left_edge],
-        ]
+        ])
     elif side == 'left':
-        corners = [
+        corners = np.array([
             [bottom_edge, left_edge],
             [bottom_edge, left_edge - width],
             [top_edge, left_edge - width],
             [top_edge, left_edge],
-        ]
+        ])
     elif side == 'top':
-        corners = [
+        corners = np.array([
             [top_edge, right_edge],
             [top_edge + width, right_edge],
             [top_edge + width, left_edge],
             [top_edge, left_edge],
-        ]
+        ])
     elif side == 'right':
-        corners = [
+        corners = np.array([
             [bottom_edge, right_edge],
             [bottom_edge, right_edge + width],
             [top_edge, right_edge + width],
             [top_edge, right_edge],
-        ]
+        ])
     else:
         raise ValueError('Side must be one of `right`, `left`, `bottom`'
                          f'`top`. Got {side=}')
 
-    segments = list(pairwise(corners))
-    new_points = corners[1:3]
+    from scipy.spatial.distance import cdist
 
-    center = np.mean(corners, axis=1)
+    all_points = mesh.points
 
-    # edges = ?
+    corner_idx = np.argwhere(cdist(corners, all_points) == 0)
+
+    if len(corner_idx) < len(corners):
+        # Add missing corners and add them where necessary
+        missing_corners = np.delete(corners, corner_idx[:, 0], axis=0)
+        all_points = np.vstack([all_points, missing_corners])
+        corner_idx = np.argwhere(cdist(corners, all_points) == 0)
+
+    R = corner_idx[:, 1].tolist()
+    additional_segments = list(zip(R, R[1:] + R[:1]))
+    cells = np.vstack([mesh.cells, additional_segments])
+
+    center = corners.mean(axis=0)
+    region_markers = mesh.region_markers + [RegionMarker(label, center)]
 
     new_mesh = mesh.__class__(
-        points=np.vstack([mesh.points, corners]),
-        cells=mesh.cells,  # + edges
-        region_markers=mesh.region_markers,
+        points=all_points,
+        cells=cells,
+        region_markers=region_markers,
     )
-
-    new_mesh.add_region_marker(RegionMarker(label, center))
 
     return new_mesh
 

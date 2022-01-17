@@ -80,7 +80,7 @@ def generate_regions(polygons: List[Polygon]) -> List[Tuple[int, np.ndarray]]:
         point = polygon.find_point()
 
         # in LineMesh format
-        regions.append((label, point))
+        regions.append((label + 1, point))
 
     return regions
 
@@ -218,20 +218,20 @@ class Mesher2D(BaseMesher):
                                      for i, polygon in enumerate(self.polygons)
                                      ])
 
-        markers_dict = {}
-        for i, segment in enumerate(self.contour.cells[:-4]):
-            markers_dict[frozenset(segment)] = segment_markers[i]
+        # markers_dict = {}
+        # for i, segment in enumerate(self.contour.cells):
+        #     markers_dict[frozenset(segment)] = segment_markers[i]
 
         line_data = mesh.cell_data_dict['physical']['line']
 
-        cells = mesh.cells_dict['line']
+        # cells = mesh.cells_dict['line']
 
-        for i, line in enumerate(cells):
-            segment = frozenset(line)
-            try:
-                line_data[i] = markers_dict[segment]
-            except KeyError:
-                pass
+        # for i, line in enumerate(cells):
+        #     segment = frozenset(line)
+        #     try:
+        #         line_data[i] = markers_dict[segment]
+        #     except KeyError:
+        #         pass
 
         if clip_line_data:
             line_data = np.clip(line_data, a_min=0, a_max=2)

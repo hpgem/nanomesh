@@ -49,7 +49,7 @@ class BaseMesh:
                  cells: np.ndarray,
                  region_markers: List[RegionMarker] = None,
                  **cell_data):
-        """Summary.
+        """Base class for meshes.
 
         Parameters
         ----------
@@ -64,7 +64,11 @@ class BaseMesh:
             Additional cell data. Argument must be a 1D numpy array
             matching the number of cells defined by `i`.
         """
-        self._label_key = 'labels'
+        default_key = 'physical'
+        if (not cell_data) or (default_key in cell_data):
+            self.default_key = default_key
+        else:
+            self.default_key = list(cell_data.keys())[0]
 
         self.points = points
         self.cells = cells
@@ -189,6 +193,25 @@ class BaseMesh:
         """Return centers of cells (mean of corner points)."""
         return self.points[self.cells].mean(axis=1)
 
+    def get_cell_data(self, key: str, default_value: float = 0) -> np.ndarray:
+        """Get cell data with optional default value.
+
+        Parameters
+        ----------
+        key : str
+            Key of the cell data to retrieve.
+        default_value : float, optional
+            Optional default value (if cell data does not exist)
+
+        Returns
+        -------
+        np.ndarray
+        """
+        try:
+            return self.cell_data[self.default_key]
+        except KeyError:
+            return np.ones(len(self.cells), dtype=int) * default_value
+
     @property
     def zero_labels(self):
         """Return zero labels as fallback."""
@@ -198,14 +221,14 @@ class BaseMesh:
     def labels(self):
         """Shortcut for cell labels."""
         try:
-            return self.cell_data[self._label_key]
+            return self.cell_data[self.default_key]
         except KeyError:
             return self.zero_labels
 
     @labels.setter
     def labels(self, data: np.ndarray):
         """Shortcut for setting cell labels."""
-        self.cell_data[self._label_key] = data
+        self.cell_data[self.default_key] = data
 
     @property
     def dimensions(self):

@@ -88,7 +88,8 @@ def pad(mesh: TriangleMesh,
         side: str,
         width: int,
         opts: str = '',
-        label: int = None) -> TriangleMesh:
+        label: int = None,
+        key: str = None) -> TriangleMesh:
     """Pad a triangle mesh.
 
     Parameters
@@ -104,6 +105,9 @@ def pad(mesh: TriangleMesh,
     label : int, optional
         The label to assign to the padded area. If not defined, generates the
         next unique label based on the existing ones.
+    key : str, optional
+        The key in the cell data dict to append the value to.
+        By default, pick `mesh.default_key`
 
     Returns
     -------
@@ -117,8 +121,13 @@ def pad(mesh: TriangleMesh,
     """
     from nanomesh.mesh import TriangleMesh
 
+    if not key:
+        key = mesh.default_key
+
+    cell_data = mesh.get_cell_data(key, default_value=0)
+
     if label is None:
-        label = mesh.labels.max() + 1
+        label = cell_data.max() + 1
 
     if width == 0:
         return mesh
@@ -184,6 +193,8 @@ def pad(mesh: TriangleMesh,
     cells = np.vstack([mesh.cells, pad_cells])
     labels = np.hstack([mesh.labels, pad_labels])
 
-    new_mesh = TriangleMesh(points=points, cells=cells, labels=labels)
+    cell_data = {mesh.default_key: labels}
+
+    new_mesh = TriangleMesh(points=points, cells=cells, **cell_data)
 
     return new_mesh

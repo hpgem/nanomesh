@@ -197,10 +197,10 @@ class BaseMesh:
     @property
     def labels(self):
         """Shortcut for cell labels."""
-        if not self.cell_data:
+        try:
+            return self.cell_data[self._label_key]
+        except KeyError:
             return self.zero_labels
-
-        return self.cell_data[self._label_key]
 
     @labels.setter
     def labels(self, data: np.ndarray):

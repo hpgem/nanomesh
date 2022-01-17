@@ -18,25 +18,25 @@ if TYPE_CHECKING:
     from ..mesh_container import MeshContainer
 
 
-def find_point_in_contour(contour: np.ndarray) -> np.ndarray:
-    """Use rejection sampling to find point in contour.
+def find_point_in_polygon(polygon: np.ndarray) -> np.ndarray:
+    """Use rejection sampling to find point in polygon.
 
     Parameters
     ----------
-    contour : (n,2) np.ndarray
-        List of coordinates describing a contour.
+    polygon : (n,2) np.ndarray
+        List of coordinates describing a polygon.
 
     Returns
     -------
     point : np.ndarray
-        Coordinate of point in the contour
+        Coordinate of point in the polygon
     """
-    # start with guess in center of contour
-    point = contour.mean(axis=0)
+    # start with guess in center of polygon
+    point = polygon.mean(axis=0)
 
-    while not measure.points_in_poly([point], contour):
-        xmin, ymin = contour.min(axis=0)
-        xmax, ymax = contour.max(axis=0)
+    while not measure.points_in_poly([point], polygon):
+        xmin, ymin = polygon.min(axis=0)
+        xmax, ymax = polygon.max(axis=0)
         point = np.random.uniform(xmin, xmax), np.random.uniform(ymin, ymax)
 
     return point
@@ -84,13 +84,13 @@ def generate_mesh(polygons: List[np.ndarray], bbox: np.ndarray) -> LineMesh:
 
 
 def generate_regions(
-        contours: List[np.ndarray]) -> List[Tuple[int, np.ndarray]]:
+        polygons: List[np.ndarray]) -> List[Tuple[int, np.ndarray]]:
     """Generate regions for triangle.
 
     Parameters
     ----------
-    contours : List[np.ndarray]
-        List of contours.
+    polygons : List[np.ndarray]
+        List of polygons.
 
     Returns
     -------
@@ -99,8 +99,8 @@ def generate_regions(
     """
     regions = []
 
-    for label, contour in enumerate(contours):
-        point = find_point_in_contour(contour)
+    for label, polygon in enumerate(polygons):
+        point = find_point_in_polygon(polygon)
 
         # in LineMesh format
         regions.append((label, point))
@@ -108,13 +108,13 @@ def generate_regions(
     return regions
 
 
-def generate_segments(contours: List[np.ndarray]) -> np.ndarray:
+def generate_segments(polygons: List[np.ndarray]) -> np.ndarray:
     """Generate segments for triangle.
 
     Parameters
     ----------
-    contours : List[np.ndarray]
-        List of contours
+    polygons : List[np.ndarray]
+        List of polygons
 
     Returns
     -------
@@ -124,8 +124,8 @@ def generate_segments(contours: List[np.ndarray]) -> np.ndarray:
     i = 0
     segments = []
 
-    for contour in contours:
-        n_points = len(contour)
+    for polygon in polygons:
+        n_points = len(polygon)
         rng = np.arange(i, i + n_points)
 
         # generate segment connectivity matrix
@@ -137,29 +137,29 @@ def generate_segments(contours: List[np.ndarray]) -> np.ndarray:
     return np.vstack(segments)
 
 
-def close_corner_contour(contour: np.ndarray, shape: tuple) -> np.ndarray:
-    """Check if contours are in the corner, and close them if needed.
+def close_corner_polygon(polygon: np.ndarray, shape: tuple) -> np.ndarray:
+    """Check if polygons are in the corner, and close them if needed.
 
-    Contours which cover a corner cannot be closed by joining the first
+    Polygons which cover a corner cannot be closed by joining the first
     and last element, because some of the area is missed. This algorithm
-    adds the corner point to close the contours.
+    adds the corner point to close the polygons.
 
     Parameters
     ----------
-    contour : (n,2) np.ndarray
-        List of coordinates describing a contour.
+    polygon : (n,2) np.ndarray
+        List of coordinates describing a polygon.
     shape : tuple
         Shape of the source image. Used to check which corners the
-        contour touches.
+        polygon touches.
 
     Returns
     -------
-    contour : (n+1,2) or (n,2) np.array
-        Return a contour with a corner point added if needed,
-        otherwise return the input contour
+    polygon : (n+1,2) or (n,2) np.array
+        Return a polygon with a corner point added if needed,
+        otherwise return the input polygon
     """
-    xmin, ymin = contour.min(axis=0)
-    xmax, ymax = contour.max(axis=0)
+    xmin, ymin = polygon.min(axis=0)
+    xmax, ymax = polygon.max(axis=0)
 
     xdim, ydim = np.array(shape) - 1
 
@@ -178,20 +178,20 @@ def close_corner_contour(contour: np.ndarray, shape: tuple) -> np.ndarray:
         extra_point = (xdim, 0)
     else:
         # all good
-        return contour
+        return polygon
 
-    contour = np.vstack([contour, extra_point])
-    return contour
+    polygon = np.vstack([polygon, extra_point])
+    return polygon
 
 
-def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
-    """This algorithm looks for long edges in the contour and subdivides them
+def subdivide_polygon(polygon, max_dist: int = 10, plot: bool = False):
+    """This algorithm looks for long edges in the polygon and subdivides them
     so they are no longer than `max_dist`
 
     Parameters
     ----------
-    contour : (n,2) np.ndarray
-        List of coordinates describing a contour.
+    polygon : (n,2) np.ndarray
+        List of coordinates describing a polygon.
     max_dist : int, optional
         Maximum distance between neighbouring coordinates.
     plot : bool, optional
@@ -202,58 +202,52 @@ def subdivide_contour(contour, max_dist: int = 10, plot: bool = False):
     (m,2) np.ndarray
         Updated coordinate array.
     """
-    new_contour: Any = []
-    rolled = np.roll(contour, shift=-1, axis=0)
-    diffs = rolled - contour
+    new_polygon: Any = []
+    rolled = np.roll(polygon, shift=-1, axis=0)
+    diffs = rolled - polygon
     # ignore last point, do not wrap around
     dist = np.linalg.norm(diffs[:-1], axis=1)
 
     last_i = 0
 
     for i in np.argwhere(dist > max_dist).reshape(-1, ):
-        new_contour.append(contour[last_i:i])
-        start = contour[i]
+        new_polygon.append(polygon[last_i:i])
+        start = polygon[i]
         stop = rolled[i]
         to_add = int(dist[i] // max_dist)
         new_points = np.linspace(start, stop, to_add, endpoint=False)
-        new_contour.append(new_points)
+        new_polygon.append(new_points)
 
         last_i = i + 1
 
-    new_contour.append(contour[last_i:])
-    new_contour = np.vstack(new_contour)
+    new_polygon.append(polygon[last_i:])
+    new_polygon = np.vstack(new_polygon)
 
     if plot:
-        plt.scatter(*contour.T[::-1], color='red', s=100, marker='x')
-        plt.plot(*contour.T[::-1], color='red')
-        plt.scatter(*new_contour.T[::-1], color='green', s=100, marker='+')
-        plt.plot(*new_contour.T[::-1], color='green')
+        plt.scatter(*polygon.T[::-1], color='red', s=100, marker='x')
+        plt.plot(*polygon.T[::-1], color='red')
+        plt.scatter(*new_polygon.T[::-1], color='green', s=100, marker='+')
+        plt.plot(*new_polygon.T[::-1], color='green')
         plt.axis('equal')
         plt.show()
 
-    return new_contour
+    return new_polygon
 
 
-def remove_duplicate_points(contour):
-    """Remove duplicate points from contour.
+def remove_duplicate_points(polygon):
+    """Remove duplicate points from polygon.
 
-    For a contour it is implied that the last point connects to the
+    For a polygon it is implied that the last point connects to the
     first point. In case the first point equals the last point, this
     results in errors down the line.
     """
-    first = contour[0]
-    last = contour[-1]
+    first = polygon[0]
+    last = polygon[-1]
 
     if np.all(first == last):
-        contour = contour[:-1]
+        polygon = polygon[:-1]
 
-    return contour
-
-
-def bbox_segments(N: int) -> list:
-    """Generate connected set of segments for outer boundary."""
-    R = list(range(N - 4, N))
-    return list(zip(R, R[1:] + R[:1]))
+    return polygon
 
 
 class Mesher2D(BaseMesher):
@@ -291,11 +285,11 @@ class Mesher2D(BaseMesher):
             for polygon in polygons
         ]
         polygons = [
-            subdivide_contour(polygon, max_dist=max_contour_dist)
+            subdivide_polygon(polygon, max_dist=max_contour_dist)
             for polygon in polygons
         ]
         polygons = [
-            close_corner_contour(polygon, self.image.shape)
+            close_corner_polygon(polygon, self.image.shape)
             for polygon in polygons
         ]
         polygons = [remove_duplicate_points(polygon) for polygon in polygons]
@@ -421,6 +415,7 @@ class Mesher2D(BaseMesher):
         **kwargs
             Keyword arguments for `.helpers.pad`.
         """
+        from .helpers import pad
         self.contours = pad(self.contours, **kwargs)
 
     def show_contour(self, ax: plt.Axes = None):

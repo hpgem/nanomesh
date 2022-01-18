@@ -190,6 +190,13 @@ class Mesher2D(BaseMesher):
                     **kwargs) -> MeshContainer:
         """Triangulate contours.
 
+        Mandatory switches for `opts`:
+            - e: ensure edges get returned
+            - p: planar straight line graph
+            - A: assign regional attribute to each triangle
+
+        If missing, these will be added.
+
         Parameters
         ----------
         opts : str, optional
@@ -198,7 +205,6 @@ class Mesher2D(BaseMesher):
             If set, clips the line data to 0: body,
             1: external boundary, 2: internal boundary
             instead of individual numbers for each segment
-
         **kwargs
             Keyword arguments passed to `triangle.triangulate`
 
@@ -207,42 +213,12 @@ class Mesher2D(BaseMesher):
         mesh : MeshContainer
             Output 2D mesh with domain labels
         """
-        # ensure edges get returned
-        if 'e' not in opts:
-            opts = f'{opts}e'
-        if 'A' not in opts:
-            opts = f'{opts}A'
+        for var in 'pAe':
+            if var not in opts:
+                opts = f'{opts}{var}'
         kwargs['opts'] = opts
 
         mesh = self.contour.triangulate(**kwargs)
-
-        # segment_markers = np.hstack(
-        #            [[i + 2] * len(polygon)
-        #             for i, polygon in enumerate(self.polygons)
-        #            ])
-
-        # markers_dict = {}
-        # for i, segment in enumerate(self.contour.cells):
-        #     markers_dict[frozenset(segment)] = segment_markers[i]
-
-        # line_data = mesh.cell_data_dict['physical']['line']
-
-        # cells = mesh.cells_dict['line']
-
-        # for i, line in enumerate(cells):
-        #     segment = frozenset(line)
-        #     try:
-        #         line_data[i] = markers_dict[segment]
-        #     except KeyError:
-        #         pass
-
-        # if clip_line_data:
-        #     line_data = np.clip(line_data, a_min=0, a_max=2)
-
-        # mesh.set_cell_data('line', key='physical', value=line_data)
-
-        # labels = self.generate_domain_mask_from_contours(mesh)
-        # mesh.set_cell_data('triangle', key='physical', value=labels)
 
         mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
         mesh.set_field_data('line', {0: 'body', 1: 'external', 2: 'internal'})

@@ -304,7 +304,7 @@ class LineMesh(BaseMesh):
 
         return ax
 
-    def triangulate(self, opts: str = 'q30a100') -> MeshContainer:
+    def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
         """Triangulate mesh using `triangle`."""
         from .mesh2d.helpers import simple_triangulate
         points = self.points

@@ -185,7 +185,7 @@ class Mesher2D(BaseMesher):
         ))
 
     def triangulate(self,
-                    opts='q30a100',
+                    opts='pAq30a100',
                     clip_line_data: bool = True,
                     **kwargs) -> MeshContainer:
         """Triangulate contours.
@@ -210,19 +210,22 @@ class Mesher2D(BaseMesher):
         # ensure edges get returned
         if 'e' not in opts:
             opts = f'{opts}e'
+        if 'A' not in opts:
+            opts = f'{opts}A'
         kwargs['opts'] = opts
 
         mesh = self.contour.triangulate(**kwargs)
 
-        segment_markers = np.hstack([[i + 2] * len(polygon)
-                                     for i, polygon in enumerate(self.polygons)
-                                     ])
+        # segment_markers = np.hstack(
+        #            [[i + 2] * len(polygon)
+        #             for i, polygon in enumerate(self.polygons)
+        #            ])
 
         # markers_dict = {}
         # for i, segment in enumerate(self.contour.cells):
         #     markers_dict[frozenset(segment)] = segment_markers[i]
 
-        line_data = mesh.cell_data_dict['physical']['line']
+        # line_data = mesh.cell_data_dict['physical']['line']
 
         # cells = mesh.cells_dict['line']
 
@@ -233,13 +236,13 @@ class Mesher2D(BaseMesher):
         #     except KeyError:
         #         pass
 
-        if clip_line_data:
-            line_data = np.clip(line_data, a_min=0, a_max=2)
+        # if clip_line_data:
+        #     line_data = np.clip(line_data, a_min=0, a_max=2)
 
-        mesh.set_cell_data('line', key='physical', value=line_data)
+        # mesh.set_cell_data('line', key='physical', value=line_data)
 
-        labels = self.generate_domain_mask_from_contours(mesh)
-        mesh.set_cell_data('triangle', key='physical', value=labels)
+        # labels = self.generate_domain_mask_from_contours(mesh)
+        # mesh.set_cell_data('triangle', key='physical', value=labels)
 
         mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
         mesh.set_field_data('line', {0: 'body', 1: 'external', 2: 'internal'})

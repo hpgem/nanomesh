@@ -120,36 +120,36 @@ def pad(mesh: TriangleMesh,
     if width == 0:
         return mesh
 
-    top_edge, right_edge = mesh.points.max(axis=0)
-    bottom_edge, left_edge = mesh.points.min(axis=0)
+    bottom_edge, right_edge = mesh.points.max(axis=0)
+    top_edge, left_edge = mesh.points.min(axis=0)
 
-    if side == 'bottom':
+    if side == 'top':
         corners = np.array([
-            [bottom_edge, right_edge],
-            [bottom_edge - width, right_edge],
-            [bottom_edge - width, left_edge],
-            [bottom_edge, left_edge],
+            [top_edge, right_edge],
+            [top_edge - width, right_edge],
+            [top_edge - width, left_edge],
+            [top_edge, left_edge],
         ])
     elif side == 'left':
         corners = np.array([
-            [bottom_edge, left_edge],
-            [bottom_edge, left_edge - width],
+            [top_edge, left_edge],
             [top_edge, left_edge - width],
-            [top_edge, left_edge],
+            [bottom_edge, left_edge - width],
+            [bottom_edge, left_edge],
         ])
-    elif side == 'top':
+    elif side == 'bottom':
         corners = np.array([
-            [top_edge, right_edge],
-            [top_edge + width, right_edge],
-            [top_edge + width, left_edge],
-            [top_edge, left_edge],
+            [bottom_edge, right_edge],
+            [bottom_edge + width, right_edge],
+            [bottom_edge + width, left_edge],
+            [bottom_edge, left_edge],
         ])
     elif side == 'right':
         corners = np.array([
-            [bottom_edge, right_edge],
-            [bottom_edge, right_edge + width],
-            [top_edge, right_edge + width],
             [top_edge, right_edge],
+            [top_edge, right_edge + width],
+            [bottom_edge, right_edge + width],
+            [bottom_edge, right_edge],
         ])
     else:
         raise ValueError('Side must be one of `right`, `left`, `bottom`'

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 import numpy as np
 import triangle as tr
+from scipy.spatial.distance import cdist
 
 from ..region_markers import RegionMarker
 
@@ -154,8 +155,6 @@ def pad(mesh: LineMesh,
     else:
         raise ValueError('Side must be one of `right`, `left`, `bottom`'
                          f'`top`. Got {side=}')
-
-    from scipy.spatial.distance import cdist
 
     all_points = mesh.points
 

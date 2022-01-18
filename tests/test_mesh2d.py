@@ -6,7 +6,7 @@ import pytest
 from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh2d import Mesher2D, generate_2d_mesh
-from nanomesh.mesh2d.mesher import close_corner_contour, subdivide_contour
+from nanomesh.mesh2d.polygon import Polygon
 from nanomesh.mesh_container import MeshContainer
 
 # There is a small disparity between the data generated on Windows / posix
@@ -73,16 +73,17 @@ def test_generate_2d_mesh(segmented):
             np.testing.assert_allclose(data, expected_data)
 
 
-def test_subdivide_contour():
-    """Test contour subdivision."""
-    contour = np.array([[0, 0], [0, 6], [2, 6], [2, 0], [0, 0]])
+def test_subdivide_polygon():
+    """Test polygon subdivision."""
+    polygon = Polygon(np.array([[0, 0], [0, 6], [2, 6], [2, 0], [0, 0]]))
 
-    ret = subdivide_contour(contour, max_dist=2)
+    ret = polygon.subdivide(max_dist=2)
 
-    expected = np.array([[0., 0.], [0., 2.], [0., 4.], [0., 6.], [2., 6.],
-                         [2., 4.], [2., 2.], [2., 0.], [0., 0.]])
+    expected_points = np.array([[0., 0.], [0., 2.], [0., 4.], [0.,
+                                                               6.], [2., 6.],
+                                [2., 4.], [2., 2.], [2., 0.], [0., 0.]])
 
-    assert np.all(ret == expected)
+    assert np.all(ret.points == expected_points)
 
 
 @pytest.mark.parametrize(
@@ -98,21 +99,21 @@ def test_subdivide_contour():
         ([[5, 5], [5, 7], [6, 6]], None),
     ))
 def test_close_contour(coords, expected_corner):
-    image_chape = 10, 20
-    contour = np.array(coords)
+    image_shape = 10, 20
+    polygon = Polygon(np.array(coords))
 
-    n_rows = contour.shape[1]
+    n_rows = polygon.points.shape[1]
 
-    ret = close_corner_contour(contour, image_chape)
+    ret = polygon.close_corner(image_shape)
 
     is_corner = (expected_corner is not None)
 
     if is_corner:
-        ret.shape[1] == n_rows + 1
-        corner = ret[-1]
+        ret.points.shape[1] == n_rows + 1
+        corner = ret.points[-1]
         np.testing.assert_equal(corner, expected_corner)
     else:
-        ret.shape[1] == n_rows
+        ret.points.shape[1] == n_rows
 
 
 @pytest.mark.xfail(os.name != GENERATED_ON,

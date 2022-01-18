@@ -270,7 +270,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             cells['line'] = triangle_dict['edges']
             # Order must match order of cell_data
             cell_data['physical'] = [
-                np.zeros(len(cells['triangle'])),
+                triangle_dict['triangle_attributes'].squeeze(),
                 triangle_dict['edge_markers'].squeeze(),
             ]
         except KeyError:
@@ -282,6 +282,8 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             cell_data=cell_data,
             point_data=point_data,
         )
+
+        mesh.triangle_dict = triangle_dict
 
         return mesh
 

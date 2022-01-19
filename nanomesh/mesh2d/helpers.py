@@ -121,7 +121,10 @@ def pad(
         When the value of `side` is invalid.
     """
     if label is None:
-        label = mesh.labels.max() + 1
+        label = 100 + ('left', 'right', 'top', 'bottom').index(side)
+
+    if name is None:
+        name = side
 
     if width == 0:
         return mesh

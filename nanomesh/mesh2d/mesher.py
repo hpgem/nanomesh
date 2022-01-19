@@ -80,7 +80,7 @@ def generate_regions(polygons: List[Polygon]) -> List[Tuple[int, np.ndarray]]:
         point = polygon.find_point()
 
         # in LineMesh format
-        regions.append((label + 1, point))
+        regions.append((1, point))
 
     return regions
 

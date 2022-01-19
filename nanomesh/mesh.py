@@ -255,7 +255,6 @@ class LineMesh(BaseMesh):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
-                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple line mesh plot using `matplotlib`.
 
@@ -277,9 +276,6 @@ class LineMesh(BaseMesh):
         if not ax:
             fig, ax = plt.subplots()
 
-        if fields is None:
-            fields = {}
-
         if key is None:
             try:
                 key = tuple(self.cell_data.keys())[0]
@@ -292,7 +288,7 @@ class LineMesh(BaseMesh):
         for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(cell_data_val, cell_data_val)
+            name = self.number_to_field.get(cell_data_val, cell_data_val)
 
             lineplot(
                 ax,
@@ -345,7 +341,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
-                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
 
@@ -368,9 +363,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         if not ax:
             fig, ax = plt.subplots()
 
-        if fields is None:
-            fields = {}
-
         if key is None:
             try:
                 key = tuple(self.cell_data.keys())[0]
@@ -383,7 +375,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(cell_data_val, cell_data_val)
+            name = self.number_to_field.get(cell_data_val, cell_data_val)
 
             ax.triplot(vert_y,
                        vert_x,

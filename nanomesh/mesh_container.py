@@ -47,7 +47,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         Parameters
         ----------
         cell_type : str
-            Cell type to update the values ofr.
+            Cell type to update the values for.
         field_data : dict
             Dictionary with key-to-number mapping, i.e.
             `field_data={0: 'green', 1: 'blue', 2: 'red'}`
@@ -144,7 +144,12 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
         cell_data = self.get_all_cell_data(cell_type)
 
-        return BaseMesh.create(cells=cells, points=points, **cell_data)
+        fields = self.field_to_number[cell_type]
+
+        return BaseMesh.create(cells=cells,
+                               points=points,
+                               fields=fields,
+                               **cell_data)
 
     def get_all_cell_data(self, cell_type: str = None) -> dict:
         """Get all cell data for given `cell_type`.

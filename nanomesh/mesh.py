@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Dict, List, Sequence
 
 import matplotlib.pyplot as plt
@@ -45,6 +46,7 @@ class BaseMesh:
     def __init__(self,
                  points: np.ndarray,
                  cells: np.ndarray,
+                 fields: Dict[str, int] = None,
                  region_markers: List[RegionMarker] = None,
                  **cell_data):
         """Base class for meshes.
@@ -55,6 +57,8 @@ class BaseMesh:
             Array with points.
         cells : (i, j) np.ndarray[int]
             Index array describing the cells of the mesh.
+        fields : Dict[str, int]:
+            Mapping from field names to labels
         region_markers : List[RegionMarker], optional
             List of region markers used for assigning labels to regions.
             Defaults to an empty list.
@@ -68,10 +72,21 @@ class BaseMesh:
         else:
             self.default_key = list(cell_data.keys())[0]
 
+        if not fields:
+            fields = {}
+
         self.points = points
         self.cells = cells
+        self.field_to_number = fields
         self.region_markers = [] if region_markers is None else region_markers
         self.cell_data = cell_data
+
+    @property
+    def number_to_field(self):
+        """Mapping from numbers to fields, proxy to `.field_to_number`."""
+        return MappingProxyType(
+            {v: k
+             for k, v in self.field_to_number.items()})
 
     def add_region_marker(self, region_marker: RegionMarkerLike):
         """Add marker to list of region markers.

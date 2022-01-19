@@ -28,7 +28,9 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             dim_name = CellType(dimension).name.lower()
             number_to_field[dim_name][number] = field
 
-        return MappingProxyType(dict(number_to_field))
+        return MappingProxyType(
+            {k: MappingProxyType(v)
+             for k, v in number_to_field.items()})
 
     @property
     def field_to_number(self):
@@ -39,7 +41,9 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             dim_name = CellType(dimension).name.lower()
             field_to_number[dim_name][field] = number
 
-        return MappingProxyType(dict(field_to_number))
+        return MappingProxyType(
+            {k: MappingProxyType(v)
+             for k, v in field_to_number.items()})
 
     def set_field_data(self, cell_type: str, field_data: Dict[int, str]):
         """Update the values in `.field_data`.
@@ -54,7 +58,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             maps `0` to `green`, etc.
         """
         try:
-            input_field_data = dict(self.number_to_field)[cell_type]
+            input_field_data = dict(self.number_to_field[cell_type])
         except KeyError:
             input_field_data = {}
 

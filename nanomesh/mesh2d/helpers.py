@@ -86,11 +86,14 @@ def simple_triangulate(points: np.ndarray,
     return mesh
 
 
-def pad(mesh: LineMesh,
-        *,
-        side: str,
-        width: int,
-        label: int = None) -> LineMesh:
+def pad(
+    mesh: LineMesh,
+    *,
+    side: str,
+    width: int,
+    label: int = None,
+    name: str = None,
+) -> LineMesh:
     """Pad a triangle mesh (2D).
 
     Parameters
@@ -104,6 +107,8 @@ def pad(mesh: LineMesh,
     label : int, optional
         The label to assign to the padded area. If not defined, generates the
         next unique label based on the existing ones.
+    name : str
+        Name of the added region.
 
     Returns
     -------
@@ -171,7 +176,7 @@ def pad(mesh: LineMesh,
     cells = np.vstack([mesh.cells, additional_segments])
 
     center = corners.mean(axis=0)
-    region_markers = mesh.region_markers + [RegionMarker(label, center)]
+    region_markers = mesh.region_markers + [RegionMarker(label, center, name)]
 
     new_mesh = mesh.__class__(
         points=all_points,

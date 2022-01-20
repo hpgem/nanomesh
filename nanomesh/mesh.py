@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Dict, List, Sequence
 
 import matplotlib.pyplot as plt
@@ -45,6 +46,7 @@ class BaseMesh:
     def __init__(self,
                  points: np.ndarray,
                  cells: np.ndarray,
+                 fields: Dict[str, int] = None,
                  region_markers: List[RegionMarker] = None,
                  **cell_data):
         """Base class for meshes.
@@ -55,6 +57,8 @@ class BaseMesh:
             Array with points.
         cells : (i, j) np.ndarray[int]
             Index array describing the cells of the mesh.
+        fields : Dict[str, int]:
+            Mapping from field names to labels
         region_markers : List[RegionMarker], optional
             List of region markers used for assigning labels to regions.
             Defaults to an empty list.
@@ -68,10 +72,21 @@ class BaseMesh:
         else:
             self.default_key = list(cell_data.keys())[0]
 
+        if not fields:
+            fields = {}
+
         self.points = points
         self.cells = cells
+        self.field_to_number = fields
         self.region_markers = [] if region_markers is None else region_markers
         self.cell_data = cell_data
+
+    @property
+    def number_to_field(self):
+        """Mapping from numbers to fields, proxy to `.field_to_number`."""
+        return MappingProxyType(
+            {v: k
+             for k, v in self.field_to_number.items()})
 
     def add_region_marker(self, region_marker: RegionMarkerLike):
         """Add marker to list of region markers.
@@ -240,7 +255,6 @@ class LineMesh(BaseMesh):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
-                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple line mesh plot using `matplotlib`.
 
@@ -262,9 +276,6 @@ class LineMesh(BaseMesh):
         if not ax:
             fig, ax = plt.subplots()
 
-        if fields is None:
-            fields = {}
-
         if key is None:
             try:
                 key = tuple(self.cell_data.keys())[0]
@@ -277,7 +288,7 @@ class LineMesh(BaseMesh):
         for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(cell_data_val, cell_data_val)
+            name = self.number_to_field.get(cell_data_val, cell_data_val)
 
             lineplot(
                 ax,
@@ -330,7 +341,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
-                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
 
@@ -353,9 +363,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         if not ax:
             fig, ax = plt.subplots()
 
-        if fields is None:
-            fields = {}
-
         if key is None:
             try:
                 key = tuple(self.cell_data.keys())[0]
@@ -368,7 +375,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(cell_data_val, cell_data_val)
+            name = self.number_to_field.get(cell_data_val, cell_data_val)
 
             ax.triplot(vert_y,
                        vert_x,

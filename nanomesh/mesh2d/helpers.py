@@ -86,11 +86,14 @@ def simple_triangulate(points: np.ndarray,
     return mesh
 
 
-def pad(mesh: LineMesh,
-        *,
-        side: str,
-        width: int,
-        label: int = None) -> LineMesh:
+def pad(
+    mesh: LineMesh,
+    *,
+    side: str,
+    width: int,
+    label: int = None,
+    name: str = None,
+) -> LineMesh:
     """Pad a triangle mesh (2D).
 
     Parameters
@@ -104,6 +107,9 @@ def pad(mesh: LineMesh,
     label : int, optional
         The label to assign to the padded area. If not defined, generates the
         next unique label based on the existing ones.
+    name : str, optional
+        Name of the added region. Note that in case of conflicts, the `label`
+        takes presedence over the `name`.
 
     Returns
     -------
@@ -115,8 +121,17 @@ def pad(mesh: LineMesh,
     ValueError
         When the value of `side` is invalid.
     """
+    labels = [m.label for m in mesh.region_markers]
+    names = [m.name for m in mesh.region_markers]
+
+    if (label in labels) and (name is None):
+        name = [m.name for m in mesh.region_markers if m.label == label][0]
+
+    if name and (name in names) and (label is None):
+        label = [m.label for m in mesh.region_markers if m.name == name][0]
+
     if label is None:
-        label = mesh.labels.max() + 1
+        label = max(max(labels) + 1, 2)
 
     if width == 0:
         return mesh
@@ -171,7 +186,7 @@ def pad(mesh: LineMesh,
     cells = np.vstack([mesh.cells, additional_segments])
 
     center = corners.mean(axis=0)
-    region_markers = mesh.region_markers + [RegionMarker(label, center)]
+    region_markers = mesh.region_markers + [RegionMarker(label, center, name)]
 
     new_mesh = mesh.__class__(
         points=all_points,

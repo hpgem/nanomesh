@@ -28,7 +28,9 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             dim_name = CellType(dimension).name.lower()
             number_to_field[dim_name][number] = field
 
-        return MappingProxyType(dict(number_to_field))
+        return MappingProxyType(
+            {k: MappingProxyType(v)
+             for k, v in number_to_field.items()})
 
     @property
     def field_to_number(self):
@@ -39,7 +41,9 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             dim_name = CellType(dimension).name.lower()
             field_to_number[dim_name][field] = number
 
-        return MappingProxyType(dict(field_to_number))
+        return MappingProxyType(
+            {k: MappingProxyType(v)
+             for k, v in field_to_number.items()})
 
     def set_field_data(self, cell_type: str, field_data: Dict[int, str]):
         """Update the values in `.field_data`.
@@ -47,14 +51,14 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         Parameters
         ----------
         cell_type : str
-            Cell type to update the values ofr.
+            Cell type to update the values for.
         field_data : dict
             Dictionary with key-to-number mapping, i.e.
             `field_data={0: 'green', 1: 'blue', 2: 'red'}`
             maps `0` to `green`, etc.
         """
         try:
-            input_field_data = dict(self.number_to_field)[cell_type]
+            input_field_data = dict(self.number_to_field[cell_type])
         except KeyError:
             input_field_data = {}
 
@@ -144,7 +148,12 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
         cell_data = self.get_all_cell_data(cell_type)
 
-        return BaseMesh.create(cells=cells, points=points, **cell_data)
+        fields = self.field_to_number.get(cell_type, None)
+
+        return BaseMesh.create(cells=cells,
+                               points=points,
+                               fields=fields,
+                               **cell_data)
 
     def get_all_cell_data(self, cell_type: str = None) -> dict:
         """Get all cell data for given `cell_type`.

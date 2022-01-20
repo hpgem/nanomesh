@@ -80,7 +80,7 @@ def generate_regions(polygons: List[Polygon]) -> List[Tuple[int, np.ndarray]]:
         point = polygon.find_point()
 
         # in LineMesh format
-        regions.append((label + 1, point))
+        regions.append((1, point))
 
     return regions
 
@@ -222,6 +222,12 @@ class Mesher2D(BaseMesher):
 
         mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
         mesh.set_field_data('line', {0: 'body', 1: 'external', 2: 'internal'})
+
+        fields = {
+            m.label: m.name
+            for m in self.contour.region_markers if m.name
+        }
+        mesh.set_field_data('triangle', fields)
 
         return mesh
 

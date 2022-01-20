@@ -107,8 +107,9 @@ def pad(
     label : int, optional
         The label to assign to the padded area. If not defined, generates the
         next unique label based on the existing ones.
-    name : str
-        Name of the added region.
+    name : str, optional
+        Name of the added region. Note that in case of conflicts, the `label`
+        takes presedence over the `name`.
 
     Returns
     -------
@@ -120,11 +121,17 @@ def pad(
     ValueError
         When the value of `side` is invalid.
     """
-    if label is None:
-        label = 100 + ('left', 'right', 'top', 'bottom').index(side)
+    labels = [m.label for m in mesh.region_markers]
+    names = [m.name for m in mesh.region_markers]
 
-    if name is None:
-        name = side
+    if (label in labels) and (name is None):
+        name = [m.name for m in mesh.region_markers if m.label == label][0]
+
+    if name and (name in names) and (label is None):
+        label = [m.label for m in mesh.region_markers if m.name == name][0]
+
+    if label is None:
+        label = min(max(labels) + 1, 2)
 
     if width == 0:
         return mesh

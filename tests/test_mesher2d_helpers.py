@@ -65,7 +65,8 @@ def test_pad_width(square, width):
 @pytest.mark.parametrize('label,expected_labels', (
     (None, {
         0: 91,
-        1: 47
+        1: 32,
+        100: 15,
     }),
     (0, {
         0: 106,
@@ -100,3 +101,78 @@ def test_pad_label(square, label, expected_labels):
     labels = dict(zip(unique, counts))
 
     assert expected_labels == labels
+
+
+@pytest.mark.parametrize('side,label,name,expected_labels', (
+    ('left', None, None, {
+        0: 91,
+        1: 32,
+        2: 15
+    }),
+    ('top', 0, None, {
+        0: 108,
+        1: 34
+    }),
+    ('top', 1, None, {
+        0: 93,
+        1: 49
+    }),
+    ('left', 2, None, {
+        0: 91,
+        1: 32,
+        2: 15
+    }),
+    ('bottom', np.pi, None, {
+        0: 94,
+        1: 34,
+        np.pi: 15
+    }),
+    ('right', 2, None, {
+        0: 96,
+        1: 32,
+        2: 14
+    }),
+    ('bottom', None, 'moo', {
+        0: 94,
+        1: 34,
+        2: 15
+    }),
+    ('bottom', None, 'background', {
+        0: 94,
+        1: 34,
+        2: 15
+    }),
+    ('bottom', None, 'feature', {
+        0: 94,
+        1: 34,
+        2: 15
+    }),
+))
+def test_pad_label2(square, side, label, name, expected_labels):
+    """Test `label` parameter for `pad`."""
+    mesher = Mesher2D(square)
+    mesher.generate_contour()
+
+    mesher.pad_contour(side=side, width=1, label=label, name=name)
+    mesh = mesher.triangulate(opts='pq30a1')
+
+    assert isinstance(mesh, MeshContainer)
+
+    tri_mesh = mesh.get('triangle')
+
+    assert isinstance(tri_mesh, TriangleMesh)
+
+    unique, counts = np.unique(tri_mesh.labels, return_counts=True)
+    labels = dict(zip(unique, counts))
+
+    assert expected_labels == labels
+
+    keys = tuple(tri_mesh.field_to_number.keys())
+    default_keys = ('background', 'feature')
+
+    if not name:
+        assert keys == default_keys
+    elif name in default_keys:
+        assert keys == default_keys
+    else:
+        assert keys == default_keys + (name, )

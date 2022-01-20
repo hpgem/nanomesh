@@ -148,7 +148,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
         cell_data = self.get_all_cell_data(cell_type)
 
-        fields = self.field_to_number[cell_type]
+        fields = self.field_to_number.get(cell_type, None)
 
         return BaseMesh.create(cells=cells,
                                points=points,

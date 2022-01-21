@@ -27,8 +27,7 @@ def test_meshio_interface(triangle_mesh_2d):
 
     np.testing.assert_allclose(new_mesh.points, triangle_mesh_2d.points)
     np.testing.assert_allclose(new_mesh.cells, triangle_mesh_2d.cells)
-    np.testing.assert_allclose(new_mesh.cell_data['labels'],
-                               triangle_mesh_2d.cell_data['labels'])
+    np.testing.assert_allclose(new_mesh.labels, triangle_mesh_2d.labels)
 
 
 def test_plot_submesh(tetra_mesh):

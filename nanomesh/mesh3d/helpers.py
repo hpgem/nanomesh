@@ -18,14 +18,15 @@ def pad(mesh: TriangleMesh,
         side: str,
         width: int,
         label: int = None) -> TriangleMesh:
-    """Pad a triangle mesh.
+    """Pad a triangle mesh (3D).
 
     Parameters
     ----------
     mesh : TriangleMesh
         The mesh to pad.
     side : str
-        Side to pad, must be one of `left`, `right`, `top`, `bottom`.
+        Side to pad, must be one of `left`, `right`, `top`,
+        `bottom`, `back`, `front`.
     width : int
         Width of the padded area.
     label : int, optional

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Dict, List, Sequence
 
 import matplotlib.pyplot as plt
@@ -8,8 +9,6 @@ import numpy as np
 import pyvista as pv
 import scipy
 
-from . import mesh2d, mesh3d
-from .mesh2d.helpers import simple_triangulate
 from .mpl.meshplot import _legend_with_triplot_fix
 from .region_markers import RegionMarker, RegionMarkerLike
 
@@ -45,9 +44,10 @@ class BaseMesh:
     def __init__(self,
                  points: np.ndarray,
                  cells: np.ndarray,
+                 fields: Dict[str, int] = None,
                  region_markers: List[RegionMarker] = None,
                  **cell_data):
-        """Summary.
+        """Base class for meshes.
 
         Parameters
         ----------
@@ -55,6 +55,8 @@ class BaseMesh:
             Array with points.
         cells : (i, j) np.ndarray[int]
             Index array describing the cells of the mesh.
+        fields : Dict[str, int]:
+            Mapping from field names to labels
         region_markers : List[RegionMarker], optional
             List of region markers used for assigning labels to regions.
             Defaults to an empty list.
@@ -62,12 +64,27 @@ class BaseMesh:
             Additional cell data. Argument must be a 1D numpy array
             matching the number of cells defined by `i`.
         """
-        self._label_key = 'labels'
+        default_key = 'physical'
+        if (not cell_data) or (default_key in cell_data):
+            self.default_key = default_key
+        else:
+            self.default_key = list(cell_data.keys())[0]
+
+        if not fields:
+            fields = {}
 
         self.points = points
         self.cells = cells
+        self.field_to_number = fields
         self.region_markers = [] if region_markers is None else region_markers
         self.cell_data = cell_data
+
+    @property
+    def number_to_field(self):
+        """Mapping from numbers to fields, proxy to `.field_to_number`."""
+        return MappingProxyType(
+            {v: k
+             for k, v in self.field_to_number.items()})
 
     def add_region_marker(self, region_marker: RegionMarkerLike):
         """Add marker to list of region markers.
@@ -187,6 +204,25 @@ class BaseMesh:
         """Return centers of cells (mean of corner points)."""
         return self.points[self.cells].mean(axis=1)
 
+    def get_cell_data(self, key: str, default_value: float = 0) -> np.ndarray:
+        """Get cell data with optional default value.
+
+        Parameters
+        ----------
+        key : str
+            Key of the cell data to retrieve.
+        default_value : float, optional
+            Optional default value (if cell data does not exist)
+
+        Returns
+        -------
+        np.ndarray
+        """
+        try:
+            return self.cell_data[self.default_key]
+        except KeyError:
+            return np.ones(len(self.cells), dtype=int) * default_value
+
     @property
     def zero_labels(self):
         """Return zero labels as fallback."""
@@ -195,15 +231,15 @@ class BaseMesh:
     @property
     def labels(self):
         """Shortcut for cell labels."""
-        if not self.cell_data:
+        try:
+            return self.cell_data[self.default_key]
+        except KeyError:
             return self.zero_labels
-
-        return self.cell_data[self._label_key]
 
     @labels.setter
     def labels(self, data: np.ndarray):
         """Shortcut for setting cell labels."""
-        self.cell_data[self._label_key] = data
+        self.cell_data[self.default_key] = data
 
     @property
     def dimensions(self):
@@ -217,7 +253,6 @@ class LineMesh(BaseMesh):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
-                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple line mesh plot using `matplotlib`.
 
@@ -239,9 +274,6 @@ class LineMesh(BaseMesh):
         if not ax:
             fig, ax = plt.subplots()
 
-        if fields is None:
-            fields = {}
-
         if key is None:
             try:
                 key = tuple(self.cell_data.keys())[0]
@@ -254,7 +286,7 @@ class LineMesh(BaseMesh):
         for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(cell_data_val, cell_data_val)
+            name = self.number_to_field.get(cell_data_val, cell_data_val)
 
             lineplot(
                 ax,
@@ -281,8 +313,9 @@ class LineMesh(BaseMesh):
 
         return ax
 
-    def triangulate(self, opts: str = 'q30a100') -> MeshContainer:
+    def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
         """Triangulate mesh using `triangle`."""
+        from .mesh2d.helpers import simple_triangulate
         points = self.points
         segments = self.cells
         regions = [[*m.coordinates, m.label, 0] for m in self.region_markers]
@@ -306,7 +339,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
-                 fields: Dict[int, str] = None,
                  **kwargs) -> plt.Axes:
         """Simple mesh plot using `matplotlib`.
 
@@ -329,9 +361,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         if not ax:
             fig, ax = plt.subplots()
 
-        if fields is None:
-            fields = {}
-
         if key is None:
             try:
                 key = tuple(self.cell_data.keys())[0]
@@ -344,7 +373,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         for cell_data_val in np.unique(cell_data):
             vert_x, vert_y = self.points.T
 
-            name = fields.get(cell_data_val, cell_data_val)
+            name = self.number_to_field.get(cell_data_val, cell_data_val)
 
             ax.triplot(vert_y,
                        vert_x,
@@ -458,26 +487,6 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         from nanomesh import tetgen
         mesh = tetgen.tetrahedralize(self, **kwargs)
         return mesh
-
-    def pad(self, **kwargs) -> TriangleMesh:
-        """Pad a mesh.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to `nanomesh.mesh2d.helpers.pad`
-        """
-        return mesh2d.pad(self, **kwargs)
-
-    def pad3d(self, **kwargs) -> TriangleMesh:
-        """Pad a 3d mesh.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to `nanomesh.mesh3d.helpers.pad`
-        """
-        return mesh3d.pad(self, **kwargs)
 
 
 class TetraMesh(BaseMesh):

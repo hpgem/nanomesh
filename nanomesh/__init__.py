@@ -14,7 +14,7 @@ logging.basicConfig(format='%(message)s',
 
 __author__ = 'Nicolas Renaud'
 __email__ = 'n.renaud@esciencecenter.nl'
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 __all__ = [
     '__author__',

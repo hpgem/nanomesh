@@ -19,12 +19,14 @@ class BoundingBox:
         """Generate bounding box from data shape."""
         xmin, ymin, zmin = 0, 0, 0
         xmax, ymax, zmax = np.array(shape) - 1
-        return cls(xmin=xmin,
-                   ymin=ymin,
-                   zmin=zmin,
-                   xmax=xmax,
-                   ymax=ymax,
-                   zmax=zmax)
+        return cls(
+            xmin=xmin,
+            ymin=ymin,
+            zmin=zmin,
+            xmax=xmax,
+            ymax=ymax,
+            zmax=zmax,
+        )
 
     @property
     def dimensions(self) -> Tuple[float, float, float]:

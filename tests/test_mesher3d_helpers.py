@@ -144,7 +144,7 @@ def test_pad_label(cube, side, label, name, expected_labels):
 
     labels = dict(zip(unique, counts))
 
-    if os.name != GENERATED_ON:
+    if os.name == GENERATED_ON:
         # https://github.com/hpgem/nanomesh/issues/144
         assert expected_labels == labels
 

@@ -107,7 +107,7 @@ def test_pad_width(square, width):
         2: 15
     }),
 ))
-def test_pad_label2(square, side, label, name, expected_labels):
+def test_pad_label(square, side, label, name, expected_labels):
     """Test `label` parameter for `pad`."""
     mesher = Mesher2D(square)
     mesher.generate_contour()

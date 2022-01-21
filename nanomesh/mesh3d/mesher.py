@@ -225,7 +225,6 @@ class Mesher3D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
         self.contour: TriangleMesh
-        self.pad_width = 0
 
     def generate_contour(
         self,

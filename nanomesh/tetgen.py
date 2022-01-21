@@ -3,7 +3,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, List, Tuple
 
-from .mesh import TetraMesh, TriangleMesh
+from .mesh import TriangleMesh
+from .mesh_container import MeshContainer
 from .region_markers import RegionMarker
 
 
@@ -98,7 +99,7 @@ def call_tetgen(fname: os.PathLike, opts: str = '-pAq1.2'):
     sp.run(['tetgen', opts, fname])
 
 
-def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> TetraMesh:
+def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> MeshContainer:
     """Tetrahedralize a surface mesh.
 
     Parameters
@@ -120,12 +121,16 @@ def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> TetraMesh:
 
     Returns
     -------
-    TetraMesh
+    MeshContainer
         Tetrahedralized mesh.
     """
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp, 'nanomesh.smesh')
         write_smesh(path, mesh)
         call_tetgen(path, opts)
-        ele_path = path.with_suffix('.1.ele')
-        return TetraMesh.read(ele_path)
+
+        tetras = MeshContainer.read(path.with_suffix('.1.ele'))
+
+    return MeshContainer(tetras.points,
+                         tetras.cells,
+                         cell_data=tetras.cell_data)

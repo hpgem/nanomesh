@@ -107,14 +107,15 @@ def test_tetgen_generate_3d_mesh(triangle_mesh):
 
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    for cell_type in ('line', 'triangle', 'tetra'):
-        mesh = mesh_container.get(cell_type)
-        expected_mesh = expected_mesh_container.get(cell_type)
+    cell_type = 'tetra'
 
-        assert mesh.points.shape == expected_mesh.points.shape
-        assert mesh.cells.shape == expected_mesh.cells.shape
-        np.testing.assert_allclose(mesh.points, expected_mesh.points)
-        np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
+    mesh = mesh_container.get(cell_type)
+    expected_mesh = expected_mesh_container.get(cell_type)
 
-        np.testing.assert_allclose(mesh.region_markers,
-                                   expected_mesh.region_markers)
+    assert mesh.points.shape == expected_mesh.points.shape
+    assert mesh.cells.shape == expected_mesh.cells.shape
+    np.testing.assert_allclose(mesh.points, expected_mesh.points)
+    np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
+
+    np.testing.assert_allclose(mesh.region_markers,
+                               expected_mesh.region_markers)

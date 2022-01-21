@@ -79,9 +79,10 @@ class BaseMesh:
         self.region_markers = [] if region_markers is None else region_markers
         self.cell_data = cell_data
 
-    def __repr__(self):
+    def __repr__(self, indent: int = 0):
         """Canonical string representation."""
-        markers = [m.name if m.name else m.label for m in self.region_markers]
+        markers = set(m.name if m.name else m.label
+                      for m in self.region_markers)
         s = (
             f'{self.__class__.__name__}(',
             f'    points = {self.points.shape},',
@@ -91,7 +92,9 @@ class BaseMesh:
             f'    cell_data = {tuple(self.cell_data.keys())},',
             ')',
         )
-        return '\n'.join(s)
+
+        prefix = ' ' * indent
+        return f'\n{prefix}'.join(s)
 
     @property
     def number_to_field(self):

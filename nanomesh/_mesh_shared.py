@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import logging
 from abc import ABC, abstractmethod
 from typing import Union
 
 import numpy as np
 
+from .mesh import BaseMesh
 from .plane import Plane
 from .volume import Volume
 
@@ -15,8 +18,19 @@ class BaseMesher(ABC):
         if isinstance(image, (Plane, Volume)):
             image = image.image
 
+        self.contour: BaseMesh | None = None
         self.image_orig = image
         self.image = image
+
+    def __repr__(self):
+        """Canonical string representation."""
+        s = (
+            f'{self.__class__.__name__}(',
+            f'    image = {self.image!r},',
+            f'    contour = {self.contour.__repr__(indent=4)}'
+            ')',
+        )
+        return '\n'.join(s)
 
     @abstractmethod
     def show_contour(self):

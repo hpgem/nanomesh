@@ -23,6 +23,9 @@ def pad(
 ) -> TriangleMesh:
     """Pad a contour triangle mesh (3D).
 
+    Note that tetgen will assign a different label for physically separate
+    regions, even when they are given the same label/name.
+
     Parameters
     ----------
     mesh : TriangleMesh
@@ -59,10 +62,7 @@ def pad(
         label = [m.label for m in mesh.region_markers if m.name == name][0]
 
     if label is None:
-        try:
-            label = max(max(labels) + 1, 2)
-        except IndexError:
-            label = 2
+        label = max(max(labels) + 1, 2) if labels else 2
 
     if width == 0:
         return mesh

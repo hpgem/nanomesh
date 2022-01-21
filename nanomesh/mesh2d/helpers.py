@@ -131,10 +131,7 @@ def pad(
         label = [m.label for m in mesh.region_markers if m.name == name][0]
 
     if label is None:
-        try:
-            label = max(max(labels) + 1, 2)
-        except IndexError:
-            label = 2
+        label = max(max(labels) + 1, 2) if labels else 2
 
     if width == 0:
         return mesh

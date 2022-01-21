@@ -317,7 +317,7 @@ class Mesher3D(BaseMesher):
         Raises
         ------
         ValueError
-            Description
+            Contour mesh has not been generated.
         """
         if not self.contour:
             raise ValueError('No contour mesh available.'

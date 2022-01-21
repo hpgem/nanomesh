@@ -1,8 +1,18 @@
 import numpy as np
 import pytest
 
-from nanomesh.mesh import TriangleMesh
+from nanomesh import MeshContainer, Mesher3D, TetraMesh, TriangleMesh
 from nanomesh.mesh3d import BoundingBox, pad
+
+
+@pytest.fixture
+def cube():
+    from nanomesh import Volume
+
+    data = np.ones([10, 10, 10], dtype=int)
+    data[2:7, 2:7, 2:7] = 0
+
+    return Volume(data)
 
 
 @pytest.fixture
@@ -61,3 +71,78 @@ def test_mesh3d_pad_invalid_side(mesh):
     """Test invalide keyword argument."""
     with pytest.raises(ValueError):
         _ = pad(mesh, side='FAIL', width=123)
+
+
+@pytest.mark.parametrize('side,label,name,expected_labels', (
+    ('left', None, None, {
+        0: 633,
+        1: 1729,
+        2: 290
+    }),
+    ('front', 0, None, {
+        0: 857,
+        1: 1851
+    }),
+    ('back', 1, None, {
+        0: 620,
+        1: 1966
+    }),
+    ('left', 2, None, {
+        0: 633,
+        1: 1729,
+        2: 290
+    }),
+    ('bottom', np.pi, None, {
+        0: 608,
+        1: 1794,
+        3: 277
+    }),
+    ('right', 2, None, {
+        0: 611,
+        1: 1760,
+        2: 300
+    }),
+    ('bottom', None, 'moo', {
+        0: 608,
+        1: 1794,
+        2: 277
+    }),
+    ('bottom', None, 'background', {
+        0: 608,
+        1: 1794,
+        2: 277
+    }),
+    ('bottom', None, 'feature', {
+        0: 608,
+        1: 1794,
+        2: 277
+    }),
+))
+def test_pad_label(cube, side, label, name, expected_labels):
+    """Test `label` parameter for `pad`."""
+    mesher = Mesher3D(cube)
+    mesher.generate_contour()
+
+    mesher.pad_contour(side=side, width=1, label=label, name=name)
+    mesh = mesher.tetrahedralize(opts='-pAq1.2')
+
+    assert isinstance(mesh, MeshContainer)
+
+    tetra_mesh = mesh.get('tetra')
+
+    assert isinstance(tetra_mesh, TetraMesh)
+
+    unique, counts = np.unique(tetra_mesh.labels, return_counts=True)
+    labels = dict(zip(unique, counts))
+
+    assert expected_labels == labels
+
+    keys = tuple(tetra_mesh.field_to_number.keys())
+    default_keys = ('background', 'feature')
+
+    if not name:
+        assert keys == default_keys
+    elif name in default_keys:
+        assert keys == default_keys
+    else:
+        assert keys == default_keys + (name, )

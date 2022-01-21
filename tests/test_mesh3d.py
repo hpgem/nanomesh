@@ -32,26 +32,25 @@ def compare_mesh_results(mesh_container, expected_fn):
         mesh_container.write(expected_fn, file_format='gmsh22', binary=False)
         raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
 
-    cell_type = 'tetra'
+    for cell_type in ('line', 'triangle', 'tetra'):
+        mesh = mesh_container.get(cell_type)
+        expected_mesh = expected_mesh_container.get(cell_type)
 
-    mesh = mesh_container.get(cell_type)
-    expected_mesh = expected_mesh_container.get(cell_type)
+        assert mesh.points.shape == expected_mesh.points.shape
+        assert mesh.cells.shape == expected_mesh.cells.shape
+        np.testing.assert_allclose(mesh.points, expected_mesh.points)
+        np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
 
-    assert mesh.points.shape == expected_mesh.points.shape
-    assert mesh.cells.shape == expected_mesh.cells.shape
-    np.testing.assert_allclose(mesh.points, expected_mesh.points)
-    np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
+        np.testing.assert_allclose(mesh.region_markers,
+                                   expected_mesh.region_markers)
 
-    np.testing.assert_allclose(mesh.region_markers,
-                               expected_mesh.region_markers)
-
-    for key in expected_mesh.cell_data:
-        try:
-            np.testing.assert_allclose(mesh.cell_data[key],
-                                       expected_mesh.cell_data[key])
-        except KeyError:
-            if key not in ('physical', 'geometrical'):
-                raise
+        for key in expected_mesh.cell_data:
+            try:
+                np.testing.assert_allclose(mesh.cell_data[key],
+                                           expected_mesh.cell_data[key])
+            except KeyError:
+                if key not in ('physical', 'geometrical'):
+                    raise
 
 
 @pytest.mark.xfail(

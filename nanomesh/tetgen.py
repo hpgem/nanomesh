@@ -3,6 +3,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, List, Tuple
 
+import numpy as np
+
 from .mesh import TriangleMesh
 from .mesh_container import MeshContainer
 from .region_markers import RegionMarker
@@ -130,7 +132,20 @@ def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> MeshContainer:
         call_tetgen(path, opts)
 
         tetras = MeshContainer.read(path.with_suffix('.1.ele'))
+        tris = MeshContainer.read(path.with_suffix('.1.face'))
+        lines = MeshContainer.read(path.with_suffix('.1.edge'))
 
-    return MeshContainer(tetras.points,
-                         tetras.cells,
-                         cell_data=tetras.cell_data)
+    assert np.all(tetras.points == tris.points), 'Point set is not equal'
+    assert np.all(tetras.points == lines.points), 'Point set is not equal'
+
+    key = 'tetgen:ref'
+    return MeshContainer(
+        tetras.points,
+        tetras.cells + tris.cells + lines.cells,
+        cell_data={
+            key: [m.cell_data[key][0] for m in (
+                tetras,
+                tris,
+                lines,
+            )]
+        })

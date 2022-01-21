@@ -13,12 +13,15 @@ if TYPE_CHECKING:
     from nanomesh.mesh import TriangleMesh
 
 
-def pad(mesh: TriangleMesh,
-        *,
-        side: str,
-        width: int,
-        label: int = None) -> TriangleMesh:
-    """Pad a triangle mesh (3D).
+def pad(
+    mesh: TriangleMesh,
+    *,
+    side: str,
+    width: int,
+    label: int = None,
+    name: str = None,
+) -> TriangleMesh:
+    """Pad a contour triangle mesh (3D).
 
     Parameters
     ----------
@@ -32,19 +35,34 @@ def pad(mesh: TriangleMesh,
     label : int, optional
         The label to assign to the padded area. If not defined, generates the
         next unique label based on the existing ones.
+    name : str, optional
+        Name of the added region. Note that in case of conflicts, the `label`
+        takes presedence over the `name`.
 
     Returns
     -------
     new_mesh : TriangleMesh
-        Padded tetrahedral mesh.
+        Padded contour triangle mesh.
 
     Raises
     ------
     ValueError
         When the value of `side` is invalid.
     """
+    labels = [m.label for m in mesh.region_markers]
+    names = [m.name for m in mesh.region_markers]
+
+    if (label in labels) and (name is None):
+        name = [m.name for m in mesh.region_markers if m.label == label][0]
+
+    if name and (name in names) and (label is None):
+        label = [m.label for m in mesh.region_markers if m.name == name][0]
+
     if label is None:
-        label = mesh.labels.max() + 1
+        try:
+            label = max(max(labels) + 1, 2)
+        except IndexError:
+            label = 2
 
     if width == 0:
         return mesh
@@ -116,7 +134,7 @@ def pad(mesh: TriangleMesh,
                          f'`top`, `front`, `back`. Got {side=}')
 
     n_points = len(mesh.points)
-    points = np.vstack([mesh.points, extra_coords])
+    all_points = np.vstack([mesh.points, extra_coords])
 
     new_triangles = [
         np.array((0, 1, 2)) + n_points,
@@ -124,17 +142,18 @@ def pad(mesh: TriangleMesh,
     ]
 
     for corner, col in zip(extra_coords, column_order):
-        connect_to = np.argwhere((points[:, edge_col] == edge_value)
-                                 & (points[:, col] == corner[col]))
+        connect_to = np.argwhere((all_points[:, edge_col] == edge_value)
+                                 & (all_points[:, col] == corner[col]))
 
         additional_points = np.argwhere(
             extra_coords[:, col] == corner[col]) + n_points
 
         first, last = additional_points
-        first_point = points[first]
+        first_point = all_points[first]
 
         sorted_by_distance = np.argsort(
-            np.linalg.norm(first_point - points[connect_to].squeeze(), axis=1))
+            np.linalg.norm(first_point - all_points[connect_to].squeeze(),
+                           axis=1))
         connect_to = connect_to[sorted_by_distance]
         connect_to = np.vstack([connect_to, last]).squeeze()
 
@@ -146,16 +165,16 @@ def pad(mesh: TriangleMesh,
 
     cells = np.vstack([mesh.cells, new_triangles])
 
-    new_mesh = mesh.__class__(
-        points=points,
-        cells=cells,
-        region_markers=mesh.region_markers,
-    )
-
     # add marker for new region
     center = extra_coords.mean(axis=0)
     center[col] = (center[col] + edge_value) / 2
 
-    new_mesh.add_region_marker(RegionMarker(label, center))
+    region_markers = mesh.region_markers + [RegionMarker(label, center, name)]
+
+    new_mesh = mesh.__class__(
+        points=all_points,
+        cells=cells,
+        region_markers=region_markers,
+    )
 
     return new_mesh

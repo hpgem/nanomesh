@@ -63,25 +63,7 @@ def test_generate_3d_mesh(segmented_image):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.msh'
 
-    mesh_container = generate_3d_mesh(segmented_image,
-                                      generate_region_markers=False)
-
-    assert 'tetgen:ref' in mesh_container.cell_data
-
-    compare_mesh_results(mesh_container, expected_fn)
-
-
-@pytest.mark.xfail(
-    os.name != GENERATED_ON,
-    raises=AssertionError,
-    reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
-            'are exactly the same.'))
-def test_generate_3d_mesh_region_markers(segmented_image):
-    """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_3d_markers.msh'
-
-    mesh_container = generate_3d_mesh(segmented_image,
-                                      generate_region_markers=True)
+    mesh_container = generate_3d_mesh(segmented_image)
 
     assert 'tetgen:ref' in mesh_container.cell_data
 

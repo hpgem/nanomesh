@@ -303,9 +303,6 @@ class Mesher3D(BaseMesher):
 
         Parameters
         ----------
-        generate_region_markers : bool, optional
-            Attempt to automatically generate region markers.
-            Overwrites existing region_markers.
         **kwargs
             Keyword arguments passed to
             `nanomesh.mesh_container.TriangleMesh.tetrahedralize`

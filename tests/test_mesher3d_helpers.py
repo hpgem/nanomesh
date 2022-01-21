@@ -81,9 +81,6 @@ def test_mesh3d_pad_invalid_side(mesh):
         _ = pad(mesh, side='FAIL', width=123)
 
 
-@pytest.mark.xfail(os.name != GENERATED_ON,
-                   raises=AssertionError,
-                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
 @pytest.mark.parametrize('side,label,name,expected_labels', (
     ('left', None, None, {
         0: 633,
@@ -144,9 +141,12 @@ def test_pad_label(cube, side, label, name, expected_labels):
     assert isinstance(tetra_mesh, TetraMesh)
 
     unique, counts = np.unique(tetra_mesh.labels, return_counts=True)
+
     labels = dict(zip(unique, counts))
 
-    assert expected_labels == labels
+    if os.name != GENERATED_ON:
+        # https://github.com/hpgem/nanomesh/issues/144
+        assert expected_labels == labels
 
     keys = tuple(tetra_mesh.field_to_number.keys())
     default_keys = ('background', 'feature')

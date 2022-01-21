@@ -125,6 +125,7 @@ def test_close_contour(coords, expected_corner):
     savefig_kwarg={'bbox_inches': 'tight'},
 )
 def test_contour_plot(segmented):
+    np.random.seed(1234)  # for region marker coords
     mesher = Mesher2D(segmented)
-    mesher.generate_contours(max_contour_dist=5, level=0.5)
-    mesher.plot_contour()
+    mesher.generate_contour(max_contour_dist=5, level=0.5)
+    mesher.show_contour()

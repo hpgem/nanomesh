@@ -83,7 +83,7 @@ def get_region_markers(vol: Union[Volume, np.ndarray]) -> List[RegionMarker]:
         i, j, k = point.astype(int)
         label = image[i, j, k]
 
-        region_marker = RegionMarker(label=label, coordinates=point)
+        region_marker = RegionMarker(label=label, point=point)
         region_markers.append(region_marker)
 
     return region_markers
@@ -225,7 +225,6 @@ class Mesher3D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
         self.contour: TriangleMesh
-        self.pad_width = 0
 
     def generate_contour(
         self,

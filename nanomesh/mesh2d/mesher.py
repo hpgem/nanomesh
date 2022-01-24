@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
 import meshio
@@ -10,6 +10,7 @@ from scipy.spatial.distance import cdist
 from skimage import measure
 
 from .._mesh_shared import BaseMesher
+from ..region_markers import RegionMarker
 from .helpers import pad
 from .polygon import Polygon
 
@@ -61,7 +62,7 @@ def generate_mesh(polygons: List[Polygon], bbox: np.ndarray) -> LineMesh:
     return mesh
 
 
-def generate_regions(polygons: List[Polygon]) -> List[Tuple[int, np.ndarray]]:
+def generate_regions(polygons: List[Polygon]) -> List[RegionMarker]:
     """Generate regions for triangle.
 
     Parameters
@@ -80,7 +81,7 @@ def generate_regions(polygons: List[Polygon]) -> List[Tuple[int, np.ndarray]]:
         point = polygon.find_point()
 
         # in LineMesh format
-        regions.append((1, point))
+        regions.append(RegionMarker(label=1, point=point))
 
     return regions
 

@@ -7,8 +7,12 @@ import numpy.typing as npt
 @dataclass
 class RegionMarker:
     label: int
-    coordinates: npt.NDArray
+    point: Union[Tuple[float, ...], npt.NDArray]
     name: Optional[str] = None
 
+    def __post_init__(self):
+        self.point = tuple(self.point)
 
-RegionMarkerLike = Union[RegionMarker, Tuple[int, npt.NDArray]]
+
+RegionMarkerLike = Union[RegionMarker, Tuple[int, Tuple[float, ...],
+                                             Optional[str]]]

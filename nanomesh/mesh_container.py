@@ -19,6 +19,12 @@ class CellType(Enum):
 
 
 class MeshContainer(meshio.Mesh, PruneZ0Mixin):
+    def __repr__(self):
+        """Canonical string representation."""
+        s = super().__repr__().splitlines()
+        s[0] = f'<{self.__class__.__name__}>'
+        return '\n'.join(s)
+
     @property
     def number_to_field(self):
         """Mapping from numbers to fields, proxy to `.field_data`."""

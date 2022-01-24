@@ -79,6 +79,23 @@ class BaseMesh:
         self.region_markers = [] if region_markers is None else region_markers
         self.cell_data = cell_data
 
+    def __repr__(self, indent: int = 0):
+        """Canonical string representation."""
+        markers = set(m.name if m.name else m.label
+                      for m in self.region_markers)
+        s = (
+            f'{self.__class__.__name__}(',
+            f'    points = {self.points.shape},',
+            f'    cells = {self.cells.shape},',
+            f'    fields = {tuple(self.field_to_number.keys())},',
+            f'    markers = {tuple(markers)},',
+            f'    cell_data = {tuple(self.cell_data.keys())},',
+            ')',
+        )
+
+        prefix = ' ' * indent
+        return f'\n{prefix}'.join(s)
+
     @property
     def number_to_field(self):
         """Mapping from numbers to fields, proxy to `.field_to_number`."""
@@ -97,8 +114,7 @@ class BaseMesh:
             3-element numpy array.
         """
         if not isinstance(region_marker, RegionMarker):
-            label, coordinates = region_marker
-            region_marker = RegionMarker(label, coordinates)
+            region_marker = RegionMarker(*region_marker)
 
         self.region_markers.append(region_marker)
 
@@ -135,7 +151,7 @@ class BaseMesh:
 
         for key, value in mesh.cell_data.items():
             # PyVista chokes on ':ref' in cell_data
-            key = key.replace(':ref', 'Ref')
+            key = key.replace(':ref', '-ref')
             cell_data[key] = value[0]
 
         return BaseMesh.create(points=points, cells=cells, **cell_data)
@@ -298,8 +314,7 @@ class LineMesh(BaseMesh):
             )
 
         if self.region_markers:
-            mark_x, mark_y = np.array(
-                [m.coordinates for m in self.region_markers]).T
+            mark_x, mark_y = np.array([m.point for m in self.region_markers]).T
             ax.scatter(mark_y,
                        mark_x,
                        marker='*',
@@ -318,7 +333,7 @@ class LineMesh(BaseMesh):
         from .mesh2d.helpers import simple_triangulate
         points = self.points
         segments = self.cells
-        regions = [[*m.coordinates, m.label, 0] for m in self.region_markers]
+        regions = [(*m.point, m.label, 0) for m in self.region_markers]
 
         return simple_triangulate(points=points,
                                   segments=segments,
@@ -405,7 +420,8 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         points = self.points
         cells = self.cells
         # preprend 3 to indicate number of points per cell
-        stacked_cells = np.hstack(np.insert(cells, 0, values=3, axis=1))
+        stacked_cells = np.hstack(np.insert(cells, 0, values=3,
+                                            axis=1))  # type: ignore
         return pv.PolyData(points, stacked_cells, n_faces=len(cells))
 
     @classmethod

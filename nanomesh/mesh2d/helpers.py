@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,7 +43,7 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
 def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
-                       regions: np.ndarray = None,
+                       regions: List[Tuple[float, ...]] = None,
                        opts: str = '') -> MeshContainer:
     """Simple triangulation using `triangle`.
 
@@ -71,7 +71,7 @@ def simple_triangulate(points: np.ndarray,
     """
     from nanomesh.mesh_container import MeshContainer
 
-    triangle_dict_in = {'vertices': points}
+    triangle_dict_in: Dict['str', Any] = {'vertices': points}
 
     if segments is not None:
         triangle_dict_in['segments'] = segments

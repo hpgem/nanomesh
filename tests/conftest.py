@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 # https://github.com/matplotlib/matplotlib/issues/18168#issuecomment-670211108
@@ -6,6 +8,15 @@ from matplotlib.testing.conftest import mpl_test_settings  # noqa
 from nanomesh import LineMesh, MeshContainer, TetraMesh, TriangleMesh
 
 KEY = 'labels'
+
+
+def pytest_configure():
+    # There is a small disparity between the data generated on Windows / posix
+    # platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
+    # Update the variable below for the platform on which the testing data
+    # have been generated, windows: nt, linux/mac: posix
+    pytest.GENERATED_ON = 'nt'
+    pytest.OS_EQUALS_GENERATED_ON = (os.name != pytest.GENERATED_ON)
 
 
 @pytest.fixture

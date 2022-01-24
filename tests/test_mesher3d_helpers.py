@@ -1,16 +1,8 @@
-import os
-
 import numpy as np
 import pytest
 
 from nanomesh import MeshContainer, Mesher3D, TetraMesh, TriangleMesh
 from nanomesh.mesh3d import BoundingBox, pad
-
-# There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
-# Update the variable below for the platform on which the testing data
-# have been generated, windows: nt, linux/mac: posix
-GENERATED_ON = 'nt'
 
 
 @pytest.fixture
@@ -144,7 +136,7 @@ def test_pad_label(cube, side, label, name, expected_labels):
 
     labels = dict(zip(unique, counts))
 
-    if os.name == GENERATED_ON:
+    if pytest.OS_EQUALS_GENERATED_ON:
         # https://github.com/hpgem/nanomesh/issues/144
         assert expected_labels == labels
 

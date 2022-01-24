@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import numpy as np
@@ -6,12 +5,6 @@ import pytest
 
 from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh_container import MeshContainer
-
-# There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
-# Update the variable below for the platform on which the testing data
-# have been generated, windows: nt, linux/mac: posix
-GENERATED_ON = 'nt'
 
 
 @pytest.fixture
@@ -88,7 +81,7 @@ def triangle_mesh():
     return mesh
 
 
-@pytest.mark.xfail(os.name != GENERATED_ON,
+@pytest.mark.xfail(pytest.OS_EQUALS_GENERATED_ON,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_tetgen_generate_3d_mesh(triangle_mesh):

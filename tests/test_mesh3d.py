@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import numpy as np
@@ -6,12 +5,6 @@ import pytest
 
 from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
 from nanomesh.mesh_container import MeshContainer
-
-# There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
-# Update the variable below for the platform on which the testing data
-# have been generated, windows: nt, linux/mac: posix
-GENERATED_ON = 'nt'
 
 
 @pytest.fixture
@@ -55,7 +48,7 @@ def compare_mesh_results(mesh_container, expected_fn):
 
 
 @pytest.mark.xfail(
-    os.name != GENERATED_ON,
+    pytest.OS_EQUALS_GENERATED_ON,
     raises=AssertionError,
     reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
             'are exactly the same.'))

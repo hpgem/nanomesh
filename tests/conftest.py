@@ -68,7 +68,7 @@ def tetra_mesh():
 
 
 @pytest.fixture
-def mesh_square2d():
+def line_tri_mesh():
     points = np.array([
         [0., 0.],
         [0., 1.],

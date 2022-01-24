@@ -14,8 +14,8 @@ from nanomesh.mpl.meshplot import plot_line_triangle
     extensions=['png'],
     savefig_kwarg={'bbox_inches': 'tight'},
 )
-def test_line_mesh_plot(mesh_square2d):
-    lines = mesh_square2d.get('line')
+def test_line_mesh_plot(line_tri_mesh):
+    lines = line_tri_mesh.get('line')
     lines.plot_mpl(label='data')
 
 
@@ -25,8 +25,8 @@ def test_line_mesh_plot(mesh_square2d):
     extensions=['png'],
     savefig_kwarg={'bbox_inches': 'tight'},
 )
-def test_line_triangle_mesh_plot(mesh_square2d):
-    plot_line_triangle(mesh_square2d, label='data')
+def test_line_triangle_mesh_plot(line_tri_mesh):
+    plot_line_triangle(line_tri_mesh, label='data')
 
 
 @image_comparison(
@@ -35,8 +35,8 @@ def test_line_triangle_mesh_plot(mesh_square2d):
     extensions=['png'],
     savefig_kwarg={'bbox_inches': 'tight'},
 )
-def test_triangle_mesh_plot(mesh_square2d):
-    lines = mesh_square2d.get('triangle')
+def test_triangle_mesh_plot(line_tri_mesh):
+    lines = line_tri_mesh.get('triangle')
     lines.plot_mpl(label='data')
 
 

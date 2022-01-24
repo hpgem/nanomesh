@@ -89,7 +89,8 @@ def load_vol(filename: os.PathLike,
     result: np.ndarray
 
     if mmap_mode:
-        result = np.memmap(filename, dtype=dtype, shape=shape, mode=mmap_mode)
+        result = np.memmap(filename, dtype=dtype, shape=shape,
+                           mode=mmap_mode)  # type: ignore
     else:
         result = np.fromfile(filename, dtype=dtype)
         result = result.reshape(shape)

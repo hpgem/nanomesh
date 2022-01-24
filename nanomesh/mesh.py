@@ -333,7 +333,7 @@ class LineMesh(BaseMesh):
         from .mesh2d.helpers import simple_triangulate
         points = self.points
         segments = self.cells
-        regions = [[*m.point, m.label, 0] for m in self.region_markers]
+        regions = [(*m.point, m.label, 0) for m in self.region_markers]
 
         return simple_triangulate(points=points,
                                   segments=segments,
@@ -420,7 +420,8 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         points = self.points
         cells = self.cells
         # preprend 3 to indicate number of points per cell
-        stacked_cells = np.hstack(np.insert(cells, 0, values=3, axis=1))
+        stacked_cells = np.hstack(np.insert(cells, 0, values=3,
+                                            axis=1))  # type: ignore
         return pv.PolyData(points, stacked_cells, n_faces=len(cells))
 
     @classmethod

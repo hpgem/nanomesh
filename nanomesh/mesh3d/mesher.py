@@ -83,7 +83,7 @@ def get_region_markers(vol: Union[Volume, np.ndarray]) -> List[RegionMarker]:
         i, j, k = point.astype(int)
         label = image[i, j, k]
 
-        region_marker = RegionMarker(label=label, coordinates=point)
+        region_marker = RegionMarker(label=label, point=point)
         region_markers.append(region_marker)
 
     return region_markers

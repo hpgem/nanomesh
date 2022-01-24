@@ -114,8 +114,7 @@ class BaseMesh:
             3-element numpy array.
         """
         if not isinstance(region_marker, RegionMarker):
-            label, coordinates = region_marker
-            region_marker = RegionMarker(label, coordinates)
+            region_marker = RegionMarker(*region_marker)
 
         self.region_markers.append(region_marker)
 
@@ -315,8 +314,7 @@ class LineMesh(BaseMesh):
             )
 
         if self.region_markers:
-            mark_x, mark_y = np.array(
-                [m.coordinates for m in self.region_markers]).T
+            mark_x, mark_y = np.array([m.point for m in self.region_markers]).T
             ax.scatter(mark_y,
                        mark_x,
                        marker='*',
@@ -335,7 +333,7 @@ class LineMesh(BaseMesh):
         from .mesh2d.helpers import simple_triangulate
         points = self.points
         segments = self.cells
-        regions = [[*m.coordinates, m.label, 0] for m in self.region_markers]
+        regions = [[*m.point, m.label, 0] for m in self.region_markers]
 
         return simple_triangulate(points=points,
                                   segments=segments,

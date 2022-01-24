@@ -136,7 +136,7 @@ def test_pad_label(cube, side, label, name, expected_labels):
 
     labels = dict(zip(unique, counts))
 
-    if pytest.OS_EQUALS_GENERATED_ON:
+    if pytest.OS_MATCHES_DATA_GEN:
         # https://github.com/hpgem/nanomesh/issues/144
         assert expected_labels == labels
 

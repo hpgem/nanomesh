@@ -16,8 +16,8 @@ def pytest_configure():
     # platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
     # Update the variable below for the platform on which the testing data
     # have been generated, windows: nt, linux/mac: posix
-    pytest.GENERATED_ON = 'nt'
-    pytest.OS_EQUALS_GENERATED_ON = (os.name != pytest.GENERATED_ON)
+    pytest.DATA_GENERATED_ON = 'nt'
+    pytest.OS_MATCHES_DATA_GEN = (os.name != pytest.DATA_GENERATED_ON)
 
 
 @pytest.fixture

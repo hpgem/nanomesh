@@ -40,7 +40,7 @@ def test_triangle_mesh_plot(mesh_square2d):
     lines.plot_mpl(label='data')
 
 
-@pytest.mark.xfail(pytest.OS_EQUALS_GENERATED_ON,
+@pytest.mark.xfail(pytest.OS_MATCHES_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
 @image_comparison(

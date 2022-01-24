@@ -39,7 +39,7 @@ def compare_mesh_results(mesh_container, expected_fn):
 
 
 @pytest.mark.xfail(
-    pytest.OS_MATCHES_DATA_GEN,
+    pytest.OS_DOES_NOT_MATCH_DATA_GEN,
     raises=AssertionError,
     reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
             'are exactly the same.'))

@@ -18,7 +18,8 @@ def pytest_configure():
     # Update the variable below for the platform on which the testing data
     # have been generated, windows: nt, linux/mac: posix
     pytest.DATA_GENERATED_ON = 'nt'
-    pytest.OS_MATCHES_DATA_GEN = (os.name != pytest.DATA_GENERATED_ON)
+    pytest.OS_MATCHES_DATA_GEN = (os.name == pytest.DATA_GENERATED_ON)
+    pytest.OS_DOES_NOT_MATCH_DATA_GEN = not pytest.OS_MATCHES_DATA_GEN
 
 
 @pytest.fixture

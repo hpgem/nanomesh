@@ -17,7 +17,7 @@ def block_image(shape=(10, 10)):
     return image
 
 
-@pytest.mark.xfail(pytest.OS_MATCHES_DATA_GEN,
+@pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_generate_2d_mesh(segmented_image):

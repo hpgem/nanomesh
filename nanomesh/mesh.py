@@ -151,7 +151,7 @@ class BaseMesh:
 
         for key, value in mesh.cell_data.items():
             # PyVista chokes on ':ref' in cell_data
-            key = key.replace(':ref', 'Ref')
+            key = key.replace(':ref', '-ref')
             cell_data[key] = value[0]
 
         return BaseMesh.create(points=points, cells=cells, **cell_data)

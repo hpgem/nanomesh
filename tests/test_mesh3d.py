@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import numpy as np
@@ -6,21 +5,6 @@ import pytest
 
 from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
 from nanomesh.mesh_container import MeshContainer
-
-# There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
-# Update the variable below for the platform on which the testing data
-# have been generated, windows: nt, linux/mac: posix
-GENERATED_ON = 'nt'
-
-
-@pytest.fixture
-def segmented_image():
-    """Generate segmented binary numpy array."""
-    image = np.ones((20, 20, 20))
-    image[5:12, 5:12, 0:10] = 0
-    image[8:15, 8:15, 10:20] = 0
-    return image
 
 
 def compare_mesh_results(mesh_container, expected_fn):
@@ -55,15 +39,15 @@ def compare_mesh_results(mesh_container, expected_fn):
 
 
 @pytest.mark.xfail(
-    os.name != GENERATED_ON,
+    pytest.OS_DOES_NOT_MATCH_DATA_GEN,
     raises=AssertionError,
     reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
             'are exactly the same.'))
-def test_generate_3d_mesh(segmented_image):
+def test_generate_3d_mesh(segmented_image_3d):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.msh'
 
-    mesh_container = generate_3d_mesh(segmented_image)
+    mesh_container = generate_3d_mesh(segmented_image_3d)
 
     assert 'tetgen:ref' in mesh_container.cell_data
 

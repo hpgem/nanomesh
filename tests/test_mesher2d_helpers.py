@@ -5,7 +5,7 @@ from nanomesh import LineMesh, MeshContainer, Mesher2D, TriangleMesh
 
 
 @pytest.fixture
-def square():
+def image_square():
     from nanomesh import Plane
 
     data = np.ones([10, 10], dtype=int)
@@ -20,9 +20,9 @@ def square():
     ('top', (-1, 0, 9, 9)),
     ('bottom', (0, 0, 10, 9)),
 ))
-def test_pad_side(square, side, shape):
+def test_pad_side(image_square, side, shape):
     """Test `side` parameter for `pad`."""
-    mesher = Mesher2D(square)
+    mesher = Mesher2D(image_square)
     mesher.generate_contour()
 
     mesher.pad_contour(side=side, width=1)
@@ -41,9 +41,9 @@ def test_pad_side(square, side, shape):
 
 
 @pytest.mark.parametrize('width', (0.0, 0.5, 1, np.pi, 100))
-def test_pad_width(square, width):
+def test_pad_width(image_square, width):
     """Test `width` parameter for `pad`."""
-    mesher = Mesher2D(square)
+    mesher = Mesher2D(image_square)
     mesher.generate_contour()
 
     mesher.pad_contour(side='left', width=width)
@@ -107,9 +107,9 @@ def test_pad_width(square, width):
         2: 15
     }),
 ))
-def test_pad_label(square, side, label, name, expected_labels):
+def test_pad_label(image_square, side, label, name, expected_labels):
     """Test `label` parameter for `pad`."""
-    mesher = Mesher2D(square)
+    mesher = Mesher2D(image_square)
     mesher.generate_contour()
 
     mesher.pad_contour(side=side, width=1, label=label, name=name)

@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh2d import simple_triangulate
-from nanomesh.utils import SliceViewer, show_image
+from nanomesh.utils import SliceViewer
 
 
 def test_SliceViewer_fails():
@@ -40,20 +39,8 @@ def test_SliceViewer(along, index, slice):
     plt.close()
 
 
-@image_comparison(
-    baseline_images=['show_image'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
-def test_show_image():
-    """Test `utils.show_image`"""
-    data = np.arange(25).reshape(5, 5)
-    show_image(data, dpi=80, title='TESTING')
-
-
 @pytest.fixture
-def simple_mesh():
+def square_outline_mesh():
     return TriangleMesh(points=np.array([
         [0., 0.],
         [0., 1.],
@@ -63,16 +50,16 @@ def simple_mesh():
                         cells=np.array([[1, 0, 3], [3, 2, 1]]))
 
 
-def test_simple_triangulate(simple_mesh):
+def test_simple_triangulate(square_outline_mesh):
     """Test simple mesh creation."""
     points = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
     mesh = simple_triangulate(points, opts='q30a1')
 
     tri_mesh = mesh.get('triangle')
 
-    np.testing.assert_equal(tri_mesh.points, simple_mesh.points)
-    np.testing.assert_equal(tri_mesh.cells, simple_mesh.cells)
-    np.testing.assert_equal(tri_mesh.labels, simple_mesh.labels)
+    np.testing.assert_equal(tri_mesh.points, square_outline_mesh.points)
+    np.testing.assert_equal(tri_mesh.cells, square_outline_mesh.cells)
+    np.testing.assert_equal(tri_mesh.labels, square_outline_mesh.labels)
 
 
 def test_pairwise():

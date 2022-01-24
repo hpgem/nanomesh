@@ -2,9 +2,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
 
-from nanomesh.mesh2d import Mesher2D, generate_2d_mesh
+from nanomesh.mesh2d import generate_2d_mesh
 from nanomesh.mesh2d.polygon import Polygon
 from nanomesh.mesh_container import MeshContainer
 
@@ -18,23 +17,15 @@ def block_image(shape=(10, 10)):
     return image
 
 
-@pytest.fixture
-def segmented():
-    """Segmented binary numpy array."""
-    image_fn = Path(__file__).parent / 'segmented.npy'
-    image = np.load(image_fn)
-    return image
-
-
 @pytest.mark.xfail(pytest.OS_EQUALS_GENERATED_ON,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
-def test_generate_2d_mesh(segmented):
+def test_generate_2d_mesh(segmented_image):
     """Test 2D mesh generation and plot."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_2d.msh'
 
     np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = generate_2d_mesh(segmented, max_contour_dist=4, plot=True)
+    mesh = generate_2d_mesh(segmented_image, max_contour_dist=4, plot=True)
 
     if expected_fn.exists():
         expected_mesh = MeshContainer.read(expected_fn)
@@ -107,19 +98,3 @@ def test_close_contour(coords, expected_corner):
         np.testing.assert_equal(corner, expected_corner)
     else:
         ret.points.shape[1] == n_rows
-
-
-@pytest.mark.xfail(pytest.OS_EQUALS_GENERATED_ON,
-                   raises=AssertionError,
-                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
-@image_comparison(
-    baseline_images=['contour_plot'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
-def test_contour_plot(segmented):
-    np.random.seed(1234)  # for region marker coords
-    mesher = Mesher2D(segmented)
-    mesher.generate_contour(max_contour_dist=5, level=0.5)
-    mesher.show_contour()

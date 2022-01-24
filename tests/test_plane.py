@@ -1,15 +1,8 @@
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh import TriangleMesh
 from nanomesh.plane import Plane
-
-
-@pytest.fixture
-def plane():
-    data = np.arange(625).reshape(25, 25)
-    return Plane(data)
 
 
 def test_to_from_sitk(plane):
@@ -42,17 +35,6 @@ def test_apply(plane):
 
     assert plane.apply(return_array) == plane
     assert plane.apply(return_scalar) == 123
-
-
-@image_comparison(
-    baseline_images=['plane_show'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
-def test_show(plane):
-    """Test function to plot image."""
-    plane.show(title='TESTING')
 
 
 @pytest.mark.skip(reason='This test hangs')
@@ -89,28 +71,6 @@ def test_crop(plane):
     """Test cropping."""
     cropped = plane.crop(left=1, right=4, bottom=5, top=3)
     assert cropped.image.shape == (2, 3)
-
-
-@image_comparison(
-    baseline_images=['compare_with_digitized'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
-def test_compare_with_digitized(plane):
-    segmented = Plane(plane.image > plane.image.mean())
-    plane.compare_with_digitized(segmented)
-
-
-@image_comparison(
-    baseline_images=['compare_with_other'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
-def test_compare_with_other(plane):
-    other = Plane(np.ones_like(plane.image))
-    plane.compare_with_other(other)
 
 
 def test_gaussian(plane):

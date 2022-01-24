@@ -1,11 +1,12 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
 # https://github.com/matplotlib/matplotlib/issues/18168#issuecomment-670211108
 from matplotlib.testing.conftest import mpl_test_settings  # noqa
 
-from nanomesh import LineMesh, MeshContainer, TetraMesh, TriangleMesh
+from nanomesh import LineMesh, MeshContainer, Plane, TetraMesh, TriangleMesh
 
 KEY = 'labels'
 
@@ -109,3 +110,17 @@ def mesh_square2d():
                          },
                          field_data=field_data,
                          cell_data=cell_data)
+
+
+@pytest.fixture
+def segmented_image():
+    """Segmented binary numpy array."""
+    image_fn = Path(__file__).parent / 'segmented_image.npy'
+    image = np.load(image_fn)
+    return image
+
+
+@pytest.fixture
+def plane():
+    data = np.arange(625).reshape(25, 25)
+    return Plane(data)

@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
 
 from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh2d import simple_triangulate
-from nanomesh.utils import SliceViewer, show_image
+from nanomesh.utils import SliceViewer
 
 
 def test_SliceViewer_fails():
@@ -38,18 +37,6 @@ def test_SliceViewer(along, index, slice):
     np.testing.assert_array_equal(arr, data[slice])
 
     plt.close()
-
-
-@image_comparison(
-    baseline_images=['show_image'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
-def test_show_image():
-    """Test `utils.show_image`"""
-    data = np.arange(25).reshape(5, 5)
-    show_image(data, dpi=80, title='TESTING')
 
 
 @pytest.fixture

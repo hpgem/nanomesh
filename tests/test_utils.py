@@ -40,7 +40,7 @@ def test_SliceViewer(along, index, slice):
 
 
 @pytest.fixture
-def simple_mesh():
+def square_outline_mesh():
     return TriangleMesh(points=np.array([
         [0., 0.],
         [0., 1.],
@@ -50,16 +50,16 @@ def simple_mesh():
                         cells=np.array([[1, 0, 3], [3, 2, 1]]))
 
 
-def test_simple_triangulate(simple_mesh):
+def test_simple_triangulate(square_outline_mesh):
     """Test simple mesh creation."""
     points = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
     mesh = simple_triangulate(points, opts='q30a1')
 
     tri_mesh = mesh.get('triangle')
 
-    np.testing.assert_equal(tri_mesh.points, simple_mesh.points)
-    np.testing.assert_equal(tri_mesh.cells, simple_mesh.cells)
-    np.testing.assert_equal(tri_mesh.labels, simple_mesh.labels)
+    np.testing.assert_equal(tri_mesh.points, square_outline_mesh.points)
+    np.testing.assert_equal(tri_mesh.cells, square_outline_mesh.cells)
+    np.testing.assert_equal(tri_mesh.labels, square_outline_mesh.labels)
 
 
 def test_pairwise():

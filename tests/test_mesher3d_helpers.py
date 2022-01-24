@@ -6,7 +6,7 @@ from nanomesh.mesh3d import BoundingBox, pad
 
 
 @pytest.fixture
-def cube():
+def image_cube():
     from nanomesh import Volume
 
     data = np.ones([10, 10, 10], dtype=int)
@@ -16,7 +16,7 @@ def cube():
 
 
 @pytest.fixture
-def mesh():
+def mesh_box():
     """Box triangle mesh."""
     points = np.array([[0., 0., 0.], [10., 0., 0.], [0., 20., 0.],
                        [10., 20., 0.], [0., 0., 30.], [10., 0., 30.],
@@ -48,29 +48,29 @@ def mesh():
      BoundingBox(
          xmin=0.0, xmax=133.0, ymin=0.0, ymax=20.0, zmin=0.0, zmax=30.0)),
 ))
-def test_mesh3d_pad(mesh, side, width, expected_bbox):
+def test_mesh3d_pad(mesh_box, side, width, expected_bbox):
     """Test mesh3d.pad function."""
-    out = pad(mesh, side=side, width=width)
+    out = pad(mesh_box, side=side, width=width)
 
-    assert len(out.points) == len(mesh.points) + 4
-    assert len(out.cells) == len(mesh.cells) + 10
+    assert len(out.points) == len(mesh_box.points) + 4
+    assert len(out.cells) == len(mesh_box.cells) + 10
 
     bbox = BoundingBox.from_points(out.points)
 
     assert bbox == expected_bbox
 
 
-def test_mesh3d_pad_no_width(mesh):
+def test_mesh3d_pad_no_width(mesh_box):
     """Test early return when width==0."""
-    out = pad(mesh, side='top', width=0)
+    out = pad(mesh_box, side='top', width=0)
 
-    assert out is mesh
+    assert out is mesh_box
 
 
-def test_mesh3d_pad_invalid_side(mesh):
+def test_mesh3d_pad_invalid_side(mesh_box):
     """Test invalide keyword argument."""
     with pytest.raises(ValueError):
-        _ = pad(mesh, side='FAIL', width=123)
+        _ = pad(mesh_box, side='FAIL', width=123)
 
 
 @pytest.mark.parametrize('side,label,name,expected_labels', (
@@ -118,9 +118,9 @@ def test_mesh3d_pad_invalid_side(mesh):
         2: 277
     }),
 ))
-def test_pad_label(cube, side, label, name, expected_labels):
+def test_pad_label(image_cube, side, label, name, expected_labels):
     """Test `label` parameter for `pad`."""
-    mesher = Mesher3D(cube)
+    mesher = Mesher3D(image_cube)
     mesher.generate_contour()
 
     mesher.pad_contour(side=side, width=1, label=label, name=name)

@@ -6,7 +6,8 @@ import pytest
 # https://github.com/matplotlib/matplotlib/issues/18168#issuecomment-670211108
 from matplotlib.testing.conftest import mpl_test_settings  # noqa
 
-from nanomesh import LineMesh, MeshContainer, Plane, TetraMesh, TriangleMesh
+from nanomesh import (LineMesh, MeshContainer, Plane, TetraMesh, TriangleMesh,
+                      Volume)
 
 LABEL_KEY = 'labels'
 
@@ -121,6 +122,31 @@ def segmented_image():
 
 
 @pytest.fixture
+def segmented_image_3d():
+    """Generate segmented binary numpy array."""
+    image = np.ones((20, 20, 20))
+    image[5:12, 5:12, 0:10] = 0
+    image[8:15, 8:15, 10:20] = 0
+    return image
+
+
+@pytest.fixture
 def plane():
     data = np.arange(625).reshape(25, 25)
     return Plane(data)
+
+
+@pytest.fixture
+def volume():
+    data = np.arange(125).reshape(5, 5, 5)
+    return Volume(data)
+
+
+@pytest.fixture
+def sample_triangle_mesh():
+    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.msh'
+    mesh = MeshContainer.read(expected_fn)
+
+    tri_mesh = mesh.get('triangle')
+
+    return tri_mesh

@@ -7,15 +7,6 @@ from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
 from nanomesh.mesh_container import MeshContainer
 
 
-@pytest.fixture
-def segmented_image():
-    """Generate segmented binary numpy array."""
-    image = np.ones((20, 20, 20))
-    image[5:12, 5:12, 0:10] = 0
-    image[8:15, 8:15, 10:20] = 0
-    return image
-
-
 def compare_mesh_results(mesh_container, expected_fn):
     """`result_mesh` is an instance of TetraMesh, and `expected_fn` the
     filename of the mesh to compare to."""
@@ -52,11 +43,11 @@ def compare_mesh_results(mesh_container, expected_fn):
     raises=AssertionError,
     reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
             'are exactly the same.'))
-def test_generate_3d_mesh(segmented_image):
+def test_generate_3d_mesh(segmented_image_3d):
     """Test 3D mesh generation."""
     expected_fn = Path(__file__).parent / 'segmented_mesh_3d.msh'
 
-    mesh_container = generate_3d_mesh(segmented_image)
+    mesh_container = generate_3d_mesh(segmented_image_3d)
 
     assert 'tetgen:ref' in mesh_container.cell_data
 

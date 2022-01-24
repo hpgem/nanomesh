@@ -5,12 +5,6 @@ from nanomesh.plane import Plane
 from nanomesh.volume import Volume
 
 
-@pytest.fixture
-def volume():
-    data = np.arange(125).reshape(5, 5, 5)
-    return Volume(data)
-
-
 def test_to_from_sitk(volume):
     """Test `SimpleITK` conversion."""
     pytest.importorskip('SimpleITK')

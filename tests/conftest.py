@@ -25,12 +25,12 @@ def pytest_configure():
 @pytest.fixture
 def line_mesh():
     points = np.arange(10).reshape(5, 2)
-    cells = np.zeros((5, 3), dtype=int)
+    cells = np.zeros((5, 2), dtype=int)
     cell_data = {LABEL_KEY: np.arange(5)}
 
     mesh = LineMesh.create(cells=cells, points=points, **cell_data)
     mesh.default_key = LABEL_KEY
-    assert isinstance(mesh, TriangleMesh)
+    assert isinstance(mesh, LineMesh)
     return mesh
 
 

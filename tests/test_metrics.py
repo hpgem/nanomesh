@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
+from helpers import image_comparison2
 
 from nanomesh import metrics
 
@@ -22,21 +22,11 @@ def test_metrics(sample_triangle_mesh, inplace):
     sample_triangle_mesh.cell_data.clear()
 
 
-@image_comparison(
-    baseline_images=['test_metrics_histogram'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
+@image_comparison2(baseline_images=['test_metrics_histogram'])
 def test_histogram(sample_triangle_mesh):
     metrics.histogram(sample_triangle_mesh, metric='area')
 
 
-@image_comparison(
-    baseline_images=['test_metrics_plot2d'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
+@image_comparison2(baseline_images=['test_metrics_plot2d'])
 def test_plot2d(sample_triangle_mesh):
     metrics.plot2d(sample_triangle_mesh, metric='area')

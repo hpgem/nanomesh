@@ -50,3 +50,25 @@ def test_prune_z_0(triangle_mesh_3d):
 
     assert triangle_mesh_3d.points.shape[1] == 2
     np.testing.assert_equal(triangle_mesh_3d.points, expected_points)
+
+
+def test_line_mesh_label_boundary(line_tri_mesh):
+    line_mesh = line_tri_mesh.get('line')
+
+    key = line_mesh.default_key
+    line_mesh.label_boundaries(left='left',
+                               right=123,
+                               top='moo',
+                               bottom='bottom',
+                               key=key)
+
+    cell_data = line_mesh.cell_data[key]
+
+    np.testing.assert_allclose(cell_data, (125, 123, 124, 2, 1))
+    assert line_mesh.fields == {
+        'Line A': 0,
+        'Line B': 1,
+        'left': 2,
+        'moo': 124,
+        'bottom': 125
+    }

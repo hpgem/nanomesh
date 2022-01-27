@@ -66,14 +66,15 @@ def write_smesh(filename: os.PathLike,
 
         print(f'{n_regions}', file=f)
 
-        region_fmt = '{:4d}' + ' {:8.2f}' * region_dim + ' {label:8}'
+        region_fmt = ('{:4d}' + ' {:8.2f}' * region_dim +
+                      ' {label:8} {constraint:8}')
 
         for i, marker in enumerate(region_markers):
-            print(region_fmt.format(
-                i + 1,
-                *marker.point,
-                label=marker.label,
-            ),
+            constraint = marker.constraint if marker.constraint else ''
+            print(region_fmt.format(i + 1,
+                                    *marker.point,
+                                    label=marker.label,
+                                    constraint=constraint),
                   file=f)
 
 

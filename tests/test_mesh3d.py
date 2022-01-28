@@ -1,20 +1,15 @@
-from pathlib import Path
-
 import numpy as np
 import pytest
+from helpers import get_expected_if_it_exists
 
 from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
-from nanomesh.mesh_container import MeshContainer
 
 
 def compare_mesh_results(mesh_container, expected_fn):
     """`result_mesh` is an instance of TetraMesh, and `expected_fn` the
     filename of the mesh to compare to."""
-    if expected_fn.exists():
-        expected_mesh_container = MeshContainer.read(expected_fn)
-    else:
-        mesh_container.write(expected_fn, file_format='gmsh22', binary=False)
-        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
+    expected_mesh_container = get_expected_if_it_exists(expected_fn,
+                                                        result=mesh_container)
 
     cell_type = 'tetra'
 
@@ -45,7 +40,7 @@ def compare_mesh_results(mesh_container, expected_fn):
             'are exactly the same.'))
 def test_generate_3d_mesh(segmented_image_3d):
     """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_3d.msh'
+    expected_fn = 'segmented_mesh_3d.msh'
 
     mesh_container = generate_3d_mesh(segmented_image_3d)
 

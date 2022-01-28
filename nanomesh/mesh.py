@@ -448,11 +448,9 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     @classmethod
     def from_triangle_dict(cls, dct: dict) -> TriangleMesh:
         """Return instance of `TriangleMesh` from triangle results dict."""
-        points = dct['vertices']
-        cells = dct['triangles']
-        mesh = cls(points=points, cells=cells)
-
-        return mesh
+        from .mesh_container import MeshContainer
+        mesh = MeshContainer.from_triangle_dict(dct)
+        return mesh.get('triangle')
 
     def optimize(self,
                  *,

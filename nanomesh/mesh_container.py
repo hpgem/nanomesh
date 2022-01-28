@@ -270,24 +270,25 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         """
         points = triangle_dict['vertices']
 
-        cell_data = {}
-        cells = {}
+        cells = {'triangle': triangle_dict['triangles']}
 
-        cells['triangle'] = triangle_dict['triangles']
+        cell_data = {}
+
+        try:
+            cell_data['physical'] = [
+                triangle_dict['triangle_attributes'].squeeze()
+            ]
+
+            # Order must match order of cell_data
+            cells['line'] = triangle_dict['edges']
+            cell_data['physical'].append(
+                triangle_dict['edge_markers'].squeeze())
+        except KeyError:
+            pass
 
         point_data = {}
         try:
             point_data['physical'] = triangle_dict['vertex_markers'].squeeze()
-        except KeyError:
-            pass
-
-        try:
-            cells['line'] = triangle_dict['edges']
-            # Order must match order of cell_data
-            cell_data['physical'] = [
-                triangle_dict['triangle_attributes'].squeeze(),
-                triangle_dict['edge_markers'].squeeze(),
-            ]
         except KeyError:
             pass
 

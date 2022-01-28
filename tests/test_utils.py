@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
+from nanomesh import simple_triangulate
 from nanomesh.mesh import TriangleMesh
-from nanomesh.mesh2d import simple_triangulate
 from nanomesh.utils import SliceViewer
 
 

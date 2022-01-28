@@ -2,10 +2,11 @@ import logging
 import sys
 
 from .mesh import LineMesh, TetraMesh, TriangleMesh
-from .mesh2d import Mesher2D, compare_mesh_with_image, simple_triangulate
+from .mesh2d import Mesher2D, compare_mesh_with_image
 from .mesh3d import Mesher3D
 from .mesh_container import MeshContainer
 from .plane import Plane
+from .triangulate import simple_triangulate
 from .volume import Volume
 
 logging.basicConfig(format='%(message)s',

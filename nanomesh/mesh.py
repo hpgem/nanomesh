@@ -333,7 +333,7 @@ class LineMesh(BaseMesh):
         from .triangulate import simple_triangulate
         points = self.points
         segments = self.cells
-        regions = [(*m.point, m.label, m.constraint)
+        regions = [(m.point[0], m.point[1], m.label, m.constraint)
                    for m in self.region_markers]
 
         return simple_triangulate(points=points,

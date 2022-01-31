@@ -387,10 +387,14 @@ class LineMesh(BaseMesh):
         regions = [(m.point[0], m.point[1], m.label, m.constraint)
                    for m in self.region_markers]
 
-        return simple_triangulate(points=points,
+        mesh = simple_triangulate(points=points,
                                   segments=segments,
                                   regions=regions,
                                   opts=opts)
+
+        fields = {m.label: m.name for m in self.region_markers if m.name}
+        mesh.set_field_data('triangle', fields)
+        return mesh
 
 
 class TriangleMesh(BaseMesh, PruneZ0Mixin):

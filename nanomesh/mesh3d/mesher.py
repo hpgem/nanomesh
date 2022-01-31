@@ -11,7 +11,7 @@ from skimage import measure, morphology
 from nanomesh._mesh_shared import BaseMesher
 from nanomesh.volume import Volume
 
-from ..region_markers import RegionMarker, RegionMarkerLike
+from ..markers import RegionMarker, RegionMarkerLike
 from ..triangulate import simple_triangulate
 from .bounding_box import BoundingBox
 from .helpers import pad

@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from nanomesh.mesh import TriangleMesh
-from nanomesh.mesh2d import simple_triangulate
 from nanomesh.utils import SliceViewer
 
 
@@ -37,29 +35,6 @@ def test_SliceViewer(along, index, slice):
     np.testing.assert_array_equal(arr, data[slice])
 
     plt.close()
-
-
-@pytest.fixture
-def square_outline_mesh():
-    return TriangleMesh(points=np.array([
-        [0., 0.],
-        [0., 1.],
-        [1., 1.],
-        [1., 0.],
-    ]),
-                        cells=np.array([[1, 0, 3], [3, 2, 1]]))
-
-
-def test_simple_triangulate(square_outline_mesh):
-    """Test simple mesh creation."""
-    points = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
-    mesh = simple_triangulate(points, opts='q30a1')
-
-    tri_mesh = mesh.get('triangle')
-
-    np.testing.assert_equal(tri_mesh.points, square_outline_mesh.points)
-    np.testing.assert_equal(tri_mesh.cells, square_outline_mesh.cells)
-    np.testing.assert_equal(tri_mesh.labels, square_outline_mesh.labels)
 
 
 def test_pairwise():

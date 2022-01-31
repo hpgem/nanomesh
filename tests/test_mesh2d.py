@@ -2,10 +2,10 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from helpers import get_expected_if_it_exists
 
 from nanomesh.mesh2d import generate_2d_mesh
 from nanomesh.mesh2d.polygon import Polygon
-from nanomesh.mesh_container import MeshContainer
 
 
 def block_image(shape=(10, 10)):
@@ -22,17 +22,11 @@ def block_image(shape=(10, 10)):
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_generate_2d_mesh(segmented_image):
     """Test 2D mesh generation and plot."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.msh'
-
     np.random.seed(1234)  # set seed for reproducible clustering
     mesh = generate_2d_mesh(segmented_image, max_contour_dist=4, plot=True)
 
-    if expected_fn.exists():
-        expected_mesh = MeshContainer.read(expected_fn)
-    else:
-        mesh.write(expected_fn, file_format='gmsh22', binary=False)
-
-        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
+    fn = Path('segmented_mesh_2d.msh')
+    expected_mesh = get_expected_if_it_exists(fn, result=mesh)
 
     assert mesh.points.shape[1] == 2
     assert mesh.points.shape == expected_mesh.points.shape

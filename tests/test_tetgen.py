@@ -1,10 +1,8 @@
-from pathlib import Path
-
 import numpy as np
 import pytest
+from helpers import get_expected_if_it_exists
 
 from nanomesh.mesh import TriangleMesh
-from nanomesh.mesh_container import MeshContainer
 
 
 @pytest.fixture
@@ -86,19 +84,15 @@ def triangle_mesh():
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
 def test_tetgen_generate_3d_mesh(triangle_mesh):
     """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'expected_tetra_mesh.msh'
+    expected_fn = 'expected_tetra_mesh.msh'
 
     triangle_mesh.add_region_marker((10, np.array([0.5, 0.5, 0.5])))
     triangle_mesh.add_region_marker((20, np.array([0.0, 2.0, 2.0])))
 
     mesh_container = triangle_mesh.tetrahedralize()
 
-    if expected_fn.exists():
-        expected_mesh_container = MeshContainer.read(expected_fn)
-    else:
-        mesh_container.write(expected_fn, file_format='gmsh22', binary=False)
-
-        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
+    expected_mesh_container = get_expected_if_it_exists(expected_fn,
+                                                        result=mesh_container)
 
     cell_type = 'tetra'
 

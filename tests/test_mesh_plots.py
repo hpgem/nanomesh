@@ -11,18 +11,18 @@ from nanomesh.mpl.meshplot import plot_line_triangle
 @image_comparison2(baseline_images=['line_mesh'])
 def test_line_mesh_plot(line_tri_mesh):
     lines = line_tri_mesh.get('line')
-    lines.plot_mpl(label='data')
+    lines.plot_mpl()
 
 
 @image_comparison2(baseline_images=['line_triangle_plot'])
 def test_line_triangle_mesh_plot(line_tri_mesh):
-    plot_line_triangle(line_tri_mesh, label='data')
+    plot_line_triangle(line_tri_mesh)
 
 
 @image_comparison2(baseline_images=['triangle_mesh'])
 def test_triangle_mesh_plot(line_tri_mesh):
     lines = line_tri_mesh.get('triangle')
-    lines.plot_mpl(label='data')
+    lines.plot_mpl()
 
 
 @pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,

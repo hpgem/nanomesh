@@ -202,7 +202,7 @@ class BaseMesh:
         **kwargs
             Extra keyword arguments passed to `pyvista.plot_itk`
         """
-        pv.plot_itk(self.to_meshio(), **kwargs)
+        return pv.plot_itk(self.to_meshio(), **kwargs)
 
     def plot_pyvista(self, **kwargs):
         """Wrapper for `pyvista.plot`.
@@ -212,7 +212,7 @@ class BaseMesh:
         **kwargs
             Extra keyword arguments passed to `pyvista.plot`
         """
-        pv.plot(self.to_meshio(), **kwargs)
+        return pv.plot(self.to_meshio(), **kwargs)
 
     @property
     def cell_centers(self):
@@ -265,9 +265,9 @@ class BaseMesh:
 class LineMesh(BaseMesh):
     _cell_type = 'line'
 
-    def plot(self, **kwargs):
-        """Shortcut for `.plot_mpl`."""
-        return self.plot_mpl(**kwargs)
+    def plot(self, *args, **kwargs):
+        """Shortcut for `.plot_mpl`"""
+        return self.plot_mpl(*args, **kwargs)
 
     def plot_mpl(self,
                  ax: plt.Axes = None,
@@ -381,10 +381,11 @@ class LineMesh(BaseMesh):
 
     def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
         """Triangulate mesh using `triangle`."""
-        from .mesh2d.helpers import simple_triangulate
+        from .triangulate import simple_triangulate
         points = self.points
         segments = self.cells
-        regions = [(*m.point, m.label, 0) for m in self.region_markers]
+        regions = [(m.point[0], m.point[1], m.label, m.constraint)
+                   for m in self.region_markers]
 
         return simple_triangulate(points=points,
                                   segments=segments,
@@ -398,9 +399,9 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     def plot(self, **kwargs):
         """Shortcut for `.plot_mpl` or `.plot_itk` depending on dimensions."""
         if self.dimensions == 2:
-            self.plot_mpl(**kwargs)
+            return self.plot_mpl(**kwargs)
         else:
-            self.plot_itk(**kwargs)
+            return self.plot_itk(**kwargs)
 
     def plot_mpl(self,
                  ax: plt.Axes = None,
@@ -441,7 +442,8 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
                        vert_x,
                        triangles=self.cells,
                        mask=cell_data != cell_data_val,
-                       label=name)
+                       label=name,
+                       **kwargs)
 
         ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
@@ -494,11 +496,9 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     @classmethod
     def from_triangle_dict(cls, dct: dict) -> TriangleMesh:
         """Return instance of `TriangleMesh` from triangle results dict."""
-        points = dct['vertices']
-        cells = dct['triangles']
-        mesh = cls(points=points, cells=cells)
-
-        return mesh
+        from .mesh_container import MeshContainer
+        mesh = MeshContainer.from_triangle_dict(dct)
+        return mesh.get('triangle')
 
     def optimize(self,
                  *,
@@ -579,7 +579,7 @@ class TetraMesh(BaseMesh):
 
     def plot(self, **kwargs):
         """Shortcut for `.plot_pyvista`."""
-        self.plot_pyvista(**kwargs)
+        return self.plot_pyvista(**kwargs)
 
     def plot_pyvista(self, **kwargs):
         """Show grid using `pyvista`.
@@ -589,7 +589,7 @@ class TetraMesh(BaseMesh):
         **kwargs
             Keyword arguments passed to `pyvista.Plotter().add_mesh`.
         """
-        self.to_pyvista_unstructured_grid().plot(**kwargs)
+        return self.to_pyvista_unstructured_grid().plot(**kwargs)
 
     def plot_submesh(
         self,

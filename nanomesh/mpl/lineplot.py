@@ -39,6 +39,13 @@ def lineplot(ax: plt.Axes,
     if mask is not None:
         lines = lines[~mask.squeeze()]
 
+    if np.issubdtype(x.dtype, np.integer):
+        x = x.astype(float)
+
+    if np.issubdtype(y.dtype, np.integer):
+        y = y.astype(float)
+
     lines_x = np.insert(x[lines], 2, np.nan, axis=1)
     lines_y = np.insert(y[lines], 2, np.nan, axis=1)
+
     return ax.plot(lines_x.ravel(), lines_y.ravel(), label=label, **kwargs)

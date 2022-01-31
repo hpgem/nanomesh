@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Sequence, Tuple
 
 import numpy as np
 import triangle as tr
@@ -9,7 +9,8 @@ from .mesh_container import MeshContainer
 def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
-                       regions: List[Tuple[float, ...]] = None,
+                       regions: Sequence[Tuple[float, float, int,
+                                               float]] = None,
                        opts: str = '') -> MeshContainer:
     """Simple triangulation using `triangle`.
 
@@ -23,9 +24,12 @@ def simple_triangulate(points: np.ndarray,
         is enforced (although each segment may be subdivided into smaller
         edges). Each segment is specified by listing the indices of its
         two endpoints. A closed set of segments describes a contour.
-    regions : k,2 np.ndarray, optional
-        Coordinates describing regions. A region is a coordinate inside
-        (e.g. at the center) of a region/contour (i.e. enclosed by segments).
+    regions : list, optional
+        In each row, the first two numbers are the x,y point describing a
+        regions. This must be a point inside, e.g. at the center,) of a
+        region or polygon (i.e. enclosed by segments).
+        The third number is the label given to the region, and the fourth
+        number the maximum area constraint for the region.
     opts : str, optional
         Additional options passed to `triangle.triangulate` documented here:
         https://rufat.be/triangle/API.html#triangle.triangulate

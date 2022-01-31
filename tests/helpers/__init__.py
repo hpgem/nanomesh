@@ -1,4 +1,8 @@
+from pathlib import Path
+
 import numpy as np
+
+from nanomesh import MeshContainer
 
 
 def assert_mesh_almost_equal(this, other, tol=0.0):
@@ -22,3 +26,17 @@ def assert_mesh_almost_equal(this, other, tol=0.0):
     for key, this_cell_data in this_cells.items():
         other_cell_data = other_cells[key]
         assert np.allclose(this_cell_data, other_cell_data)
+
+
+def get_expected_if_it_exists(filename: str, result: MeshContainer):
+    """Read expected mesh if it exists, otherwise write result to filename."""
+    path = Path(__file__).parents[1].joinpath(filename)
+
+    if path.exists():
+        expected_mesh = MeshContainer.read(path)
+    else:
+        result.write(path, file_format='gmsh22', binary=False)
+
+        raise RuntimeError(f'Wrote expected mesh to {path.absolute()}')
+
+    return expected_mesh

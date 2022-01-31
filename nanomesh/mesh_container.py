@@ -195,7 +195,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot(**kwargs)
+        return mesh.plot(**kwargs)
 
     def plot_mpl(self, cell_type: str = None, **kwargs):
         """Plot data using matplotlib.
@@ -208,8 +208,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        fields = self.number_to_field.get(mesh._cell_type, None)
-        mesh.plot_mpl(fields=fields, **kwargs)
+        return mesh.plot_mpl(**kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
         """Plot data using itk.
@@ -222,7 +221,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot_itk(**kwargs)
+        return mesh.plot_itk(**kwargs)
 
     def plot_pyvista(self, cell_type: str = None, **kwargs):
         """Plot data using pyvista.
@@ -235,7 +234,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot_pyvista(**kwargs)
+        return mesh.plot_pyvista(**kwargs)
 
     @classmethod
     def from_mesh(cls, mesh: BaseMesh):
@@ -270,24 +269,25 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         """
         points = triangle_dict['vertices']
 
-        cell_data = {}
-        cells = {}
+        cells = {'triangle': triangle_dict['triangles']}
 
-        cells['triangle'] = triangle_dict['triangles']
+        cell_data = {}
+
+        try:
+            cell_data['physical'] = [
+                triangle_dict['triangle_attributes'].squeeze()
+            ]
+
+            # Order must match order of cell_data
+            cells['line'] = triangle_dict['edges']
+            cell_data['physical'].append(
+                triangle_dict['edge_markers'].squeeze())
+        except KeyError:
+            pass
 
         point_data = {}
         try:
             point_data['physical'] = triangle_dict['vertex_markers'].squeeze()
-        except KeyError:
-            pass
-
-        try:
-            cells['line'] = triangle_dict['edges']
-            # Order must match order of cell_data
-            cell_data['physical'] = [
-                triangle_dict['triangle_attributes'].squeeze(),
-                triangle_dict['edge_markers'].squeeze(),
-            ]
         except KeyError:
             pass
 

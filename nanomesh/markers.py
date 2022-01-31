@@ -23,3 +23,17 @@ class RegionMarker:
 
 RegionMarkerLike = Union[RegionMarker, Tuple[int, Tuple[float, ...],
                                              Optional[str]]]
+
+
+@dataclass
+class SegmentMarker:
+    label: int
+    point: Union[Tuple[float, ...], npt.NDArray]
+    name: Optional[str] = None
+
+    def __post_init__(self):
+        self.point = tuple(self.point)
+
+
+SegmentMarkerLike = Union[SegmentMarker, Tuple[int, Tuple[float, ...],
+                                               Optional[str]]]

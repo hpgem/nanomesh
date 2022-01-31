@@ -208,8 +208,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        fields = self.number_to_field.get(mesh._cell_type, None)
-        return mesh.plot_mpl(fields=fields, **kwargs)
+        return mesh.plot_mpl(**kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
         """Plot data using itk.

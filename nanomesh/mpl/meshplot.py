@@ -24,10 +24,10 @@ def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
     ax.legend(by_label.values(), by_label.keys(), **kwargs)
 
 
-def plot_line_triangle(mesh: MeshContainer, label: str, **kwargs):
+def plot_line_triangle(mesh: MeshContainer, key: str = None, **kwargs):
     """Plot line/triangle mesh together."""
     assert set(mesh.cells_dict.keys()) == {'line', 'triangle'}
     fig, (ax1, ax2) = plt.subplots(ncols=2)
-    mesh.plot_mpl('line', ax=ax1, label=label, **kwargs)
-    mesh.plot_mpl('triangle', ax=ax2, label=label, **kwargs)
+    mesh.plot_mpl('line', ax=ax1, key=key, **kwargs)
+    mesh.plot_mpl('triangle', ax=ax2, key=key, **kwargs)
     return fig, (ax1, ax2)

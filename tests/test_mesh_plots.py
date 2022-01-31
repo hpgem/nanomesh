@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
+from helpers import image_comparison2
 
 from nanomesh import Mesher2D
 from nanomesh.mesh import TriangleMesh
@@ -8,33 +8,18 @@ from nanomesh.mesh2d import compare_mesh_with_image
 from nanomesh.mpl.meshplot import plot_line_triangle
 
 
-@image_comparison(
-    baseline_images=['line_mesh'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
+@image_comparison2(baseline_images=['line_mesh'])
 def test_line_mesh_plot(line_tri_mesh):
     lines = line_tri_mesh.get('line')
     lines.plot_mpl()
 
 
-@image_comparison(
-    baseline_images=['line_triangle_plot'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
+@image_comparison2(baseline_images=['line_triangle_plot'])
 def test_line_triangle_mesh_plot(line_tri_mesh):
     plot_line_triangle(line_tri_mesh)
 
 
-@image_comparison(
-    baseline_images=['triangle_mesh'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
+@image_comparison2(baseline_images=['triangle_mesh'])
 def test_triangle_mesh_plot(line_tri_mesh):
     lines = line_tri_mesh.get('triangle')
     lines.plot_mpl()
@@ -43,12 +28,7 @@ def test_triangle_mesh_plot(line_tri_mesh):
 @pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
-@image_comparison(
-    baseline_images=['contour_plot'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
+@image_comparison2(baseline_images=['contour_plot'])
 def test_contour_plot(segmented_image):
     np.random.seed(1234)  # for region marker coords
     mesher = Mesher2D(segmented_image)
@@ -56,12 +36,7 @@ def test_contour_plot(segmented_image):
     mesher.show_contour()
 
 
-@image_comparison(
-    baseline_images=['compare_mesh_with_image'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
+@image_comparison2(baseline_images=['compare_mesh_with_image'])
 def test_compare_with_mesh():
     image = np.zeros([5, 5])
 

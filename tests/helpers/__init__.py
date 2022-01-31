@@ -1,8 +1,17 @@
+from functools import partial
 from pathlib import Path
 
 import numpy as np
+from matplotlib.testing.decorators import image_comparison
 
 from nanomesh import MeshContainer
+
+image_comparison2 = partial(
+    image_comparison,
+    remove_text=True,
+    extensions=['png'],
+    savefig_kwarg={'bbox_inches': 'tight'},
+)
 
 
 def assert_mesh_almost_equal(this, other, tol=0.0):

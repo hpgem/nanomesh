@@ -126,12 +126,14 @@ def test_pad_label(image_square, side, label, name, expected_labels):
 
     assert expected_labels == labels
 
-    keys = tuple(tri_mesh.field_to_number.keys())
-    default_keys = ('background', 'feature')
+    keys = set(tri_mesh.field_to_number.keys())
+    default_keys = {'background', 'feature'}
 
     if not name:
         assert keys == default_keys
     elif name in default_keys:
         assert keys == default_keys
     else:
-        assert keys == default_keys + (name, )
+        assert keys == default_keys | {
+            name,
+        }

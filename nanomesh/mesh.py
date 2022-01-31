@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Dict, List, Sequence
+from typing import TYPE_CHECKING, Dict, List, Optional, Sequence
 
 import matplotlib.pyplot as plt
 import meshio
@@ -70,12 +70,11 @@ class BaseMesh:
         else:
             self.default_key = list(cell_data.keys())[0]
 
-        if not fields:
-            fields = {}
+        self.fields = dict(fields) if fields else {}
 
         self.points = points
         self.cells = cells
-        self.field_to_number = fields
+        self.field_to_number = MappingProxyType(self.fields)
         self.region_markers = [] if region_markers is None else region_markers
         self.cell_data = cell_data
 
@@ -332,6 +331,54 @@ class LineMesh(BaseMesh):
 
         return ax
 
+    def label_boundaries(self,
+                         left: Optional[int | str] = None,
+                         right: Optional[int | str] = None,
+                         top: Optional[int | str] = None,
+                         bottom: Optional[int | str] = None,
+                         key: str = None):
+        """Labels the boundaries of the mesh with the given value.
+
+        Parameters
+        ----------
+        left : int | str, optional
+            Labels left boundary segments with the given value. If a string
+            is passed, the `.fields` attribute is updated with the
+            field / value pair.
+        right : int | str, optional
+            Same as above.
+        top : int | str, optional
+            Same as above.
+        bottom : int | str, optional
+            Same as above.
+        key : str, optional
+            Key of the `.cell_data` dictionary to update. Defaults to
+            `.default_key`.
+        """
+        if not key:
+            key = self.default_key
+
+        for side, f_bound, col in (
+            (left, np.min, 1),
+            (right, np.max, 1),
+            (top, np.max, 0),
+            (bottom, np.min, 0),
+        ):
+            if not side:
+                continue
+
+            bound = f_bound(self.points)
+            idx = np.argwhere(self.points[:, col] == bound)
+            side_idx = np.nonzero(np.all(np.isin(self.cells, idx), axis=1))
+
+            if isinstance(side, str):
+                int_label = max(self.cell_data[key].max(), 1) + 1
+                self.fields[side] = int_label
+            else:
+                int_label = side
+
+            self.cell_data[key][side_idx] = int_label
+
     def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
         """Triangulate mesh using `triangle`."""
         from .triangulate import simple_triangulate
@@ -340,17 +387,21 @@ class LineMesh(BaseMesh):
         regions = [(m.point[0], m.point[1], m.label, m.constraint)
                    for m in self.region_markers]
 
-        return simple_triangulate(points=points,
+        mesh = simple_triangulate(points=points,
                                   segments=segments,
                                   regions=regions,
                                   opts=opts)
+
+        fields = {m.label: m.name for m in self.region_markers if m.name}
+        mesh.set_field_data('triangle', fields)
+        return mesh
 
 
 class TriangleMesh(BaseMesh, PruneZ0Mixin):
     _cell_type = 'triangle'
 
     def plot(self, **kwargs):
-        """Shortcut for `.plot_mpl`."""
+        """Shortcut for `.plot_mpl` or `.plot_itk` depending on dimensions."""
         if self.dimensions == 2:
             return self.plot_mpl(**kwargs)
         else:
@@ -367,8 +418,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         ax : plt.Axes, optional
             Axes to use for plotting.
         key : str, optional
-            Label of cell data item to plot, defaults to the
-            first key in `.cell_data`.
+            Label of cell data item to plot, defaults to `.default_key`.
         fields : dict
             Maps cell data value to string for legend.
         **kwargs
@@ -381,11 +431,8 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         if not ax:
             fig, ax = plt.subplots()
 
-        if key is None:
-            try:
-                key = tuple(self.cell_data.keys())[0]
-            except IndexError:
-                pass
+        if not key:
+            key = self.default_key
 
         # https://github.com/python/mypy/issues/9430
         cell_data = self.cell_data.get(key, self.zero_labels)  # type: ignore

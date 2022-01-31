@@ -194,8 +194,14 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         **kwargs
             Extra keyword arguments passed to plotting method.
         """
-        mesh = self.get(cell_type)
-        return mesh.plot(**kwargs)
+        cell_types = {cell.type for cell in self.cells}
+
+        if (not cell_type) and (cell_types == {'line', 'triangle'}):
+            from .mpl.meshplot import plot_line_triangle
+            return plot_line_triangle(self, **kwargs)
+        else:
+            mesh = self.get(cell_type)
+            return mesh.plot(**kwargs)
 
     def plot_mpl(self, cell_type: str = None, **kwargs):
         """Plot data using matplotlib.

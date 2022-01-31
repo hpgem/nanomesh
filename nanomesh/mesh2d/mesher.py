@@ -224,12 +224,6 @@ class Mesher2D(BaseMesher):
         mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
         mesh.set_field_data('line', {0: 'body', 1: 'external', 2: 'internal'})
 
-        fields = {
-            m.label: m.name
-            for m in self.contour.region_markers if m.name
-        }
-        mesh.set_field_data('triangle', fields)
-
         return mesh
 
     def generate_domain_mask_from_contours(

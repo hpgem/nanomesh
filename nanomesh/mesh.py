@@ -266,6 +266,10 @@ class BaseMesh:
 class LineMesh(BaseMesh):
     _cell_type = 'line'
 
+    def plot(self, *args, **kwargs):
+        """Shortcut for `.plot_mpl`"""
+        return self.plot_mpl(*args, **kwargs)
+
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,

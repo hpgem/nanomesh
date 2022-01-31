@@ -195,7 +195,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot(**kwargs)
+        return mesh.plot(**kwargs)
 
     def plot_mpl(self, cell_type: str = None, **kwargs):
         """Plot data using matplotlib.
@@ -209,7 +209,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         """
         mesh = self.get(cell_type)
         fields = self.number_to_field.get(mesh._cell_type, None)
-        mesh.plot_mpl(fields=fields, **kwargs)
+        return mesh.plot_mpl(fields=fields, **kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
         """Plot data using itk.
@@ -222,7 +222,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot_itk(**kwargs)
+        return mesh.plot_itk(**kwargs)
 
     def plot_pyvista(self, cell_type: str = None, **kwargs):
         """Plot data using pyvista.
@@ -235,7 +235,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot_pyvista(**kwargs)
+        return mesh.plot_pyvista(**kwargs)
 
     @classmethod
     def from_mesh(cls, mesh: BaseMesh):

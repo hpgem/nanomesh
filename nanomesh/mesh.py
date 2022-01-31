@@ -203,7 +203,7 @@ class BaseMesh:
         **kwargs
             Extra keyword arguments passed to `pyvista.plot_itk`
         """
-        pv.plot_itk(self.to_meshio(), **kwargs)
+        return pv.plot_itk(self.to_meshio(), **kwargs)
 
     def plot_pyvista(self, **kwargs):
         """Wrapper for `pyvista.plot`.
@@ -213,7 +213,7 @@ class BaseMesh:
         **kwargs
             Extra keyword arguments passed to `pyvista.plot`
         """
-        pv.plot(self.to_meshio(), **kwargs)
+        return pv.plot(self.to_meshio(), **kwargs)
 
     @property
     def cell_centers(self):
@@ -348,9 +348,9 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     def plot(self, **kwargs):
         """Shortcut for `.plot_mpl`."""
         if self.dimensions == 2:
-            self.plot_mpl(**kwargs)
+            return self.plot_mpl(**kwargs)
         else:
-            self.plot_itk(**kwargs)
+            return self.plot_itk(**kwargs)
 
     def plot_mpl(self,
                  ax: plt.Axes = None,
@@ -395,7 +395,8 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
                        vert_x,
                        triangles=self.cells,
                        mask=cell_data != cell_data_val,
-                       label=name)
+                       label=name,
+                       **kwargs)
 
         ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
@@ -531,7 +532,7 @@ class TetraMesh(BaseMesh):
 
     def plot(self, **kwargs):
         """Shortcut for `.plot_pyvista`."""
-        self.plot_pyvista(**kwargs)
+        return self.plot_pyvista(**kwargs)
 
     def plot_pyvista(self, **kwargs):
         """Show grid using `pyvista`.
@@ -541,7 +542,7 @@ class TetraMesh(BaseMesh):
         **kwargs
             Keyword arguments passed to `pyvista.Plotter().add_mesh`.
         """
-        self.to_pyvista_unstructured_grid().plot(**kwargs)
+        return self.to_pyvista_unstructured_grid().plot(**kwargs)
 
     def plot_submesh(
         self,

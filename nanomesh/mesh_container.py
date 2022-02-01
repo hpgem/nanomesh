@@ -367,10 +367,18 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         from pathlib import Path
 
         from meshio import write
-        from meshio._helpers import _filetype_from_path
+        from meshio._helpers import extension_to_filetypes
 
         if file_format is None:
-            file_format = _filetype_from_path(Path(filename))
+            suffix = Path(filename).suffix
+
+            try:
+                file_types = extension_to_filetypes[suffix]
+                file_format = file_types[0]
+            except KeyError:
+                raise IOError('Unknown extension, specify file format.')
+            except IndexError:
+                raise IOError('Specify file format ({file_types}).')
 
         if file_format.startswith('gmsh'):
             cell_data = {}

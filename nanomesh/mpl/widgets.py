@@ -17,6 +17,7 @@ class PolygonSelectorWithSnapping(PolygonSelector):
         Keyword arguments passed to `matplotlib.widgets.PolygonSelector`.
         The parent axes for the widget.
     """
+
     def __init__(
         self,
         *args,

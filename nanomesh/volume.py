@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Volume(BaseImage):
+
     @classmethod
     def load(cls, filename: os.PathLike, **kwargs) -> 'Volume':
         """Load the data. Supported filetypes: `.npy`, `.vol`.

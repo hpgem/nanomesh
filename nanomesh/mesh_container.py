@@ -19,6 +19,7 @@ class CellType(Enum):
 
 
 class MeshContainer(meshio.Mesh, PruneZ0Mixin):
+
     def __repr__(self):
         """Canonical string representation."""
         s = super().__repr__().splitlines()

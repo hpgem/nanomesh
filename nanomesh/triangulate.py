@@ -10,7 +10,8 @@ def simple_triangulate(points: np.ndarray,
                        *,
                        segments: np.ndarray = None,
                        regions: Sequence[Tuple[float, float, int,
-                                               float]] = None,
+                                               float, ]] = None,
+                       segment_markers: np.ndarray = None,
                        opts: str = '') -> MeshContainer:
     """Simple triangulation using `triangle`.
 
@@ -30,6 +31,8 @@ def simple_triangulate(points: np.ndarray,
         region or polygon (i.e. enclosed by segments).
         The third number is the label given to the region, and the fourth
         number the maximum area constraint for the region.
+    segment_markers : j,1 np.ndarray, optional
+        Array with labels for segments.
     opts : str, optional
         Additional options passed to `triangle.triangulate` documented here:
         https://rufat.be/triangle/API.html#triangle.triangulate
@@ -48,6 +51,9 @@ def simple_triangulate(points: np.ndarray,
 
     if regions is not None:
         triangle_dict_in['regions'] = regions
+
+    if segment_markers is not None:
+        triangle_dict_in['segment_markers'] = segment_markers
 
     triangle_dict_out = tr.triangulate(triangle_dict_in, opts=opts)
 

@@ -80,14 +80,14 @@ class BaseMesh:
 
     def __repr__(self, indent: int = 0):
         """Canonical string representation."""
-        markers = set(m.name if m.name else m.label
-                      for m in self.region_markers)
+        region_markers = set(m.name if m.name else m.label
+                             for m in self.region_markers)
         s = (
             f'{self.__class__.__name__}(',
             f'    points = {self.points.shape},',
             f'    cells = {self.cells.shape},',
             f'    fields = {tuple(self.field_to_number.keys())},',
-            f'    markers = {tuple(markers)},',
+            f'    region_markers = {tuple(region_markers)},',
             f'    cell_data = {tuple(self.cell_data.keys())},',
             ')',
         )
@@ -108,8 +108,8 @@ class BaseMesh:
         Parameters
         ----------
         region_marker : RegionMarkerLike
-            Either a `RegionMarker` object or `(label, coordinates)` tuple,
-            where the label must be an `int` and the coordinates a 2- or
+            Either a `RegionMarker` object or `(label, point)` tuple,
+            where the label must be an `int` and the point a 2- or
             3-element numpy array.
         """
         if not isinstance(region_marker, RegionMarker):
@@ -387,9 +387,12 @@ class LineMesh(BaseMesh):
         regions = [(m.point[0], m.point[1], m.label, m.constraint)
                    for m in self.region_markers]
 
+        segment_markers = self.cell_data.get('segment_markers', None)
+
         mesh = simple_triangulate(points=points,
                                   segments=segments,
                                   regions=regions,
+                                  segment_markers=segment_markers,
                                   opts=opts)
 
         fields = {m.label: m.name for m in self.region_markers if m.name}

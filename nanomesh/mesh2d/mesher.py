@@ -21,7 +21,8 @@ if TYPE_CHECKING:
     from ..mesh_container import MeshContainer
 
 
-def generate_mesh(polygons: List[Polygon], bbox: np.ndarray) -> LineMesh:
+def polygons_to_line_mesh(polygons: List[Polygon],
+                          bbox: np.ndarray) -> LineMesh:
     """Generate line-mesh from polygons and surrounding bbox. The polygons are
     stacked and missing corners are obtained from the bounding box coordinates.
 
@@ -58,8 +59,26 @@ def generate_mesh(polygons: List[Polygon], bbox: np.ndarray) -> LineMesh:
     additional_segments = list(zip(R, R[1:] + R[:1]))
     segments = np.vstack([segments, additional_segments])
 
-    mesh = LineMesh(points=all_points, cells=segments)
+    segment_markers = number_segments(polygons, additional_segments)
+
+    mesh = LineMesh(points=all_points,
+                    cells=segments,
+                    segment_markers=segment_markers)
+
     return mesh
+
+
+def number_segments(polygons: list, additional_segments: list) -> np.ndarray:
+    """Label groups of segments sequentially."""
+    offset = 1
+    polygon_numbers = [
+        np.ones(len(polygon), dtype=int) * (i + offset)
+        for i, polygon in enumerate(polygons)
+    ]
+    i_start = len(polygons) + offset + 1
+    i_end = len(additional_segments) + i_start
+    boundary_numbers = np.arange(i_start, i_end)
+    return np.hstack([*polygon_numbers, boundary_numbers])
 
 
 def generate_regions(polygons: List[Polygon]) -> List[RegionMarker]:
@@ -162,7 +181,7 @@ class Mesher2D(BaseMesher):
 
         regions = generate_regions(polygons)
 
-        contour = generate_mesh(polygons, self.image_bbox)
+        contour = polygons_to_line_mesh(polygons, self.image_bbox)
         contour.add_region_markers(regions)
 
         self.polygons = polygons

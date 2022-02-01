@@ -19,12 +19,14 @@ class BoundingBox:
         """Generate bounding box from data shape."""
         xmin, ymin, zmin = 0, 0, 0
         xmax, ymax, zmax = np.array(shape) - 1
-        return cls(xmin=xmin,
-                   ymin=ymin,
-                   zmin=zmin,
-                   xmax=xmax,
-                   ymax=ymax,
-                   zmax=zmax)
+        return cls(
+            xmin=xmin,
+            ymin=ymin,
+            zmin=zmin,
+            xmax=xmax,
+            ymax=ymax,
+            zmax=zmax,
+        )
 
     @property
     def dimensions(self) -> Tuple[float, float, float]:
@@ -36,7 +38,7 @@ class BoundingBox:
         )
 
     @classmethod
-    def from_points(cls, points: np.array):
+    def from_points(cls, points: np.ndarray):
         """Generate bounding box from set of points or coordinates."""
         xmax, ymax, zmax = np.max(points, axis=0)
         xmin, ymin, zmin = np.min(points, axis=0)

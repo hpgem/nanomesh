@@ -2,10 +2,12 @@ import logging
 import sys
 
 from .mesh import LineMesh, TetraMesh, TriangleMesh
-from .mesh2d import Mesher2D, compare_mesh_with_image, simple_triangulate
+from .mesh2d import Mesher2D, compare_mesh_with_image
 from .mesh3d import Mesher3D
 from .mesh_container import MeshContainer
 from .plane import Plane
+from .region_markers import RegionMarker
+from .triangulate import simple_triangulate
 from .volume import Volume
 
 logging.basicConfig(format='%(message)s',
@@ -14,7 +16,7 @@ logging.basicConfig(format='%(message)s',
 
 __author__ = 'Nicolas Renaud'
 __email__ = 'n.renaud@esciencecenter.nl'
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 __all__ = [
     '__author__',
@@ -28,6 +30,7 @@ __all__ = [
     'Plane',
     'simple_triangulate',
     'TetraMesh',
+    'RegionMarker',
     'TriangleMesh',
     'Volume',
 ]

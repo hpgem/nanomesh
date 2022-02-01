@@ -1,19 +1,11 @@
-import os
 from pathlib import Path
 
 import numpy as np
 import pytest
-from matplotlib.testing.decorators import image_comparison
+from helpers import get_expected_if_it_exists
 
-from nanomesh.mesh2d import Mesher2D, generate_2d_mesh
-from nanomesh.mesh2d.mesher import close_corner_contour, subdivide_contour
-from nanomesh.mesh_container import MeshContainer
-
-# There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
-# Update the variable below for the platform on which the testing data
-# have been generated, windows: nt, linux/mac: posix
-GENERATED_ON = 'nt'
+from nanomesh.mesh2d import generate_2d_mesh
+from nanomesh.mesh2d.polygon import Polygon
 
 
 def block_image(shape=(10, 10)):
@@ -25,31 +17,18 @@ def block_image(shape=(10, 10)):
     return image
 
 
-@pytest.fixture
-def segmented():
-    """Segmented binary numpy array."""
-    image_fn = Path(__file__).parent / 'segmented.npy'
-    image = np.load(image_fn)
-    return image
-
-
-@pytest.mark.xfail(os.name != GENERATED_ON,
+@pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
-def test_generate_2d_mesh(segmented):
+def test_generate_2d_mesh(segmented_image):
     """Test 2D mesh generation and plot."""
-    expected_fn = Path(__file__).parent / 'segmented_mesh_2d.msh'
-
     np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = generate_2d_mesh(segmented, max_contour_dist=4, plot=True)
+    mesh = generate_2d_mesh(segmented_image, max_contour_dist=4, plot=True)
 
-    if expected_fn.exists():
-        expected_mesh = MeshContainer.read(expected_fn)
-    else:
-        mesh.write(expected_fn, file_format='gmsh22', binary=False)
+    fn = Path('segmented_mesh_2d.msh')
+    expected_mesh = get_expected_if_it_exists(fn, result=mesh)
 
-        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
-
+    assert mesh.points.shape[1] == 2
     assert mesh.points.shape == expected_mesh.points.shape
     np.testing.assert_allclose(mesh.points, expected_mesh.points)
 
@@ -72,16 +51,17 @@ def test_generate_2d_mesh(segmented):
             np.testing.assert_allclose(data, expected_data)
 
 
-def test_subdivide_contour():
-    """Test contour subdivision."""
-    contour = np.array([[0, 0], [0, 6], [2, 6], [2, 0], [0, 0]])
+def test_subdivide_polygon():
+    """Test polygon subdivision."""
+    polygon = Polygon(np.array([[0, 0], [0, 6], [2, 6], [2, 0], [0, 0]]))
 
-    ret = subdivide_contour(contour, max_dist=2)
+    ret = polygon.subdivide(max_dist=2)
 
-    expected = np.array([[0., 0.], [0., 2.], [0., 4.], [0., 6.], [2., 6.],
-                         [2., 4.], [2., 2.], [2., 0.], [0., 0.]])
+    expected_points = np.array([[0., 0.], [0., 2.], [0., 4.], [0.,
+                                                               6.], [2., 6.],
+                                [2., 4.], [2., 2.], [2., 0.], [0., 0.]])
 
-    assert np.all(ret == expected)
+    assert np.all(ret.points == expected_points)
 
 
 @pytest.mark.parametrize(
@@ -97,33 +77,18 @@ def test_subdivide_contour():
         ([[5, 5], [5, 7], [6, 6]], None),
     ))
 def test_close_contour(coords, expected_corner):
-    image_chape = 10, 20
-    contour = np.array(coords)
+    image_shape = 10, 20
+    polygon = Polygon(np.array(coords))
 
-    n_rows = contour.shape[1]
+    n_rows = polygon.points.shape[1]
 
-    ret = close_corner_contour(contour, image_chape)
+    ret = polygon.close_corner(image_shape)
 
     is_corner = (expected_corner is not None)
 
     if is_corner:
-        ret.shape[1] == n_rows + 1
-        corner = ret[-1]
+        ret.points.shape[1] == n_rows + 1
+        corner = ret.points[-1]
         np.testing.assert_equal(corner, expected_corner)
     else:
-        ret.shape[1] == n_rows
-
-
-@pytest.mark.xfail(os.name != GENERATED_ON,
-                   raises=AssertionError,
-                   reason=('https://github.com/hpgem/nanomesh/issues/144'))
-@image_comparison(
-    baseline_images=['contour_plot'],
-    remove_text=True,
-    extensions=['png'],
-    savefig_kwarg={'bbox_inches': 'tight'},
-)
-def test_contour_plot(segmented):
-    mesher = Mesher2D(segmented)
-    mesher.generate_contours(max_contour_dist=5, level=0.5)
-    mesher.plot_contour()
+        ret.points.shape[1] == n_rows

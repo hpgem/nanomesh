@@ -1,17 +1,8 @@
-import os
-import pickle
-from pathlib import Path
-
 import numpy as np
 import pytest
+from helpers import get_expected_if_it_exists
 
 from nanomesh.mesh import TriangleMesh
-
-# There is a small disparity between the data generated on Windows / posix
-# platforms (mac/linux): https://github.com/hpgem/nanomesh/issues/144
-# Update the variable below for the platform on which the testing data
-# have been generated, windows: nt, linux/mac: posix
-GENERATED_ON = 'nt'
 
 
 @pytest.fixture
@@ -88,33 +79,30 @@ def triangle_mesh():
     return mesh
 
 
-@pytest.mark.xfail(os.name != GENERATED_ON,
+@pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
-def test_generate_3d_mesh(triangle_mesh):
+def test_tetgen_generate_3d_mesh(triangle_mesh):
     """Test 3D mesh generation."""
-    expected_fn = Path(__file__).parent / 'expected_tetra_mesh.pickle'
-
-    np.random.seed(1234)  # set seed for reproducible clustering
+    expected_fn = 'expected_tetra_mesh.msh'
 
     triangle_mesh.add_region_marker((10, np.array([0.5, 0.5, 0.5])))
     triangle_mesh.add_region_marker((20, np.array([0.0, 2.0, 2.0])))
 
-    tetra_mesh = triangle_mesh.tetrahedralize()
+    mesh_container = triangle_mesh.tetrahedralize()
 
-    if expected_fn.exists():
-        with open(expected_fn, 'rb') as f:
-            expected_mesh = pickle.load(f)
-    else:
-        with open(expected_fn, 'wb') as f:
-            pickle.dump(tetra_mesh, f)
+    expected_mesh_container = get_expected_if_it_exists(expected_fn,
+                                                        result=mesh_container)
 
-        raise RuntimeError(f'Wrote expected mesh to {expected_fn.absolute()}')
+    cell_type = 'tetra'
 
-    assert tetra_mesh.points.shape == expected_mesh.points.shape
-    assert tetra_mesh.cells.shape == expected_mesh.cells.shape
-    np.testing.assert_allclose(tetra_mesh.points, expected_mesh.points)
-    np.testing.assert_allclose(tetra_mesh.cells, expected_mesh.cells)
+    mesh = mesh_container.get(cell_type)
+    expected_mesh = expected_mesh_container.get(cell_type)
 
-    np.testing.assert_allclose(tetra_mesh.region_markers,
+    assert mesh.points.shape == expected_mesh.points.shape
+    assert mesh.cells.shape == expected_mesh.cells.shape
+    np.testing.assert_allclose(mesh.points, expected_mesh.points)
+    np.testing.assert_allclose(mesh.cells, expected_mesh.cells)
+
+    np.testing.assert_allclose(mesh.region_markers,
                                expected_mesh.region_markers)

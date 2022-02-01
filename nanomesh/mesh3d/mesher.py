@@ -9,11 +9,12 @@ import numpy as np
 from skimage import measure, morphology
 
 from nanomesh._mesh_shared import BaseMesher
-from nanomesh.mesh2d import simple_triangulate
 from nanomesh.volume import Volume
 
 from ..region_markers import RegionMarker, RegionMarkerLike
+from ..triangulate import simple_triangulate
 from .bounding_box import BoundingBox
+from .helpers import pad
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ def get_region_markers(vol: Union[Volume, np.ndarray]) -> List[RegionMarker]:
         i, j, k = point.astype(int)
         label = image[i, j, k]
 
-        region_marker = RegionMarker(label=label, coordinates=point)
+        region_marker = RegionMarker(label=label, point=point)
         region_markers.append(region_marker)
 
     return region_markers
@@ -224,7 +225,6 @@ class Mesher3D(BaseMesher):
     def __init__(self, image: np.ndarray):
         super().__init__(image)
         self.contour: TriangleMesh
-        self.pad_width = 0
 
     def generate_contour(
         self,
@@ -252,24 +252,27 @@ class Mesher3D(BaseMesher):
             allow_degenerate=False,
         )
 
-        mesh = TriangleMesh(points=points, cells=cells)
+        contour = TriangleMesh(points=points, cells=cells)
 
         bbox = BoundingBox.from_shape(self.image.shape)
-        mesh = generate_envelope(mesh, bbox=bbox)
+        contour = generate_envelope(contour, bbox=bbox)
 
-        logger.info(f'Generated contour with {len(mesh.cells)} cells')
+        region_markers = get_region_markers(self.image)
+        contour.add_region_markers(region_markers)
 
-        self.contour = mesh
+        logger.info(f'Generated contour with {len(contour.cells)} cells')
+
+        self.contour = contour
 
     def pad_contour(self, **kwargs):
-        """Pad the contour. See `nanomesh.TriangleMesh.pad3d` for info.
+        """Pad the contour. See `.helpers.pad` for info.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments for `nanomesh.TriangleMesh.pad3d`.
+            Keyword arguments for `.helpers.pad`.
         """
-        self.contour = self.contour.pad3d(**kwargs)
+        self.contour = pad(self.contour, **kwargs)
 
     def show_contour(self, **kwargs):
         """Pad the contour. See `nanomesh.BaseMesh.plot_pyvista` for info.
@@ -294,14 +297,11 @@ class Mesher3D(BaseMesher):
         for region_marker in region_markers:
             self.contour.add_region_marker(region_marker)
 
-    def tetrahedralize(self, generate_region_markers: bool = False, **kwargs):
+    def tetrahedralize(self, **kwargs):
         """Tetrahedralize a surface contour mesh.
 
         Parameters
         ----------
-        generate_region_markers : bool, optional
-            Attempt to automatically generate region markers.
-            Overwrites existing region_markers.
         **kwargs
             Keyword arguments passed to
             `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
@@ -313,19 +313,23 @@ class Mesher3D(BaseMesher):
         Raises
         ------
         ValueError
-            Description
+            Contour mesh has not been generated.
         """
         if not self.contour:
             raise ValueError('No contour mesh available.'
                              'Run `Mesher3D.generate_contour()` first.')
 
-        if generate_region_markers:
-            region_markers = get_region_markers(self.image)
-            self.contour.region_markers = region_markers
-
         contour = self.contour
-        volume_mesh = contour.tetrahedralize(**kwargs)
-        return volume_mesh
+        mesh = contour.tetrahedralize(**kwargs)
+
+        mesh.set_field_data('tetra', {0: 'background', 1: 'feature'})
+        fields = {
+            m.label: m.name
+            for m in self.contour.region_markers if m.name
+        }
+        mesh.set_field_data('tetra', fields)
+
+        return mesh
 
 
 def generate_3d_mesh(

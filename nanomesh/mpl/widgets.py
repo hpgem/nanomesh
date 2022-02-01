@@ -37,19 +37,19 @@ class PolygonSelectorWithSnapping(PolygonSelector):
         # Complete the polygon.
         elif (len(self._xs) > 3 and self._xs[-1] == self._xs[0]
               and self._ys[-1] == self._ys[0]):
-            self._polygon_completed = True
+            self._selection_completed = True
 
         elif self.snapped is not None:
             self._xs.insert(-1, self._xs[-1])
             self._ys.insert(-1, self._ys[-1])
 
         # Place new vertex.
-        elif (not self._polygon_completed and 'move_all' not in self.state
+        elif (not self._selection_completed and 'move_all' not in self.state
               and 'move_vertex' not in self.state):
             self._xs.insert(-1, event.xdata)
             self._ys.insert(-1, event.ydata)
 
-        if self._polygon_completed:
+        if self._selection_completed:
             self.onselect(self.verts)
 
     def _onmove(self, event):
@@ -60,7 +60,7 @@ class PolygonSelectorWithSnapping(PolygonSelector):
             self._xs[idx], self._ys[idx] = event.xdata, event.ydata
             # Also update the end of the polygon line if the first vertex is
             # the active handle and the polygon is completed.
-            if idx == 0 and self._polygon_completed:
+            if idx == 0 and self._selection_completed:
                 self._xs[-1], self._ys[-1] = event.xdata, event.ydata
 
         # Move all vertices.
@@ -72,7 +72,7 @@ class PolygonSelectorWithSnapping(PolygonSelector):
                 self._ys[k] = self._ys_at_press[k] + dy
 
         # Do nothing if completed or waiting for a move.
-        elif (self._polygon_completed or 'move_vertex' in self.state
+        elif (self._selection_completed or 'move_vertex' in self.state
               or 'move_all' in self.state):
             return
 

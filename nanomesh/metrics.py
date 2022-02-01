@@ -23,7 +23,7 @@ class Metric:
     def __call__(self, mesh: BaseMesh) -> np.ndarray:
         grid = mesh.to_pyvista_unstructured_grid()
         ret = grid.compute_cell_quality(self.metric)
-        quality = ret.cell_arrays['CellQuality']
+        quality = ret.cell_data['CellQuality']
         return np.array(quality)
 
 

@@ -34,7 +34,10 @@ class BaseImage:
         self.image = image
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(shape={self.image.shape})'
+        """Canonical string representation."""
+        return (f'{self.__class__.__name__}(shape={self.image.shape}, '
+                f'range=({self.image.min()},{self.image.max()}), '
+                f'dtype={self.image.dtype})')
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):

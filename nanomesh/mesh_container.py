@@ -8,7 +8,7 @@ from typing import Dict, List
 import meshio
 import numpy as np
 
-from .mesh import BaseMesh
+from .mesh import BaseMesh, PruneZ0Mixin
 
 
 class CellType(Enum):
@@ -18,7 +18,13 @@ class CellType(Enum):
     TETRA = 3
 
 
-class MeshContainer(meshio.Mesh):
+class MeshContainer(meshio.Mesh, PruneZ0Mixin):
+    def __repr__(self):
+        """Canonical string representation."""
+        s = super().__repr__().splitlines()
+        s[0] = f'<{self.__class__.__name__}>'
+        return '\n'.join(s)
+
     @property
     def number_to_field(self):
         """Mapping from numbers to fields, proxy to `.field_data`."""
@@ -28,7 +34,9 @@ class MeshContainer(meshio.Mesh):
             dim_name = CellType(dimension).name.lower()
             number_to_field[dim_name][number] = field
 
-        return MappingProxyType(dict(number_to_field))
+        return MappingProxyType(
+            {k: MappingProxyType(v)
+             for k, v in number_to_field.items()})
 
     @property
     def field_to_number(self):
@@ -39,7 +47,9 @@ class MeshContainer(meshio.Mesh):
             dim_name = CellType(dimension).name.lower()
             field_to_number[dim_name][field] = number
 
-        return MappingProxyType(dict(field_to_number))
+        return MappingProxyType(
+            {k: MappingProxyType(v)
+             for k, v in field_to_number.items()})
 
     def set_field_data(self, cell_type: str, field_data: Dict[int, str]):
         """Update the values in `.field_data`.
@@ -47,14 +57,14 @@ class MeshContainer(meshio.Mesh):
         Parameters
         ----------
         cell_type : str
-            Cell type to update the values ofr.
+            Cell type to update the values for.
         field_data : dict
             Dictionary with key-to-number mapping, i.e.
             `field_data={0: 'green', 1: 'blue', 2: 'red'}`
             maps `0` to `green`, etc.
         """
         try:
-            input_field_data = dict(self.number_to_field)[cell_type]
+            input_field_data = dict(self.number_to_field[cell_type])
         except KeyError:
             input_field_data = {}
 
@@ -144,7 +154,12 @@ class MeshContainer(meshio.Mesh):
 
         cell_data = self.get_all_cell_data(cell_type)
 
-        return BaseMesh.create(cells=cells, points=points, **cell_data)
+        fields = self.field_to_number.get(cell_type, None)
+
+        return BaseMesh.create(cells=cells,
+                               points=points,
+                               fields=fields,
+                               **cell_data)
 
     def get_all_cell_data(self, cell_type: str = None) -> dict:
         """Get all cell data for given `cell_type`.
@@ -179,8 +194,14 @@ class MeshContainer(meshio.Mesh):
         **kwargs
             Extra keyword arguments passed to plotting method.
         """
-        mesh = self.get(cell_type)
-        mesh.plot(**kwargs)
+        cell_types = {cell.type for cell in self.cells}
+
+        if (not cell_type) and (cell_types == {'line', 'triangle'}):
+            from .mpl.meshplot import plot_line_triangle
+            return plot_line_triangle(self, **kwargs)
+        else:
+            mesh = self.get(cell_type)
+            return mesh.plot(**kwargs)
 
     def plot_mpl(self, cell_type: str = None, **kwargs):
         """Plot data using matplotlib.
@@ -193,8 +214,7 @@ class MeshContainer(meshio.Mesh):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        fields = self.number_to_field.get(mesh._cell_type, None)
-        mesh.plot_mpl(fields=fields, **kwargs)
+        return mesh.plot_mpl(**kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
         """Plot data using itk.
@@ -207,7 +227,7 @@ class MeshContainer(meshio.Mesh):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot_itk(**kwargs)
+        return mesh.plot_itk(**kwargs)
 
     def plot_pyvista(self, cell_type: str = None, **kwargs):
         """Plot data using pyvista.
@@ -220,7 +240,7 @@ class MeshContainer(meshio.Mesh):
             Extra keyword arguments passed to plotting method.
         """
         mesh = self.get(cell_type)
-        mesh.plot_pyvista(**kwargs)
+        return mesh.plot_pyvista(**kwargs)
 
     @classmethod
     def from_mesh(cls, mesh: BaseMesh):
@@ -255,24 +275,25 @@ class MeshContainer(meshio.Mesh):
         """
         points = triangle_dict['vertices']
 
-        cell_data = {}
-        cells = {}
+        cells = {'triangle': triangle_dict['triangles']}
 
-        cells['triangle'] = triangle_dict['triangles']
+        cell_data = {}
+
+        try:
+            cell_data['physical'] = [
+                triangle_dict['triangle_attributes'].squeeze()
+            ]
+
+            # Order must match order of cell_data
+            cells['line'] = triangle_dict['edges']
+            cell_data['physical'].append(
+                triangle_dict['edge_markers'].squeeze())
+        except KeyError:
+            pass
 
         point_data = {}
         try:
             point_data['physical'] = triangle_dict['vertex_markers'].squeeze()
-        except KeyError:
-            pass
-
-        try:
-            cells['line'] = triangle_dict['edges']
-            # Order must match order of cell_data
-            cell_data['physical'] = [
-                np.zeros(len(cells['triangle'])),
-                triangle_dict['edge_markers'].squeeze(),
-            ]
         except KeyError:
             pass
 
@@ -282,6 +303,8 @@ class MeshContainer(meshio.Mesh):
             cell_data=cell_data,
             point_data=point_data,
         )
+
+        mesh.triangle_dict = triangle_dict
 
         return mesh
 
@@ -295,7 +318,6 @@ class MeshContainer(meshio.Mesh):
         """
         from meshio import read
         mesh = read(*args, **kwargs)
-        mesh.prune_z_0()
 
         cell_data = {}
         for key, value in mesh.cell_data.items():
@@ -311,7 +333,7 @@ class MeshContainer(meshio.Mesh):
 
             point_data[key] = value
 
-        return cls(
+        ret = cls(
             mesh.points,
             mesh.cells,
             point_data=point_data,
@@ -322,6 +344,8 @@ class MeshContainer(meshio.Mesh):
             gmsh_periodic=mesh.gmsh_periodic,
             info=mesh.info,
         )
+        ret.prune_z_0()
+        return ret
 
     def write(self, filename, file_format: str = None, **kwargs):
         """Thin wrapper of `meshio.write` to avoid altering class.

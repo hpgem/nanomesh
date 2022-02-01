@@ -48,7 +48,7 @@ ipython-genutils==0.2.0
 ipywidgets==7.6.5
 isort==5.10.1
 itk-core==5.2.1.post1
-itk-filtering==5.2.1.post1
+itk-filtering>=5.2.0.post2
 itk-meshtopolydata==0.7.1
 itk-numerics==5.2.1.post1
 itkwidgets==0.32.1

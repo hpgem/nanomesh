@@ -35,6 +35,7 @@ def test_load_volume_unknown_extension(volume, tmp_path):
 
 def test_apply(volume):
     """Test whether the apply method works with numpy functions."""
+
     def return_array(image):
         return image
 

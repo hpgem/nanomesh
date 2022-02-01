@@ -19,6 +19,7 @@ class SliceViewer:
     **kwargs :
         Passed to first call of `SliceViewer.update`.
     """
+
     def __init__(
         self,
         data: np.ndarray,

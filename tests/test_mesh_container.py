@@ -85,6 +85,7 @@ def test_mesh_container_set_cell_data(line_tri_mesh):
 
 
 def test_write_read(line_tri_mesh, tmp_path):
+
     def asserts(mesh):
         assert mesh.points.shape[1] == 2
         assert 'physical' in mesh.cell_data

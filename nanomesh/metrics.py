@@ -16,6 +16,7 @@ class Metric:
         Metric to calculate. For a full list,
         see `pvmesh.compute_cell_quality`.
     """
+
     def __init__(self, metric: str):
         super().__init__()
         self.metric = metric

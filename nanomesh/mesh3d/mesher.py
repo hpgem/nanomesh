@@ -222,6 +222,7 @@ def generate_envelope(mesh: TriangleMesh,
 
 
 class Mesher3D(BaseMesher):
+
     def __init__(self, image: np.ndarray):
         super().__init__(image)
         self.contour: TriangleMesh

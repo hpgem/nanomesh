@@ -117,6 +117,7 @@ class ROISelector:
     bbox : (4,2) np.ndarray
         Coordinates describing the corners of the polygon
     """
+
     def __init__(self, ax, snap_to: np.ndarray = None):
         self.ax = ax
         self.canvas = ax.figure.canvas

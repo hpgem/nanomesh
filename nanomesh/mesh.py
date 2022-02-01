@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 
 class PruneZ0Mixin:
+
     def prune_z_0(self):
         """Drop third dimension (z) coordinates if present and all values are
         equal to 0 (within tolerance).

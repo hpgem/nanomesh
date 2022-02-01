@@ -116,6 +116,7 @@ def generate_segments(polygons: List[Polygon]) -> np.ndarray:
 
 
 class Mesher2D(BaseMesher):
+
     def __init__(self, image: np.ndarray):
         super().__init__(image)
         self.contour: LineMesh

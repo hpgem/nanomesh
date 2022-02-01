@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 
 class Plane(BaseImage):
+
     @classmethod
     def load(cls, filename: os.PathLike, **kwargs) -> 'Plane':
         """Load the data. Supported filetypes: `.npy`.

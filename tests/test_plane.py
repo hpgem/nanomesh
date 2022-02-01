@@ -27,6 +27,7 @@ def test_load_plane(plane, tmp_path):
 
 def test_apply(plane):
     """Test whether the apply method works with numpy functions."""
+
     def return_array(image):
         return image
 

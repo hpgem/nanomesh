@@ -10,7 +10,7 @@ from scipy.spatial.distance import cdist
 from skimage import measure
 
 from .._mesh_shared import BaseMesher
-from ..markers import RegionMarker
+from ..region_markers import RegionMarker
 from .helpers import pad
 from .polygon import Polygon
 

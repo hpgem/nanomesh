@@ -6,7 +6,7 @@ import numpy as np
 
 from nanomesh.utils import pairwise
 
-from ..markers import RegionMarker
+from ..region_markers import RegionMarker
 from .bounding_box import BoundingBox
 
 if TYPE_CHECKING:

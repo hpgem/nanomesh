@@ -9,8 +9,8 @@ import numpy as np
 import pyvista as pv
 import scipy
 
-from .markers import RegionMarker, RegionMarkerLike
 from .mpl.meshplot import _legend_with_triplot_fix
+from .region_markers import RegionMarker, RegionMarkerLike
 
 if TYPE_CHECKING:
     import open3d

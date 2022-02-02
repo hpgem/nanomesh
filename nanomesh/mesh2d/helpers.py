@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial.distance import cdist
 
-from ..markers import RegionMarker
+from ..region_markers import RegionMarker
 
 if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh, TriangleMesh

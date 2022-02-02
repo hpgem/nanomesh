@@ -3,9 +3,9 @@ import tempfile
 from pathlib import Path
 from typing import Any, List, Tuple
 
-from .markers import RegionMarker
 from .mesh import TriangleMesh
 from .mesh_container import MeshContainer
+from .region_markers import RegionMarker
 
 
 def write_smesh(filename: os.PathLike,

@@ -70,26 +70,64 @@ def polygons_to_line_mesh(polygons: List[Polygon],
     return mesh
 
 
-def generate_regions(polygons: List[Polygon]) -> List[RegionMarker]:
+def generate_background_region(polygons: List[Polygon],
+                               bbox: np.ndarray) -> RegionMarker:
+    """Generate marker for background. This point is inside the bbox, but
+    outside the given polygons.
+
+    Parameters
+    ----------
+    polygons : List[Polygon]
+        List of polygons.
+    bbox : (n, 2) np.ndarray
+        Coordinates for the bounding box. These define the convex hull
+        of the meshing area.
+
+    Returns
+    -------
+    region : RegionMarker
+        Region marker to describe the background feature
+    """
+    point = bbox.mean(axis=0)
+
+    xmin, ymin = bbox.min(axis=0)
+    xmax, ymax = bbox.max(axis=0)
+
+    while any(polygon.contains_point(point) for polygon in polygons):
+        point = np.random.uniform(xmin, xmax), np.random.uniform(ymin, ymax)
+
+    return RegionMarker(label=0, point=point, name='background')
+
+
+def generate_regions(polygons: List[Polygon],
+                     same_label: bool = True) -> List[RegionMarker]:
     """Generate regions for triangle.
 
     Parameters
     ----------
     polygons : List[Polygon]
         List of polygons.
+    same_label : bool, optional
+        If True, all labels equal 1.
+        If False, label regions sequentially from 1
 
     Returns
     -------
-    regions : (n,5) np.ndarray
-        Array with regions with each row: (x, y, z, index, 0)
+    regions : List[RegionMarker]
+        List of region markers describing each feature
     """
     regions = []
 
-    for label, polygon in enumerate(polygons):
+    for i, polygon in enumerate(polygons):
         point = polygon.find_point()
 
         # in LineMesh format
-        regions.append(RegionMarker(label=1, point=point))
+        if same_label:
+            regions.append(RegionMarker(label=1, point=point, name='feature'))
+        else:
+            label = i + 1
+            regions.append(
+                RegionMarker(label=label, point=point, name=f'feature{label}'))
 
     return regions
 
@@ -168,7 +206,8 @@ class Mesher2D(BaseMesher):
         ]
         polygons = [polygon.remove_duplicate_points() for polygon in polygons]
 
-        regions = generate_regions(polygons)
+        regions = generate_regions(polygons, same_label=True)
+        regions.append(generate_background_region(polygons, self.image_bbox))
 
         contour = polygons_to_line_mesh(polygons, self.image_bbox)
         contour.add_region_markers(regions)
@@ -228,10 +267,6 @@ class Mesher2D(BaseMesher):
         kwargs['opts'] = opts
 
         mesh = self.contour.triangulate(**kwargs)
-
-        # mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
-        # mesh.set_field_data(
-        # 'line', {0: 'body', 1: 'external', 2: 'internal'})
 
         return mesh
 

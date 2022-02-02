@@ -25,7 +25,7 @@ class Polygon:
         # start with guess in center of polygon
         point = self.points.mean(axis=0)
 
-        while not measure.points_in_poly([point], self.points):
+        while not self.contains_point(point):
             xmin, ymin = self.points.min(axis=0)
             xmax, ymax = self.points.max(axis=0)
             point = np.random.uniform(xmin,
@@ -165,17 +165,32 @@ class Polygon:
         new_points = measure.approximate_polygon(self.points, *args, **kwargs)
         return Polygon(new_points)
 
+    def contains_point(self, point: np.ndarray) -> bool:
+        """Test whether point lies inside polygon.
+
+        Parameters
+        ----------
+        point : (2,) np.ndarray
+            Point coordinates
+
+        Returns
+        -------
+        bool
+            True if corresponding point is inside the polygon
+        """
+        return measure.points_in_poly([point], self.points)
+
     def contains_points(self, points: np.ndarray) -> np.ndarray:
-        """Test whether points lie inside a polygon.
+        """Test whether points lie inside polygon.
 
         Parameters
         ----------
         points : (n,2) np.ndarray
-            Description
+            List of points
 
         Returns
         -------
         mask : (n,) boolean np.ndarray
-            True if corresponding point is inside the p olygon
+            True if corresponding points lie inside the polygon
         """
         return measure.points_in_poly(points, self.points)

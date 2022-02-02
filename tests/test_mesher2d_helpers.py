@@ -97,14 +97,12 @@ def test_pad_width(image_square, width):
         2: 15
     }),
     ('bottom', None, 'background', {
-        0: 94,
+        0: 109,
         1: 34,
-        2: 15
     }),
     ('bottom', None, 'feature', {
         0: 94,
-        1: 34,
-        2: 15
+        1: 49,
     }),
 ))
 def test_pad_label(image_square, side, label, name, expected_labels):

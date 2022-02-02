@@ -314,6 +314,7 @@ class LineMesh(BaseMesh):
                 lines=self.cells,
                 mask=cell_data != cell_data_val,
                 label=name,
+                **kwargs,
             )
 
         if self.region_markers:

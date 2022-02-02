@@ -11,7 +11,7 @@ from skimage import measure
 
 from .._mesh_shared import BaseMesher
 from ..region_markers import RegionMarker
-from .helpers import pad
+from .helpers import append_to_segment_markers, generate_segment_markers, pad
 from .polygon import Polygon
 
 logger = logging.getLogger(__name__)
@@ -59,26 +59,15 @@ def polygons_to_line_mesh(polygons: List[Polygon],
     additional_segments = list(zip(R, R[1:] + R[:1]))
     segments = np.vstack([segments, additional_segments])
 
-    segment_markers = number_segments(polygons, additional_segments)
+    segment_markers = generate_segment_markers(polygons)
+    segment_markers = append_to_segment_markers(segment_markers,
+                                                additional_segments)
 
     mesh = LineMesh(points=all_points,
                     cells=segments,
                     segment_markers=segment_markers)
 
     return mesh
-
-
-def number_segments(polygons: list, additional_segments: list) -> np.ndarray:
-    """Label groups of segments sequentially."""
-    offset = 1
-    polygon_numbers = [
-        np.ones(len(polygon), dtype=int) * (i + offset)
-        for i, polygon in enumerate(polygons)
-    ]
-    i_start = len(polygons) + offset + 1
-    i_end = len(additional_segments) + i_start
-    boundary_numbers = np.arange(i_start, i_end)
-    return np.hstack([*polygon_numbers, boundary_numbers])
 
 
 def generate_regions(polygons: List[Polygon]) -> List[RegionMarker]:
@@ -240,8 +229,9 @@ class Mesher2D(BaseMesher):
 
         mesh = self.contour.triangulate(**kwargs)
 
-        mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
-        mesh.set_field_data('line', {0: 'body', 1: 'external', 2: 'internal'})
+        # mesh.set_field_data('triangle', {0: 'background', 1: 'feature'})
+        # mesh.set_field_data(
+        # 'line', {0: 'body', 1: 'external', 2: 'internal'})
 
         return mesh
 

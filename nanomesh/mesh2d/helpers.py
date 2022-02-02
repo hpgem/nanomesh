@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -140,10 +140,58 @@ def pad(
     center = corners.mean(axis=0)
     region_markers = mesh.region_markers + [RegionMarker(label, center, name)]
 
+    segment_markers = mesh.cell_data.get(
+        'segment_markers',
+        np.zeros(len(mesh.cells)),
+    )
+    segment_markers = append_to_segment_markers(segment_markers,
+                                                additional_segments)
+
     new_mesh = mesh.__class__(
         points=all_points,
         cells=cells,
         region_markers=region_markers,
+        segment_markers=segment_markers,
     )
 
     return new_mesh
+
+
+def generate_segment_markers(segments: List[np.ndarray]) -> np.ndarray:
+    """Generate array of sequential markers for segments.
+
+    Parameters
+    ----------
+    segments : List[np.ndarray]
+        Description
+
+    Returns
+    -------
+    segment_markers : (j,1) np.ndarray
+    """
+    return np.hstack([
+        np.ones(len(segment), dtype=int) * (i + 1)
+        for i, segment in enumerate(segments)
+    ])
+
+
+def append_to_segment_markers(segment_markers: np.ndarray,
+                              segments: List[np.ndarray]) -> np.ndarray:
+    """Append sequential markers to existing array of segment markers.
+
+    Parameters
+    ----------
+    segment_markers : np.ndarray
+        List of existing markers
+    segments : List[np.ndarray]
+        List of segments to label sequentially and append to segment markers.
+
+    Returns
+    -------
+    segment_markers : (j,1) np.ndarray
+    """
+    additional_markers = []
+    offset = segment_markers.max() + 1
+    for i, segment in enumerate(segments):
+        additional_markers.append(i + offset)
+    segment_markers = np.hstack([segment_markers, additional_markers])

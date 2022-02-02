@@ -144,8 +144,10 @@ def pad(
         'segment_markers',
         np.zeros(len(mesh.cells)),
     )
-    segment_markers = append_to_segment_markers(segment_markers,
-                                                additional_segments)
+    segment_markers = append_to_segment_markers(
+        segment_markers,
+        additional_segments,
+    )
 
     new_mesh = mesh.__class__(
         points=all_points,
@@ -157,26 +159,34 @@ def pad(
     return new_mesh
 
 
-def generate_segment_markers(segments: List[np.ndarray]) -> np.ndarray:
+def generate_segment_markers(segments: List[np.ndarray],
+                             ones: bool = False) -> np.ndarray:
     """Generate array of sequential markers for segments.
 
     Parameters
     ----------
     segments : List[np.ndarray]
         Description
+    ones : bool, optional
+        Assign the label (1) to all segments
 
     Returns
     -------
-    segment_markers : (j,1) np.ndarray
+    segment_markers : np.ndarray
     """
-    return np.hstack([
-        np.ones(len(segment), dtype=int) * (i + 1)
-        for i, segment in enumerate(segments)
-    ])
+    if ones:
+        n_items = sum(len(segment) for segment in segments)
+        return np.ones(n_items, dtype=int)
+    else:
+        return np.hstack([
+            np.ones(len(segment), dtype=int) * (i + 1)
+            for i, segment in enumerate(segments)
+        ])
 
 
 def append_to_segment_markers(segment_markers: np.ndarray,
-                              segments: List[np.ndarray]) -> np.ndarray:
+                              segments: List[np.ndarray],
+                              same_label: bool = False) -> np.ndarray:
     """Append sequential markers to existing array of segment markers.
 
     Parameters
@@ -184,14 +194,19 @@ def append_to_segment_markers(segment_markers: np.ndarray,
     segment_markers : np.ndarray
         List of existing markers
     segments : List[np.ndarray]
-        List of segments to label sequentially and append to segment markers.
+        List of segments to label sequentially and append to segment markers
+    same_label : bool, optional
+        Assign the next available integer label to all additional segments
 
     Returns
     -------
-    segment_markers : (j,1) np.ndarray
+    segment_markers : np.ndarray
     """
-    additional_markers = []
     offset = segment_markers.max() + 1
-    for i, segment in enumerate(segments):
-        additional_markers.append(i + offset)
+
+    if same_label:
+        additional_markers = np.ones(len(segments)) * offset
+    else:
+        additional_markers = [i + offset for i in range(len(segments))]
+
     return np.hstack([segment_markers, additional_markers])

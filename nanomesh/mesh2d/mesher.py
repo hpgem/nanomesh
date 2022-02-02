@@ -235,32 +235,6 @@ class Mesher2D(BaseMesher):
 
         return mesh
 
-    def generate_domain_mask_from_contours(
-        self,
-        mesh: MeshContainer,
-    ) -> np.ndarray:
-        """Generate domain mask from contour.
-
-        Parameters
-        ----------
-        mesh : MeshContainer
-            Input mesh
-
-        Returns
-        -------
-        labels : (n,) np.array
-            Array cell labels.
-        """
-        centers = mesh.get('triangle').cell_centers
-
-        labels = np.zeros(len(centers), dtype=int)
-
-        for polygon in self.polygons:
-            mask = polygon.contains_points(centers)
-            labels[mask] = 1
-
-        return labels
-
     def pad_contour(self, **kwargs):
         """Pad the contour. See `.helpers.pad` for info.
 

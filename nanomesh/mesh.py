@@ -285,8 +285,8 @@ class LineMesh(BaseMesh):
         ----------
         ax : plt.Axes, optional
             Axes to use for plotting.
-        label : str, optional
-            Label of cell data item to plot.
+        key : str, optional
+            Name of the cell data array to plot.
         **kwargs
             Extra keyword arguments passed to `.mpl.lineplot`
 

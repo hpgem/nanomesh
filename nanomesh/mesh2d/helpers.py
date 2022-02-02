@@ -194,4 +194,4 @@ def append_to_segment_markers(segment_markers: np.ndarray,
     offset = segment_markers.max() + 1
     for i, segment in enumerate(segments):
         additional_markers.append(i + offset)
-    segment_markers = np.hstack([segment_markers, additional_markers])
+    return np.hstack([segment_markers, additional_markers])

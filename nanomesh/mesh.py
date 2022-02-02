@@ -261,6 +261,12 @@ class BaseMesh:
         """Return number of dimensions for point data."""
         return self.points.shape[1]
 
+    def reverse_cell_order(self):
+        """Reverse order of cells and cell data."""
+        self.cells = self.cells[::-1]
+        for key, data in self.cell_data.items():
+            self.cell_data[key] = data[::-1]
+
 
 class LineMesh(BaseMesh):
     _cell_type = 'line'

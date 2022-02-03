@@ -156,7 +156,7 @@ def test_generate_segment_markers(ones):
 
 @pytest.mark.parametrize('same_label', (False, True))
 def test_append_to_segment_markers(same_label):
-    inp = [1, 1, 1]
+    inp = np.array([1, 1, 1])
     extra = [(1, 2), (2, 3), (3, 4)]
 
     out = append_to_segment_markers(inp, extra, same_label=same_label)

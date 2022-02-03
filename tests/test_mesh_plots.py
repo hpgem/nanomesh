@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from helpers import image_comparison2
 
+import nanomesh
 from nanomesh import Mesher2D
 from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh2d import compare_mesh_with_image
@@ -25,6 +26,8 @@ def test_triangle_mesh_plot(line_tri_mesh):
     lines.plot_mpl()
 
 
+@pytest.mark.xfail(nanomesh.__version__ == '0.5.0',
+                   reason='https://github.com/hpgem/nanomesh/issues/210')
 @pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))

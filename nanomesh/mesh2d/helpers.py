@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -140,10 +140,73 @@ def pad(
     center = corners.mean(axis=0)
     region_markers = mesh.region_markers + [RegionMarker(label, center, name)]
 
+    segment_markers = mesh.cell_data.get(
+        'segment_markers',
+        np.zeros(len(mesh.cells)),
+    )
+    segment_markers = append_to_segment_markers(
+        segment_markers,
+        additional_segments,
+    )
+
     new_mesh = mesh.__class__(
         points=all_points,
         cells=cells,
         region_markers=region_markers,
+        segment_markers=segment_markers,
     )
 
     return new_mesh
+
+
+def generate_segment_markers(segments: List[np.ndarray],
+                             ones: bool = False) -> np.ndarray:
+    """Generate array of sequential markers for segments.
+
+    Parameters
+    ----------
+    segments : List[np.ndarray]
+        Description
+    ones : bool, optional
+        Assign the label (1) to all segments
+
+    Returns
+    -------
+    segment_markers : np.ndarray
+    """
+    if ones:
+        n_items = sum(len(segment) for segment in segments)
+        return np.ones(n_items, dtype=int)
+    else:
+        return np.hstack([
+            np.ones(len(segment), dtype=int) * (i + 1)
+            for i, segment in enumerate(segments)
+        ])
+
+
+def append_to_segment_markers(segment_markers: np.ndarray,
+                              segments: List[np.ndarray],
+                              same_label: bool = False) -> np.ndarray:
+    """Append sequential markers to existing array of segment markers.
+
+    Parameters
+    ----------
+    segment_markers : np.ndarray
+        List of existing markers
+    segments : List[np.ndarray]
+        List of segments to label sequentially and append to segment markers
+    same_label : bool, optional
+        Assign the next available integer label to all additional segments
+
+    Returns
+    -------
+    segment_markers : np.ndarray
+    """
+    offset = segment_markers.max() + 1
+
+    if same_label:
+        additional_markers = np.ones(len(segments)) * offset
+    else:
+        additional_markers = [i + offset for i in range(len(segments))]
+
+    return np.hstack([segment_markers, additional_markers])

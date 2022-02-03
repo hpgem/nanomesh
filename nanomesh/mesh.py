@@ -81,14 +81,14 @@ class BaseMesh:
 
     def __repr__(self, indent: int = 0):
         """Canonical string representation."""
-        markers = set(m.name if m.name else m.label
-                      for m in self.region_markers)
+        region_markers = set(m.name if m.name else m.label
+                             for m in self.region_markers)
         s = (
             f'{self.__class__.__name__}(',
             f'    points = {self.points.shape},',
             f'    cells = {self.cells.shape},',
             f'    fields = {tuple(self.field_to_number.keys())},',
-            f'    markers = {tuple(markers)},',
+            f'    region_markers = {tuple(region_markers)},',
             f'    cell_data = {tuple(self.cell_data.keys())},',
             ')',
         )
@@ -109,8 +109,8 @@ class BaseMesh:
         Parameters
         ----------
         region_marker : RegionMarkerLike
-            Either a `RegionMarker` object or `(label, coordinates)` tuple,
-            where the label must be an `int` and the coordinates a 2- or
+            Either a `RegionMarker` object or `(label, point)` tuple,
+            where the label must be an `int` and the point a 2- or
             3-element numpy array.
         """
         if not isinstance(region_marker, RegionMarker):
@@ -262,6 +262,12 @@ class BaseMesh:
         """Return number of dimensions for point data."""
         return self.points.shape[1]
 
+    def reverse_cell_order(self):
+        """Reverse order of cells and cell data."""
+        self.cells = self.cells[::-1]
+        for key, data in self.cell_data.items():
+            self.cell_data[key] = data[::-1]
+
 
 class LineMesh(BaseMesh):
     _cell_type = 'line'
@@ -280,8 +286,8 @@ class LineMesh(BaseMesh):
         ----------
         ax : plt.Axes, optional
             Axes to use for plotting.
-        label : str, optional
-            Label of cell data item to plot.
+        key : str, optional
+            Name of the cell data array to plot.
         **kwargs
             Extra keyword arguments passed to `.mpl.lineplot`
 
@@ -315,6 +321,7 @@ class LineMesh(BaseMesh):
                 lines=self.cells,
                 mask=cell_data != cell_data_val,
                 label=name,
+                **kwargs,
             )
 
         if self.region_markers:
@@ -388,9 +395,12 @@ class LineMesh(BaseMesh):
         regions = [(m.point[0], m.point[1], m.label, m.constraint)
                    for m in self.region_markers]
 
+        segment_markers = self.cell_data.get('segment_markers', None)
+
         mesh = simple_triangulate(points=points,
                                   segments=segments,
                                   regions=regions,
+                                  segment_markers=segment_markers,
                                   opts=opts)
 
         fields = {m.label: m.name for m in self.region_markers if m.name}

@@ -280,7 +280,7 @@ class LineMesh(BaseMesh):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
-                 legend: str = 'floating',
+                 legend: str = None,
                  **kwargs) -> plt.Axes:
         """Simple line mesh plot using `matplotlib`.
 

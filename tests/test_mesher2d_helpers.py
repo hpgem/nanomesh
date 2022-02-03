@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 
 from nanomesh import LineMesh, MeshContainer, Mesher2D, TriangleMesh
+from nanomesh.mesh2d.helpers import (append_to_segment_markers,
+                                     generate_segment_markers)
 
 
 @pytest.fixture
@@ -135,3 +137,33 @@ def test_pad_label(image_square, side, label, name, expected_labels):
         assert keys == default_keys | {
             name,
         }
+
+
+@pytest.mark.parametrize('ones', (False, True))
+def test_generate_segment_markers(ones):
+    i, j, k = 2, 3, 1
+
+    inp = [np.arange(i), np.arange(j), np.arange(k)]
+    out = generate_segment_markers(inp, ones=ones)
+
+    if ones:
+        expected = [1, 1, 1, 1, 1, 1]
+    else:
+        expected = [1, 1, 2, 2, 2, 3]
+
+    np.testing.assert_allclose(out, expected)
+
+
+@pytest.mark.parametrize('same_label', (False, True))
+def test_append_to_segment_markers(same_label):
+    inp = [1, 1, 1]
+    extra = [(1, 2), (2, 3), (3, 4)]
+
+    out = append_to_segment_markers(inp, extra, same_label=same_label)
+
+    if same_label:
+        expected = [1, 1, 1, 2, 2, 2]
+    else:
+        expected = [1, 1, 1, 2, 3, 4]
+
+    np.testing.assert_allclose(out, expected)

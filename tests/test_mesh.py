@@ -72,3 +72,19 @@ def test_line_mesh_label_boundary(line_tri_mesh):
         'moo': 124,
         'bottom': 125
     }
+
+
+@pytest.mark.parametrize('cell_type', ('line', 'triangle'))
+def test_reverse_cell_order(line_tri_mesh, cell_type):
+    mesh = line_tri_mesh.get(cell_type)
+    key = mesh.default_key
+
+    points = mesh.points
+    cells = mesh.cells
+    data = mesh.cell_data[key]
+
+    mesh.reverse_cell_order()
+
+    np.testing.assert_allclose(mesh.points, points)
+    np.testing.assert_allclose(mesh.cells, cells[::-1])
+    np.testing.assert_allclose(mesh.cell_data[key], data[::-1])

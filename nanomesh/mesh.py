@@ -9,7 +9,8 @@ import numpy as np
 import pyvista as pv
 import scipy
 
-from .mpl.meshplot import _legend_with_triplot_fix
+from .mpl.meshplot import (_legend_with_field_names_only,
+                           _legend_with_triplot_fix)
 from .region_markers import RegionMarker, RegionMarkerLike
 
 if TYPE_CHECKING:
@@ -279,6 +280,7 @@ class LineMesh(BaseMesh):
     def plot_mpl(self,
                  ax: plt.Axes = None,
                  key: str = None,
+                 legend: str = 'floating',
                  **kwargs) -> plt.Axes:
         """Simple line mesh plot using `matplotlib`.
 
@@ -324,6 +326,19 @@ class LineMesh(BaseMesh):
                 **kwargs,
             )
 
+            if legend == 'floating':
+                idx = (self.cell_data[self.default_key] == cell_data_val)
+                cells = self.cells[idx]
+                points = self.points[np.unique(cells)]
+                point = points.mean(axis=0)
+
+                ax.annotate(name,
+                            point[::-1],
+                            textcoords='offset pixels',
+                            xytext=(4, 4),
+                            color='red',
+                            va='bottom')
+
         if self.region_markers:
             mark_x, mark_y = np.array([m.point for m in self.region_markers]).T
             ax.scatter(mark_y,
@@ -331,11 +346,22 @@ class LineMesh(BaseMesh):
                        marker='*',
                        color='red',
                        label='Region markers')
+            for marker in self.region_markers:
+                label = marker.name if marker.name else marker.label
+                ax.annotate(label,
+                            marker.point[::-1],
+                            textcoords='offset pixels',
+                            xytext=(4, -4),
+                            color='red',
+                            va='top')
 
         ax.set_title(f'{self._cell_type} mesh')
         ax.axis('equal')
 
-        ax.legend(title=key)
+        if legend == 'all':
+            ax.legend(title=key)
+        elif legend == 'fields':
+            _legend_with_field_names_only(ax=ax, title=key)
 
         return ax
 

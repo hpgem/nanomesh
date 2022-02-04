@@ -84,7 +84,11 @@ class Volume(BaseImage):
         sv.interact()
         return sv
 
-    def show_volume(self, renderer: str = 'itkwidgets', **kwargs) -> None:
+    def plot(self, *args, **kwargs):
+        """Shortcut for `.show()."""
+        return self.show(*args, **kwargs)
+
+    def show(self, renderer: str = 'itkwidgets', **kwargs) -> None:
         """Show volume using `itkwidgets` or `ipyvolume`.
 
         Extra keyword arguments (`kwargs`) are passed to

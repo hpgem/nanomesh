@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh, TriangleMesh
 
 
-def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
+def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh, **kwargs):
     """Compare mesh with image.
 
     Parameters
@@ -21,6 +21,8 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
         Image to compare mesh with
     mesh : TriangleMesh
         Triangle mesh to plot on image
+    **kwargs :
+        Extra keyword arguments passed on to plotting function.
 
     Returns
     -------
@@ -28,7 +30,7 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh):
     """
     fig, ax = plt.subplots()
 
-    mesh.plot_mpl(ax=ax)
+    mesh.plot_mpl(ax=ax, **kwargs)
 
     ax.imshow(image)
     ax.axis('image')

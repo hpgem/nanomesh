@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence, Tuple
+from typing import TYPE_CHECKING, Any, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,26 +10,30 @@ if TYPE_CHECKING:
     from nanomesh.mesh_container import MeshContainer
 
 
-def _deduplicate_labels(handles_labels: Sequence[Tuple[Any, str]]):
+def _deduplicate_labels(
+    handles_labels: Tuple[List[Any],
+                          List[str]]) -> Tuple[List[Any], List[str]]:
     """Deduplicate legend handles and labels.
 
     Parameters
     ----------
-    handles_labels : Sequence[Tuple[Any, str]]
-        List of legend handles and labels.
+    handles_labels : Tuple[List[Any], List[str]]
+        Legend handles and labels.
 
     Returns
     -------
-    Tuple
-        Deduplicated legend items
+    (new_handles, new_labels) : Tuple[List[Any], List[str]]
+        Deduplicated legend handles and labels
     """
-    seen_labels = []
-    new_handles_labels = []
-    for handle, label in handles_labels:
-        if label not in seen_labels:
-            new_handles_labels.append((handle, label))
-            seen_labels.append(label)
-    return new_handles_labels
+    new_handles = []
+    new_labels = []
+
+    for handle, label in zip(*handles_labels):
+        if label not in new_labels:
+            new_handles.append(handle)
+            new_labels.append(label)
+
+    return (new_handles, new_labels)
 
 
 def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
@@ -43,9 +47,10 @@ def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
         Extra keyword arguments passed to `ax.legend()`.
     """
     handles_labels = ax.get_legend_handles_labels()
+
     new_handles_labels = _deduplicate_labels(handles_labels)
 
-    return ax.legend(*zip(*new_handles_labels), **kwargs)
+    return ax.legend(*new_handles_labels, **kwargs)
 
 
 def _legend_with_field_names_only(ax: plt.Axes,
@@ -61,17 +66,24 @@ def _legend_with_field_names_only(ax: plt.Axes,
     **kwargs
         Extra keyword arguments passed to `ax.legend()`.
     """
-    new_handles_labels = []
-    for handle, label in zip(*ax.get_legend_handles_labels()):
+    handles_labels = ax.get_legend_handles_labels()
+
+    new_handles = []
+    new_labels = []
+
+    for handle, label in zip(*handles_labels):
         try:
             float(label)
         except ValueError:
-            new_handles_labels.append((handle, label))
+            new_handles.append(handle)
+            new_labels.append(label)
+
+    new_handles_labels = (new_handles, new_labels)
 
     if triplot_fix:
         new_handles_labels = _deduplicate_labels(new_handles_labels)
 
-    return ax.legend(*zip(*new_handles_labels), **kwargs)
+    return ax.legend(*new_handles_labels, **kwargs)
 
 
 def line_triangle_plot(mesh: MeshContainer,
@@ -300,6 +312,8 @@ def trianglemeshplot(mesh: TriangleMesh,
 
     ax.set_title(f'{mesh._cell_type} mesh')
     ax.axis('equal')
+
+    print('rawr', legend)
 
     if legend == 'all':
         _legend_with_triplot_fix(ax=ax, title=key)

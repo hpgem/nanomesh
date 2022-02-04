@@ -66,4 +66,4 @@ def test_compare_with_mesh():
     labels = np.array([0, 0, 1, 1])
     mesh = TriangleMesh(points=points, cells=cells, labels=labels)
 
-    compare_mesh_with_image(image, mesh)
+    compare_mesh_with_image(image, mesh, legend='all')

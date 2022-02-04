@@ -95,6 +95,25 @@ class BaseMesh:
         prefix = ' ' * indent
         return f'\n{prefix}'.join(s)
 
+    def info(self):
+        """Print info about the mesh."""
+        for key, data in self.cell_data.items():
+            print(key)
+
+            unique, counts = np.unique(data, return_counts=True)
+
+            for i, n in zip(unique, counts):
+                name = self.number_to_field.get(i, i)
+                print(f'    {name}: {n}')
+
+        print()
+        print('regions')
+        for region in self.region_markers:
+            name = region.name if region.name else region.label
+            x, y = region.point
+            print(f'    {name}: {x=:.2f}, {y=:.2f}'
+                  ' (constraint={region.constraint})')
+
     @property
     def number_to_field(self):
         """Mapping from numbers to fields, proxy to `.field_to_number`."""

@@ -275,7 +275,7 @@ class Mesher3D(BaseMesher):
         """
         self.contour = pad(self.contour, **kwargs)
 
-    def show_contour(self, **kwargs):
+    def plot_contour(self, **kwargs):
         """Pad the contour. See `nanomesh.BaseMesh.plot_pyvista` for info.
 
         Parameters

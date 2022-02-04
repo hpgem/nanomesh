@@ -150,7 +150,7 @@ def lineplot(ax: plt.Axes,
 def linemeshplot(mesh: LineMesh,
                  ax: plt.Axes = None,
                  key: str = None,
-                 legend: str = 'all',
+                 legend: str = 'fields',
                  **kwargs) -> plt.Axes:
     """Simple line mesh plot using `matplotlib`.
 
@@ -240,7 +240,7 @@ def linemeshplot(mesh: LineMesh,
 def trianglemeshplot(mesh: TriangleMesh,
                      ax: plt.Axes = None,
                      key: str = None,
-                     legend: str = None,
+                     legend: str = 'fields',
                      **kwargs) -> plt.Axes:
     """Simple line mesh plot using `matplotlib`.
 

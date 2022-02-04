@@ -240,6 +240,7 @@ def linemeshplot(mesh: LineMesh,
 def trianglemeshplot(mesh: TriangleMesh,
                      ax: plt.Axes = None,
                      key: str = None,
+                     legend: str = None,
                      **kwargs) -> plt.Axes:
     """Simple line mesh plot using `matplotlib`.
 
@@ -249,6 +250,12 @@ def trianglemeshplot(mesh: TriangleMesh,
         Axes to use for plotting.
     key : str, optional
         Label of cell data item to plot, defaults to `.default_key`.
+    legend : str
+        Style for the legend.
+        - off : No legend
+        - all : Create legend with all labels
+        - fields : Create legend with field names only
+        - floating : Add floating labels to plot
     **kwargs
         Extra keyword arguments passed to `ax.triplot`
 
@@ -277,9 +284,26 @@ def trianglemeshplot(mesh: TriangleMesh,
                    label=name,
                    **kwargs)
 
+        if legend == 'floating':
+            idx = (mesh.cell_data[mesh.default_key] == cell_data_val)
+            cells = mesh.cells[idx]
+            points = mesh.points[np.unique(cells)]
+
+            point = points[len(points) // 2]  # take middle point as anchor
+
+            ax.annotate(name,
+                        point[::-1],
+                        textcoords='offset pixels',
+                        xytext=(4, 4),
+                        color='red',
+                        va='bottom')
+
     ax.set_title(f'{mesh._cell_type} mesh')
     ax.axis('equal')
 
-    _legend_with_triplot_fix(ax, title=key)
+    if legend == 'all':
+        _legend_with_triplot_fix(ax=ax, title=key)
+    elif legend == 'fields':
+        _legend_with_field_names_only(ax=ax, triplot_fix=True, title=key)
 
     return ax

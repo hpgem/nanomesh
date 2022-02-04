@@ -290,7 +290,7 @@ class LineMesh(BaseMesh):
         -------
         plt.Axes
         """
-        from .plotting.meshplot import linemeshplot
+        from .plotting import linemeshplot
         return linemeshplot(self, *args, **kwargs)
 
     def label_boundaries(self,
@@ -387,7 +387,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         -------
         plt.Axes
         """
-        from .plotting.meshplot import trianglemeshplot
+        from .plotting import trianglemeshplot
         return trianglemeshplot(self, *args, **kwargs)
 
     def to_trimesh(self):

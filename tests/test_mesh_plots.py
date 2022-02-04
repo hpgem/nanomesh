@@ -6,7 +6,7 @@ import nanomesh
 from nanomesh import Mesher2D
 from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh2d import compare_mesh_with_image
-from nanomesh.plotting.meshplot import line_triangle_plot
+from nanomesh.plotting import line_triangle_plot
 
 
 @image_comparison2(baseline_images=['line_mesh'])

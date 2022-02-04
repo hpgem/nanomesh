@@ -9,7 +9,6 @@ import numpy as np
 import pyvista as pv
 import scipy
 
-from .mpl.meshplot import _legend_with_triplot_fix
 from .region_markers import RegionMarker, RegionMarkerLike
 
 if TYPE_CHECKING:
@@ -276,68 +275,23 @@ class LineMesh(BaseMesh):
         """Shortcut for `.plot_mpl`"""
         return self.plot_mpl(*args, **kwargs)
 
-    def plot_mpl(self,
-                 ax: plt.Axes = None,
-                 key: str = None,
-                 **kwargs) -> plt.Axes:
-        """Simple line mesh plot using `matplotlib`.
+    def plot_mpl(self, *args, **kwargs) -> plt.Axes:
+        """Simple line mesh plot using `matplotlib`. See
+        `.plotting.linemeshplot` for details.
 
         Parameters
         ----------
-        ax : plt.Axes, optional
-            Axes to use for plotting.
-        key : str, optional
-            Name of the cell data array to plot.
+        *args
+            Arguments passed to `.plotting.linemeshplot`
         **kwargs
-            Extra keyword arguments passed to `.mpl.lineplot`
+            Keyword arguments passed to `.plotting.linemeshplot`
 
         Returns
         -------
         plt.Axes
         """
-        from .mpl.lineplot import lineplot
-
-        if not ax:
-            fig, ax = plt.subplots()
-
-        if key is None:
-            try:
-                key = tuple(self.cell_data.keys())[0]
-            except IndexError:
-                pass
-
-        # https://github.com/python/mypy/issues/9430
-        cell_data = self.cell_data.get(key, self.zero_labels)  # type: ignore
-
-        for cell_data_val in np.unique(cell_data):
-            vert_x, vert_y = self.points.T
-
-            name = self.number_to_field.get(cell_data_val, cell_data_val)
-
-            lineplot(
-                ax,
-                x=vert_y,
-                y=vert_x,
-                lines=self.cells,
-                mask=cell_data != cell_data_val,
-                label=name,
-                **kwargs,
-            )
-
-        if self.region_markers:
-            mark_x, mark_y = np.array([m.point for m in self.region_markers]).T
-            ax.scatter(mark_y,
-                       mark_x,
-                       marker='*',
-                       color='red',
-                       label='Region markers')
-
-        ax.set_title(f'{self._cell_type} mesh')
-        ax.axis('equal')
-
-        ax.legend(title=key)
-
-        return ax
+        from .plotting import linemeshplot
+        return linemeshplot(self, *args, **kwargs)
 
     def label_boundaries(self,
                          left: Optional[int | str] = None,
@@ -418,54 +372,23 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         else:
             return self.plot_itk(**kwargs)
 
-    def plot_mpl(self,
-                 ax: plt.Axes = None,
-                 key: str = None,
-                 **kwargs) -> plt.Axes:
-        """Simple mesh plot using `matplotlib`.
+    def plot_mpl(self, *args, **kwargs) -> plt.Axes:
+        """Simple triangle mesh plot using `matplotlib`. See
+        `.plotting.trianglemeshplot` for details.
 
         Parameters
         ----------
-        ax : plt.Axes, optional
-            Axes to use for plotting.
-        key : str, optional
-            Label of cell data item to plot, defaults to `.default_key`.
-        fields : dict
-            Maps cell data value to string for legend.
+        *args
+            Arguments passed to `.plotting.trianglemeshplot`
         **kwargs
-            Extra keyword arguments passed to `ax.triplot`
+            Keyword arguments passed to `.plotting.trianglemeshplot`
 
         Returns
         -------
         plt.Axes
         """
-        if not ax:
-            fig, ax = plt.subplots()
-
-        if not key:
-            key = self.default_key
-
-        # https://github.com/python/mypy/issues/9430
-        cell_data = self.cell_data.get(key, self.zero_labels)  # type: ignore
-
-        for cell_data_val in np.unique(cell_data):
-            vert_x, vert_y = self.points.T
-
-            name = self.number_to_field.get(cell_data_val, cell_data_val)
-
-            ax.triplot(vert_y,
-                       vert_x,
-                       triangles=self.cells,
-                       mask=cell_data != cell_data_val,
-                       label=name,
-                       **kwargs)
-
-        ax.set_title(f'{self._cell_type} mesh')
-        ax.axis('equal')
-
-        _legend_with_triplot_fix(ax, title=key)
-
-        return ax
+        from .plotting import trianglemeshplot
+        return trianglemeshplot(self, *args, **kwargs)
 
     def to_trimesh(self):
         """Return instance of `trimesh.Trimesh`."""

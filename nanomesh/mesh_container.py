@@ -198,8 +198,8 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         cell_types = {cell.type for cell in self.cells}
 
         if (not cell_type) and (cell_types == {'line', 'triangle'}):
-            from .mpl.meshplot import plot_line_triangle
-            return plot_line_triangle(self, **kwargs)
+            from .plotting import line_triangle_plot
+            return line_triangle_plot(self, **kwargs)
         else:
             mesh = self.get(cell_type)
             return mesh.plot(**kwargs)

@@ -27,4 +27,4 @@ def test_compare_with_other(plane):
 def test_show_image():
     """Test `utils.show_image`"""
     data = np.arange(25).reshape(5, 5)
-    show_image(data, dpi=80, title='TESTING')
+    show_image(data, title='TESTING')

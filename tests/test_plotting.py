@@ -36,9 +36,9 @@ def test_contour_plot(segmented_image):
     mesher = Mesher2D(segmented_image)
     mesher.generate_contour(max_contour_dist=5, level=0.5)
 
-    mesher.show_contour(legend='fields')
-    mesher.show_contour(legend='floating')
-    mesher.show_contour(legend='all')
+    mesher.plot_contour(legend='fields')
+    mesher.plot_contour(legend='floating')
+    mesher.plot_contour(legend='all')
 
 
 @image_comparison2(baseline_images=['compare_mesh_with_image'])

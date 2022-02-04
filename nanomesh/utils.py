@@ -102,17 +102,17 @@ class SliceViewer:
 
 def show_image(image,
                *,
-               dpi: int = 80,
+               ax: plt.Axes = None,
                title: str = None,
                **kwargs) -> 'plt.Axes':
-    """Simple function to show an image using matplotlib.
+    """Simple function to plot an image using matplotlib.
 
     Parameters
     ----------
     image : 2D np.ndarray
         Image to display.
-    dpi : int, optional
-        DPI to render at.
+    ax : plt.Axes, optional
+        Axes to use for plotting.
     title : str, optional
         Title for the plot.
     **kwargs : dict
@@ -121,14 +121,12 @@ def show_image(image,
     Returns
     -------
     plt.Axes
-        Description
     """
     kwargs.setdefault('interpolation', None)
 
-    fig = plt.figure(dpi=dpi)
-    plt.set_cmap('gray')
+    if not ax:
+        fig, ax = plt.subplots()
 
-    ax = fig.add_subplot()
     ax.imshow(image, **kwargs)
 
     if title:

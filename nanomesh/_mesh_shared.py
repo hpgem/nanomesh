@@ -34,7 +34,7 @@ class BaseMesher(ABC):
         return '\n'.join(s)
 
     @abstractmethod
-    def show_contour(self):
+    def plot_contour(self):
         ...
 
     @abstractmethod

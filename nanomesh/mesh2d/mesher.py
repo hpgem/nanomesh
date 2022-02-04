@@ -281,7 +281,7 @@ class Mesher2D(BaseMesher):
         """
         self.contour = pad(self.contour, **kwargs)
 
-    def show_contour(self, ax: plt.Axes = None, **kwargs):
+    def plot_contour(self, ax: plt.Axes = None, **kwargs):
         """Plot contours on image.
 
         Parameters

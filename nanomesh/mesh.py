@@ -276,21 +276,21 @@ class LineMesh(BaseMesh):
         return self.plot_mpl(*args, **kwargs)
 
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:
-        """Simple line mesh plot using `matplotlib`. See `.mpl.linemeshplot`
-        for details.
+        """Simple line mesh plot using `matplotlib`. See
+        `.plotting.linemeshplot` for details.
 
         Parameters
         ----------
         *args
-            Arguments passed to `mpl.linemeshplot`
+            Arguments passed to `.plotting.linemeshplot`
         **kwargs
-            Keyword arguments passed to `.mpl.linemeshplot`
+            Keyword arguments passed to `.plotting.linemeshplot`
 
         Returns
         -------
         plt.Axes
         """
-        from .mpl.meshplot import linemeshplot
+        from .plotting.meshplot import linemeshplot
         return linemeshplot(self, *args, **kwargs)
 
     def label_boundaries(self,
@@ -374,20 +374,20 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
 
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:
         """Simple triangle mesh plot using `matplotlib`. See
-        `.mpl.trianglemeshplot` for details.
+        `.plotting.trianglemeshplot` for details.
 
         Parameters
         ----------
         *args
-            Arguments passed to `mpl.trianglemeshplot`
+            Arguments passed to `.plotting.trianglemeshplot`
         **kwargs
-            Keyword arguments passed to `.mpl.trianglemeshplot`
+            Keyword arguments passed to `.plotting.trianglemeshplot`
 
         Returns
         -------
         plt.Axes
         """
-        from .mpl.meshplot import trianglemeshplot
+        from .plotting.meshplot import trianglemeshplot
         return trianglemeshplot(self, *args, **kwargs)
 
     def to_trimesh(self):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Any, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +8,28 @@ import numpy as np
 if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh, TriangleMesh
     from nanomesh.mesh_container import MeshContainer
+
+
+def _deduplicate_labels(handles_labels: Sequence[Tuple[Any, str]]):
+    """Deduplicate legend handles and labels.
+
+    Parameters
+    ----------
+    handles_labels : Sequence[Tuple[Any, str]]
+        List of legend handles and labels.
+
+    Returns
+    -------
+    Tuple
+        Deduplicated legend items
+    """
+    seen_labels = []
+    new_handles_labels = []
+    for handle, label in handles_labels:
+        if label not in seen_labels:
+            new_handles_labels.append((handle, label))
+            seen_labels.append(label)
+    return new_handles_labels
 
 
 def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
@@ -20,13 +42,15 @@ def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
     **kwargs
         Extra keyword arguments passed to `ax.legend()`.
     """
-    handles, labels = ax.get_legend_handles_labels()
-    # reverse to avoid blank line color
-    by_label = dict(zip(reversed(labels), reversed(handles)))
-    return ax.legend(by_label.values(), by_label.keys(), **kwargs)
+    handles_labels = ax.get_legend_handles_labels()
+    new_handles_labels = _deduplicate_labels(handles_labels)
+
+    return ax.legend(*zip(*new_handles_labels), **kwargs)
 
 
-def _legend_with_field_names_only(ax: plt.Axes, **kwargs):
+def _legend_with_field_names_only(ax: plt.Axes,
+                                  triplot_fix: bool = False,
+                                  **kwargs):
     """Add legend with named fields only.
 
     Parameters
@@ -43,6 +67,9 @@ def _legend_with_field_names_only(ax: plt.Axes, **kwargs):
             float(label)
         except ValueError:
             new_handles_labels.append((handle, label))
+
+    if triplot_fix:
+        new_handles_labels = _deduplicate_labels(new_handles_labels)
 
     return ax.legend(*zip(*new_handles_labels), **kwargs)
 

@@ -186,6 +186,16 @@ class BaseImage:
         """
         return self.apply(normalize_values)
 
+    def invert_contrast(self):
+        """Invert the contrast of the image.
+
+        Returns
+        -------
+        out : BaseImage
+            Inverted image
+        """
+        return self.apply(lambda arr: arr.max() - arr)
+
     def binary_digitize(self, threshold: Union[float, str] = None):
         """Convert into a binary image.
 

@@ -281,13 +281,15 @@ class Mesher2D(BaseMesher):
         """
         self.contour = pad(self.contour, **kwargs)
 
-    def plot_contour(self, ax: plt.Axes = None, **kwargs):
+    def plot_contour(self, ax: plt.Axes = None, cmap: str = None, **kwargs):
         """Plot contours on image.
 
         Parameters
         ----------
         ax : matplotlib.Axes
             Axes to use for plotting.
+        cmap : str
+            Matplotlib color map for `ax.imshow`
         **kwargs
             Extra keyword arguments passed to `.plotting.linemeshplot()`
 
@@ -301,7 +303,7 @@ class Mesher2D(BaseMesher):
         ax.set_title('Contours')
         self.contour.plot_mpl(ax=ax, **kwargs)
 
-        ax.imshow(self.image)
+        ax.imshow(self.image, cmap=cmap)
         ax.axis('image')
         ax.set_xticks([])
         ax.set_yticks([])

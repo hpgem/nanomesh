@@ -108,14 +108,12 @@ def test_mesh3d_pad_invalid_side(mesh_box):
         2: 277
     }),
     ('bottom', None, 'background', {
-        0: 608,
+        0: 885,
         1: 1794,
-        2: 277
     }),
     ('bottom', None, 'feature', {
         0: 608,
-        1: 1794,
-        2: 277
+        1: 2071,
     }),
 ))
 def test_pad_label(image_cube, side, label, name, expected_labels):

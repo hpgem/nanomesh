@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Tuple
+from itertools import cycle
+from typing import TYPE_CHECKING, Any, Generator, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +9,19 @@ import numpy as np
 if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh, TriangleMesh
     from nanomesh.mesh_container import MeshContainer
+
+
+def _get_color_cycle() -> Generator[str, None, None]:
+    """Get default matplotlib color cycle.
+
+    Yields
+    ------
+    Generator[str]
+        Generates color string in hex format (#XXXXXX).
+    """
+    color_cycle = cycle(plt.rcParams['axes.prop_cycle'])
+    while True:
+        yield next(color_cycle)['color']
 
 
 def _deduplicate_labels(
@@ -284,6 +298,9 @@ def trianglemeshplot(mesh: TriangleMesh,
     # https://github.com/python/mypy/issues/9430
     cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
 
+    # control color cycle to avoid skipping colors in `ax.triplot`
+    color_cycle = _get_color_cycle()
+
     for cell_data_val in np.unique(cell_data):
         vert_x, vert_y = mesh.points.T
 
@@ -294,6 +311,7 @@ def trianglemeshplot(mesh: TriangleMesh,
                    triangles=mesh.cells,
                    mask=cell_data != cell_data_val,
                    label=name,
+                   color=next(color_cycle),
                    **kwargs)
 
         if legend == 'floating':
@@ -312,8 +330,6 @@ def trianglemeshplot(mesh: TriangleMesh,
 
     ax.set_title(f'{mesh._cell_type} mesh')
     ax.axis('equal')
-
-    print('rawr', legend)
 
     if legend == 'all':
         _legend_with_triplot_fix(ax=ax, title=key)

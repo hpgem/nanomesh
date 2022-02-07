@@ -12,7 +12,10 @@ if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh, TriangleMesh
 
 
-def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh, **kwargs):
+def compare_mesh_with_image(image: np.ndarray,
+                            mesh: TriangleMesh,
+                            cmap: str = None,
+                            **kwargs):
     """Compare mesh with image.
 
     Parameters
@@ -21,6 +24,8 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh, **kwargs):
         Image to compare mesh with
     mesh : TriangleMesh
         Triangle mesh to plot on image
+    cmap : str
+        Matplotlib color map for `ax.imshow`
     **kwargs :
         Extra keyword arguments passed on to plotting function.
 
@@ -32,7 +37,7 @@ def compare_mesh_with_image(image: np.ndarray, mesh: TriangleMesh, **kwargs):
 
     mesh.plot_mpl(ax=ax, **kwargs)
 
-    ax.imshow(image)
+    ax.imshow(image, cmap=cmap)
     ax.axis('image')
     ax.set_xticks([])
     ax.set_yticks([])

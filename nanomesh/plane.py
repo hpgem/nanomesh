@@ -163,7 +163,9 @@ class Plane(BaseImage):
         from nanomesh.mesh2d import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
 
-    def compare_with_digitized(self, digitized: Union[np.ndarray, 'Plane'],
+    def compare_with_digitized(self,
+                               digitized: Union[np.ndarray, 'Plane'],
+                               cmap: str = None,
                                **kwargs) -> 'plt.Axes':
         """Compare image with digitized (segmented) image. Returns a plot with
         the overlay of the digitized image.
@@ -172,6 +174,8 @@ class Plane(BaseImage):
         ----------
         digitized : np.ndarray, Plane
             Digitized image of the same dimensions to overlay
+        cmap : str
+            Matplotlib color map for `ax.imshow`
         **kwargs : dict
             Extra keyword arguments passed to `skimage.color.label2rgb`.
 
@@ -190,7 +194,7 @@ class Plane(BaseImage):
 
         fig, ax = plt.subplots()
 
-        ax.imshow(image_overlay, interpolation='none')
+        ax.imshow(image_overlay, interpolation='none', cmap=cmap)
         ax.axis('image')
         ax.set_xticks([])
         ax.set_yticks([])
@@ -198,7 +202,9 @@ class Plane(BaseImage):
 
         return ax
 
-    def compare_with_other(self, other: Union[np.ndarray, 'Plane'],
+    def compare_with_other(self,
+                           other: Union[np.ndarray, 'Plane'],
+                           cmap: str = None,
                            **kwargs) -> 'plt.Axes':
         """Compare image with other image.
 
@@ -206,6 +212,8 @@ class Plane(BaseImage):
         ----------
         other : np.ndarray, Plane
             Other image of the same dimensions to overlay
+        cmap : str
+            Matplotlib color map for `ax.imshow`
         **kwargs : dict
             Extra keyword arguments passed to `skimage.util.compare_images`.
 
@@ -224,7 +232,7 @@ class Plane(BaseImage):
 
         fig, ax = plt.subplots()
 
-        ax.imshow(comp, interpolation='none')
+        ax.imshow(comp, interpolation='none', cmap=cmap)
         ax.axis('image')
         ax.set_xticks([])
         ax.set_yticks([])

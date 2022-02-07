@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Tuple
+from itertools import cycle
+from typing import TYPE_CHECKING, Any, Generator, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +9,19 @@ import numpy as np
 if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh, TriangleMesh
     from nanomesh.mesh_container import MeshContainer
+
+
+def _get_color_cycle() -> Generator[str, None, None]:
+    """Get default matplotlib color cycle.
+
+    Yields
+    ------
+    Generator[str]
+        Generates color string in hex format (#XXXXXX).
+    """
+    color_cycle = cycle(plt.rcParams['axes.prop_cycle'])
+    while True:
+        yield next(color_cycle)['color']
 
 
 def _deduplicate_labels(
@@ -253,21 +267,27 @@ def trianglemeshplot(mesh: TriangleMesh,
                      ax: plt.Axes = None,
                      key: str = None,
                      legend: str = 'fields',
+                     flip_xy: bool = False,
                      **kwargs) -> plt.Axes:
     """Simple line mesh plot using `matplotlib`.
 
     Parameters
     ----------
+    mesh : TriangleMesh
+        Input triangle mesh.
     ax : plt.Axes, optional
         Axes to use for plotting.
     key : str, optional
         Label of cell data item to plot, defaults to `.default_key`.
-    legend : str
+    legend : str, optional
         Style for the legend.
         - off : No legend
         - all : Create legend with all labels
         - fields : Create legend with field names only
         - floating : Add floating labels to plot
+    flip_xy : bool, optional
+        Flip x/y coordinates. This is sometimes necessary to combine the
+        plot with other plots.
     **kwargs
         Extra keyword arguments passed to `ax.triplot`
 
@@ -284,8 +304,14 @@ def trianglemeshplot(mesh: TriangleMesh,
     # https://github.com/python/mypy/issues/9430
     cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
 
+    # control color cycle to avoid skipping colors in `ax.triplot`
+    color_cycle = _get_color_cycle()
+
     for cell_data_val in np.unique(cell_data):
         vert_x, vert_y = mesh.points.T
+
+        if flip_xy:
+            vert_x, vert_y = vert_y, vert_x
 
         name = mesh.number_to_field.get(cell_data_val, cell_data_val)
 
@@ -294,6 +320,7 @@ def trianglemeshplot(mesh: TriangleMesh,
                    triangles=mesh.cells,
                    mask=cell_data != cell_data_val,
                    label=name,
+                   color=next(color_cycle),
                    **kwargs)
 
         if legend == 'floating':
@@ -301,10 +328,12 @@ def trianglemeshplot(mesh: TriangleMesh,
             cells = mesh.cells[idx]
             points = mesh.points[np.unique(cells)]
 
-            point = points[len(points) // 2]  # take middle point as anchor
+            x, y = points[len(points) // 2]  # take middle point as anchor
 
-            ax.annotate(name,
-                        point[::-1],
+            if flip_xy:
+                x, y = y, x
+
+            ax.annotate(name, (y, x),
                         textcoords='offset pixels',
                         xytext=(4, 4),
                         color='red',
@@ -312,8 +341,6 @@ def trianglemeshplot(mesh: TriangleMesh,
 
     ax.set_title(f'{mesh._cell_type} mesh')
     ax.axis('equal')
-
-    print('rawr', legend)
 
     if legend == 'all':
         _legend_with_triplot_fix(ax=ax, title=key)

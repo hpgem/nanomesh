@@ -267,21 +267,27 @@ def trianglemeshplot(mesh: TriangleMesh,
                      ax: plt.Axes = None,
                      key: str = None,
                      legend: str = 'fields',
+                     flip_xy: bool = False,
                      **kwargs) -> plt.Axes:
     """Simple line mesh plot using `matplotlib`.
 
     Parameters
     ----------
+    mesh : TriangleMesh
+        Input triangle mesh.
     ax : plt.Axes, optional
         Axes to use for plotting.
     key : str, optional
         Label of cell data item to plot, defaults to `.default_key`.
-    legend : str
+    legend : str, optional
         Style for the legend.
         - off : No legend
         - all : Create legend with all labels
         - fields : Create legend with field names only
         - floating : Add floating labels to plot
+    flip_xy : bool, optional
+        Flip x/y coordinates. This is sometimes necessary to combine the
+        plot with other plots.
     **kwargs
         Extra keyword arguments passed to `ax.triplot`
 
@@ -304,6 +310,9 @@ def trianglemeshplot(mesh: TriangleMesh,
     for cell_data_val in np.unique(cell_data):
         vert_x, vert_y = mesh.points.T
 
+        if flip_xy:
+            vert_x, vert_y = vert_y, vert_x
+
         name = mesh.number_to_field.get(cell_data_val, cell_data_val)
 
         ax.triplot(vert_y,
@@ -319,10 +328,12 @@ def trianglemeshplot(mesh: TriangleMesh,
             cells = mesh.cells[idx]
             points = mesh.points[np.unique(cells)]
 
-            point = points[len(points) // 2]  # take middle point as anchor
+            x, y = points[len(points) // 2]  # take middle point as anchor
 
-            ax.annotate(name,
-                        point[::-1],
+            if flip_xy:
+                x, y = y, x
+
+            ax.annotate(name, (y, x),
                         textcoords='offset pixels',
                         xytext=(4, 4),
                         color='red',

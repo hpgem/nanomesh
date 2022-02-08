@@ -101,30 +101,6 @@ def _legend_with_field_names_only(ax: plt.Axes,
     return ax.legend(*new_handles_labels, **kwargs)
 
 
-def line_triangle_plot(mesh: MeshContainer,
-                       **kwargs) -> Tuple[plt.Axes, plt.Axes]:
-    """Plot line/triangle mesh together.
-
-    Parameters
-    ----------
-    mesh : MeshContainer
-        Input mesh containing line and triangle cells.
-    **kwargs
-        Exstra keyword arguments passed to
-        - .linemeshplot()
-        - .trianglemeshplot()
-
-    Returns
-    -------
-    Tuple(plt.Axes, plt.Axes)
-        Tuple of matplotlib axes
-    """
-    fig, (ax1, ax2) = plt.subplots(ncols=2)
-    mesh.plot_mpl('line', ax=ax1, **kwargs)
-    mesh.plot_mpl('triangle', ax=ax2, **kwargs)
-    return ax1, ax2
-
-
 def lineplot(ax: plt.Axes,
              *,
              x: np.ndarray,
@@ -382,3 +358,32 @@ def trianglemeshplot(mesh: TriangleMesh,
         _legend_with_field_names_only(ax=ax, triplot_fix=True, title=key)
 
     return ax
+
+
+def linetrianglemeshplot(mesh: MeshContainer,
+                         **kwargs) -> Tuple[plt.Axes, plt.Axes]:
+    """Plot line/triangle mesh together.
+
+    Parameters
+    ----------
+    mesh : MeshContainer
+        Input mesh containing line and triangle cells.
+    **kwargs
+        Exstra keyword arguments passed to
+        - .linemeshplot()
+        - .trianglemeshplot()
+
+    Returns
+    -------
+    Tuple(plt.Axes, plt.Axes)
+        Tuple of matplotlib axes
+    """
+    fig, (ax1, ax2) = plt.subplots(ncols=2)
+
+    line_mesh = mesh.get('line')
+    linemeshplot(line_mesh, ax=ax1, **kwargs)
+
+    triangle_mesh = mesh.get('triangle')
+    trianglemeshplot(triangle_mesh, ax=ax2, **kwargs)
+
+    return ax1, ax2

@@ -17,7 +17,7 @@ def test_create(n_points, n_cells, expected):
 
     mesh = BaseMesh.create(points=points, cells=cells)
 
-    assert mesh._cell_type == expected
+    assert mesh.cell_type == expected
 
 
 def test_meshio_interface(triangle_mesh_2d):

@@ -25,7 +25,7 @@ def _get_color_cycle(colors) -> cycle:
     return cycle(colors)
 
 
-def _get_point(mesh, label: int) -> Tuple[float, float]:
+def _get_point(mesh, label: int, method: str = 'mean') -> Tuple[float, float]:
     """Pick middle point from mesh matching default key.
 
     Parameters
@@ -43,9 +43,11 @@ def _get_point(mesh, label: int) -> Tuple[float, float]:
     idx = (mesh.cell_data[mesh.default_key] == label)
     cells = mesh.cells[idx]
     points = mesh.points[np.unique(cells)]
-    return points.mean(axis=0)
 
-    # return points[len(points) // 2]  # take middle point as anchor
+    if method == 'middle':
+        return points[len(points) // 2]  # take middle point as anchor
+    else:
+        return points.mean(axis=0)
 
 
 def _annotate(ax: plt.Axes,
@@ -309,7 +311,8 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
         )
 
         if legend == 'floating':
-            xy = _get_point(mesh, cell_data_val)
+            method = 'middle' if mesh.cell_type == 'triangle' else 'mean'
+            xy = _get_point(mesh, cell_data_val, method=method)
             _annotate(ax, name, xy, flip_xy=flip_xy)
 
     if mesh.region_markers:

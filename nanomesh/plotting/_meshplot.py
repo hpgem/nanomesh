@@ -222,23 +222,23 @@ def lineplot(ax: plt.Axes,
 
 
 def triplot(ax: plt.Axes, **kwargs):
-    """Shallow wrapper for `ax.triplot`."""
+    """Shallow wrapper for `ax.triplot` with the same API as `lineplot`."""
     x = kwargs.pop('x')
     y = kwargs.pop('y')
     kwargs['triangles'] = kwargs.pop('cells')
     return ax.triplot(x, y, **kwargs)
 
 
-def generic_plot(mesh: LineMesh | TriangleMesh,
-                 ax: plt.Axes = None,
-                 key: str = None,
-                 legend: str = 'fields',
-                 show_labels: Sequence[int | str] = None,
-                 hide_labels: Sequence[int | str] = None,
-                 colors: Sequence[str] = None,
-                 flip_xy: bool = True,
-                 **kwargs) -> plt.Axes:
-    """Simple line or triangle mesh plot using `matplotlib`.
+def _meshplot(mesh: LineMesh | TriangleMesh,
+              ax: plt.Axes = None,
+              key: str = None,
+              legend: str = 'fields',
+              show_labels: Sequence[int | str] = None,
+              hide_labels: Sequence[int | str] = None,
+              colors: Sequence[str] = None,
+              flip_xy: bool = True,
+              **kwargs) -> plt.Axes:
+    """Plot line or triangle mesh plot using `matplotlib`.
 
     Parameters
     ----------
@@ -347,8 +347,8 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
     return ax
 
 
-trianglemeshplot = generic_plot
-linemeshplot = generic_plot
+trianglemeshplot = _meshplot
+linemeshplot = _meshplot
 
 
 def linetrianglemeshplot(mesh: MeshContainer,

@@ -39,7 +39,7 @@ class PruneZ0Mixin:
 
 
 class BaseMesh:
-    _cell_type: str = 'base'
+    cell_type: str = 'base'
 
     def __init__(self,
                  points: np.ndarray,
@@ -131,7 +131,7 @@ class BaseMesh:
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of `meshio.Mesh`."""
         cells = [
-            (self._cell_type, self.cells),
+            (self.cell_type, self.cells),
         ]
 
         mesh = meshio.Mesh(self.points, cells)
@@ -269,7 +269,7 @@ class BaseMesh:
 
 
 class LineMesh(BaseMesh):
-    _cell_type = 'line'
+    cell_type = 'line'
 
     def plot(self, *args, **kwargs):
         """Shortcut for `.plot_mpl`"""
@@ -363,7 +363,7 @@ class LineMesh(BaseMesh):
 
 
 class TriangleMesh(BaseMesh, PruneZ0Mixin):
-    _cell_type = 'triangle'
+    cell_type = 'triangle'
 
     def plot(self, **kwargs):
         """Shortcut for `.plot_mpl` or `.plot_itk` depending on dimensions."""
@@ -491,7 +491,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
 
 
 class TetraMesh(BaseMesh):
-    _cell_type = 'tetra'
+    cell_type = 'tetra'
 
     def to_open3d(self):
         """Return instance of `open3d.geometry.TetraMesh`."""

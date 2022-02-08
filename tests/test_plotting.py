@@ -5,7 +5,7 @@ from helpers import image_comparison2
 from nanomesh import Mesher2D
 from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh2d import compare_mesh_with_image
-from nanomesh.plotting import line_triangle_plot
+from nanomesh.plotting import linetrianglemeshplot
 
 
 @image_comparison2(baseline_images=['line_mesh'])
@@ -14,9 +14,9 @@ def test_line_mesh_plot(line_tri_mesh):
     lines.plot_mpl()
 
 
-@image_comparison2(baseline_images=['line_triangle_plot'])
+@image_comparison2(baseline_images=['linetrianglemeshplot'])
 def test_line_triangle_mesh_plot(line_tri_mesh):
-    line_triangle_plot(line_tri_mesh)
+    linetrianglemeshplot(line_tri_mesh)
 
 
 @image_comparison2(baseline_images=['triangle_mesh'])

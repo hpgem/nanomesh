@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import cycle
-from typing import TYPE_CHECKING, Any, Generator, List, Tuple
+from typing import TYPE_CHECKING, Any, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,17 +11,18 @@ if TYPE_CHECKING:
     from nanomesh.mesh_container import MeshContainer
 
 
-def _get_color_cycle() -> Generator[str, None, None]:
+def _get_color_cycle(colors) -> cycle:
     """Get default matplotlib color cycle.
 
-    Yields
-    ------
-    Generator[str]
-        Generates color string in hex format (#XXXXXX).
+    Returns
+    -------
+    itertools.cycle
+        Cycles through color strings in hex format (#XXXXXX).
     """
-    color_cycle = cycle(plt.rcParams['axes.prop_cycle'])
-    while True:
-        yield next(color_cycle)['color']
+    if not colors:
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+    return cycle(colors)
 
 
 def _deduplicate_labels(
@@ -177,6 +178,9 @@ def linemeshplot(mesh: LineMesh,
                  ax: plt.Axes = None,
                  key: str = None,
                  legend: str = 'fields',
+                 show_labels: Sequence[int | str] = None,
+                 hide_labels: Sequence[int | str] = None,
+                 colors: Sequence[str] = None,
                  **kwargs) -> plt.Axes:
     """Simple line mesh plot using `matplotlib`.
 
@@ -192,6 +196,12 @@ def linemeshplot(mesh: LineMesh,
         - all : Create legend with all labels
         - fields : Create legend with field names only
         - floating : Add floating labels to plot
+    show_labels : Sequence[int | str]
+        List of labels or field names of cell data to show
+    hide_labels : Sequence[int | str]
+        List of labels or field names of cell data to hide
+    colors : Sequence[str]
+        List of colors to cycle through
     **kwargs
         Extra keyword arguments passed to `.plotting.lineplot`
 
@@ -208,10 +218,18 @@ def linemeshplot(mesh: LineMesh,
     # https://github.com/python/mypy/issues/9430
     cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
 
+    color_cycle = _get_color_cycle(colors)
+
     for cell_data_val in np.unique(cell_data):
         vert_x, vert_y = mesh.points.T
 
         name = mesh.number_to_field.get(cell_data_val, cell_data_val)
+
+        if show_labels and (name not in show_labels):
+            continue
+
+        if hide_labels and (name in hide_labels):
+            continue
 
         lineplot(
             ax,
@@ -220,6 +238,7 @@ def linemeshplot(mesh: LineMesh,
             lines=mesh.cells,
             mask=cell_data != cell_data_val,
             label=name,
+            color=next(color_cycle),
             **kwargs,
         )
 
@@ -267,6 +286,9 @@ def trianglemeshplot(mesh: TriangleMesh,
                      ax: plt.Axes = None,
                      key: str = None,
                      legend: str = 'fields',
+                     show_labels: Sequence[int | str] = None,
+                     hide_labels: Sequence[int | str] = None,
+                     colors: Sequence[str] = None,
                      flip_xy: bool = False,
                      **kwargs) -> plt.Axes:
     """Simple line mesh plot using `matplotlib`.
@@ -285,6 +307,12 @@ def trianglemeshplot(mesh: TriangleMesh,
         - all : Create legend with all labels
         - fields : Create legend with field names only
         - floating : Add floating labels to plot
+    show_labels : Sequence[int | str]
+        List of labels or field names of cell data to show
+    hide_labels : Sequence[int | str]
+        List of labels or field names of cell data to hide
+    colors : Sequence[str]
+        List of colors to cycle through
     flip_xy : bool, optional
         Flip x/y coordinates. This is sometimes necessary to combine the
         plot with other plots.
@@ -305,7 +333,7 @@ def trianglemeshplot(mesh: TriangleMesh,
     cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
 
     # control color cycle to avoid skipping colors in `ax.triplot`
-    color_cycle = _get_color_cycle()
+    color_cycle = _get_color_cycle(colors)
 
     for cell_data_val in np.unique(cell_data):
         vert_x, vert_y = mesh.points.T
@@ -314,6 +342,12 @@ def trianglemeshplot(mesh: TriangleMesh,
             vert_x, vert_y = vert_y, vert_x
 
         name = mesh.number_to_field.get(cell_data_val, cell_data_val)
+
+        if show_labels and (name not in show_labels):
+            continue
+
+        if hide_labels and (name in hide_labels):
+            continue
 
         ax.triplot(vert_y,
                    vert_x,

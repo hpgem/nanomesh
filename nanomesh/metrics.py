@@ -4,7 +4,7 @@ from typing import Callable, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .mesh import BaseMesh
+from .mesh._base import BaseMesh
 
 
 class Metric:

@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Callable, Union
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .base_image import BaseImage
-from .utils import show_image
+from ._base import BaseImage
+from ._utils import show_image
 
 logger = logging.getLogger(__name__)
 
@@ -88,25 +88,25 @@ class Plane(BaseImage):
         Parameters
         ----------
         **kwargs:
-            Keyword arguments are passed to `mesh2d.generate_2d_mesh`
+            Keyword arguments are passed to `mesh2d.plane2mesh`
 
         Returns
         -------
         mesh : TriangleMesh
             Description of the mesh.
         """
-        from nanomesh.mesh2d import generate_2d_mesh
-        return generate_2d_mesh(image=self.image, **kwargs)
+        from nanomesh.image2mesh import plane2mesh
+        return plane2mesh(image=self.image, **kwargs)
 
     def select_roi(self, from_points: np.ndarray = None):
         """Select region of interest in interactive matplotlib figure.
 
         Returns
         -------
-        roi : `nanomesh.roi2d.ROISelector`
+        roi : `nanomesh.image._roi2d.ROISelector`
             Region of interest object. Bounding box is stored in `roi.bbox`.
         """
-        from nanomesh.roi2d import ROISelector
+        from ._roi2d import ROISelector
         ax = self.show(title='Select region of interest')
         if from_points is not None:
             # reverse columns to match image
@@ -144,7 +144,7 @@ class Plane(BaseImage):
         `nanomesh.Plane`
             Cropped region as `nanomesh.Plane` object.
         """
-        from nanomesh.roi2d import extract_rectangle
+        from ._roi2d import extract_rectangle
         cropped = extract_rectangle(self.image, bbox=bbox)
         return Plane(cropped)
 
@@ -160,7 +160,7 @@ class Plane(BaseImage):
         -------
         ax : matplotlib.Axes
         """
-        from nanomesh.mesh2d import compare_mesh_with_image
+        from ..utils import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
 
     def compare_with_digitized(self,

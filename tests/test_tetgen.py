@@ -82,7 +82,7 @@ def triangle_mesh():
 @pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
-def test_tetgen_generate_3d_mesh(triangle_mesh):
+def test_tetgen_volume2mesh(triangle_mesh):
     """Test 3D mesh generation."""
     expected_fn = 'expected_tetra_mesh.msh'
 

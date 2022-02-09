@@ -6,13 +6,12 @@ import triangle as tr
 from .mesh_container import MeshContainer
 
 
-def simple_triangulate(points: np.ndarray,
-                       *,
-                       segments: np.ndarray = None,
-                       regions: Sequence[Tuple[float, float, int,
-                                               float, ]] = None,
-                       segment_markers: np.ndarray = None,
-                       opts: str = '') -> MeshContainer:
+def triangulate(points: np.ndarray,
+                *,
+                segments: np.ndarray = None,
+                regions: Sequence[Tuple[float, float, int, float, ]] = None,
+                segment_markers: np.ndarray = None,
+                opts: str = '') -> MeshContainer:
     """Simple triangulation using `triangle`.
 
     Parameters

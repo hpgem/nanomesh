@@ -1,8 +1,7 @@
 import numpy as np
 import pytest
 
-from nanomesh.plane import Plane
-from nanomesh.volume import Volume
+from nanomesh import Plane, Volume
 
 
 def test_to_from_sitk(volume):
@@ -48,7 +47,7 @@ def test_apply(volume):
 
 def test_show_slice(volume):
     """Test slice viewer call."""
-    from nanomesh.utils import SliceViewer
+    from nanomesh.image import SliceViewer
     sv = volume.show_slice()
     assert isinstance(sv, SliceViewer)
 

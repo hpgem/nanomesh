@@ -16,7 +16,7 @@ from nanomesh import LineMesh, RegionMarker
     'pAq30a',
     'pAq30a2',
 ))
-def test_simple_triangulate_from_line_mesh(opts):
+def test_triangulate_from_line_mesh(opts):
     points = np.array([[0, 0], [10, 0], [10, 10], [0, 10]])
     cells = np.array([[0, 1], [1, 2], [2, 3], [3, 0], [1, 3]])
 

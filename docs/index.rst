@@ -40,7 +40,6 @@ API Reference
    :maxdepth: 1
    :caption: API reference
 
-   nanomesh.base_image.rst
    nanomesh.io.rst
    nanomesh.mesh2d.rst
    nanomesh.mesh3d.rst
@@ -48,11 +47,10 @@ API Reference
    nanomesh.mesh_utils.rst
    nanomesh.mesh_utils_3d.rst
    nanomesh.metrics.rst
-   nanomesh.plane.rst
+   nanomesh.image.rst
    nanomesh.roi2d.rst
    nanomesh.tetgen.rst
    nanomesh.utils.rst
-   nanomesh.volume.rst
 
 
 Links

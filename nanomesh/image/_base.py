@@ -5,7 +5,7 @@ from typing import Callable, Union
 import numpy as np
 
 
-def normalize_values(image: np.ndarray):
+def _normalize_values(image: np.ndarray):
     """Rescale values to 0.0 to 1.0.
 
     Parameters
@@ -184,7 +184,7 @@ class BaseImage:
         out : BaseImage
             Normalized image
         """
-        return self.apply(normalize_values)
+        return self.apply(_normalize_values)
 
     def invert_contrast(self):
         """Invert the contrast of the image.

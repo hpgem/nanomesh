@@ -2,7 +2,7 @@ import numpy as np
 from helpers import image_comparison2
 
 from nanomesh import Plane
-from nanomesh.utils import show_image
+from nanomesh.image import show_image
 
 
 @image_comparison2(baseline_images=['plane_show'])

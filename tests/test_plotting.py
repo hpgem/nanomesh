@@ -3,9 +3,9 @@ import pytest
 from helpers import image_comparison2
 
 from nanomesh import Mesher2D
-from nanomesh.image2mesh import compare_mesh_with_image
 from nanomesh.mesh import TriangleMesh
 from nanomesh.plotting import linetrianglemeshplot
+from nanomesh.utils import compare_mesh_with_image
 
 
 @image_comparison2(baseline_images=['line_mesh'])

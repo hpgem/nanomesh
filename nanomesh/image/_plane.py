@@ -160,7 +160,7 @@ class Plane(BaseImage):
         -------
         ax : matplotlib.Axes
         """
-        from nanomesh.image2mesh import compare_mesh_with_image
+        from ..utils import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
 
     def compare_with_digitized(self,

@@ -8,7 +8,8 @@ from typing import Dict, List
 import meshio
 import numpy as np
 
-from .mesh import BaseMesh, PruneZ0Mixin
+from .mesh._base import BaseMesh
+from .mesh._mixin import PruneZ0Mixin
 
 
 class CellType(Enum):

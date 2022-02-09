@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 import pyvista as pv
 
-from nanomesh.mesh import BaseMesh, TriangleMesh
+from nanomesh import TriangleMesh
+from nanomesh.mesh._base import BaseMesh
 
 
 @pytest.mark.parametrize('n_points,n_cells,expected', (

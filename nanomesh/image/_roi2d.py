@@ -5,7 +5,7 @@ from matplotlib.patches import Polygon
 from scipy.spatial import ConvexHull
 from skimage import transform
 
-from .plotting import PolygonSelectorWithSnapping
+from ..plotting import PolygonSelectorWithSnapping
 
 
 def minimum_bounding_rectangle(coords: np.ndarray) -> np.ndarray:

@@ -103,10 +103,10 @@ class Plane(BaseImage):
 
         Returns
         -------
-        roi : `nanomesh.roi2d.ROISelector`
+        roi : `nanomesh.image._roi2d.ROISelector`
             Region of interest object. Bounding box is stored in `roi.bbox`.
         """
-        from nanomesh.roi2d import ROISelector
+        from ._roi2d import ROISelector
         ax = self.show(title='Select region of interest')
         if from_points is not None:
             # reverse columns to match image

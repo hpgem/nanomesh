@@ -1,13 +1,14 @@
 import logging
 import sys
 
+from ._tetgen_wrapper import tetrahedralize
+from ._triangle_wrapper import triangulate
 from .image import Plane, Volume
 from .mesh import LineMesh, TetraMesh, TriangleMesh
 from .mesh2d import Mesher2D, compare_mesh_with_image
 from .mesh3d import Mesher3D
 from .mesh_container import MeshContainer
 from .region_markers import RegionMarker
-from .triangulate import simple_triangulate
 
 logging.basicConfig(format='%(message)s',
                     level=logging.INFO,
@@ -27,7 +28,8 @@ __all__ = [
     'Mesher3D',
     'MeshContainer',
     'Plane',
-    'simple_triangulate',
+    'triangulate',
+    'tetrahedralize',
     'TetraMesh',
     'RegionMarker',
     'TriangleMesh',

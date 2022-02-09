@@ -11,8 +11,8 @@ from skimage import measure, morphology
 from nanomesh._mesh_shared import BaseMesher
 from nanomesh.image import Volume
 
+from .._triangle_wrapper import triangulate
 from ..region_markers import RegionMarker, RegionMarkerLike
-from ..triangulate import simple_triangulate
 from .bounding_box import BoundingBox
 from .helpers import pad
 
@@ -171,7 +171,7 @@ def close_side(mesh: TriangleMesh,
 
     coords = all_points[is_edge][:, keep_cols]
 
-    edge_mesh = simple_triangulate(points=coords, opts='')
+    edge_mesh = triangulate(points=coords, opts='')
     cells = edge_mesh.cells_dict['triangle'].copy()
 
     shape = cells.shape

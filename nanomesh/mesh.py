@@ -343,7 +343,7 @@ class LineMesh(BaseMesh):
 
     def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
         """Triangulate mesh using `triangle`."""
-        from .triangulate import simple_triangulate
+        from ._triangle_wrapper import triangulate
         points = self.points
         segments = self.cells
         regions = [(m.point[0], m.point[1], m.label, m.constraint)
@@ -351,11 +351,11 @@ class LineMesh(BaseMesh):
 
         segment_markers = self.cell_data.get('segment_markers', None)
 
-        mesh = simple_triangulate(points=points,
-                                  segments=segments,
-                                  regions=regions,
-                                  segment_markers=segment_markers,
-                                  opts=opts)
+        mesh = triangulate(points=points,
+                           segments=segments,
+                           regions=regions,
+                           segment_markers=segment_markers,
+                           opts=opts)
 
         fields = {m.label: m.name for m in self.region_markers if m.name}
         mesh.set_field_data('triangle', fields)
@@ -478,15 +478,15 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         Parameters
         ----------
         **kwargs
-            Keyword arguments passed to `nanomesh.tetgen.tetrahedralize`.
+            Keyword arguments passed to `nanomesh.tetrahedralize`.
 
         Returns
         -------
         mesh : TetraMesh
             Tetrahedralized mesh.
         """
-        from nanomesh import tetgen
-        mesh = tetgen.tetrahedralize(self, **kwargs)
+        from ._tetgen_wrapper import tetrahedralize
+        mesh = tetrahedralize(self, **kwargs)
         return mesh
 
 

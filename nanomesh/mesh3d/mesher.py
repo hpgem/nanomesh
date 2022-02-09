@@ -9,7 +9,7 @@ import numpy as np
 from skimage import measure, morphology
 
 from nanomesh._mesh_shared import BaseMesher
-from nanomesh.volume import Volume
+from nanomesh.image import Volume
 
 from ..region_markers import RegionMarker, RegionMarkerLike
 from ..triangulate import simple_triangulate

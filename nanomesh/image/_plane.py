@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Callable, Union
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .base_image import BaseImage
-from .utils import show_image
+from ._base import BaseImage
+from ._utils import show_image
 
 logger = logging.getLogger(__name__)
 

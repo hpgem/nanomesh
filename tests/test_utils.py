@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from nanomesh.utils import SliceViewer
+from nanomesh.image import SliceViewer
 
 
 def test_SliceViewer_fails():

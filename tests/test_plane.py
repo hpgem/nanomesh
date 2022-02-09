@@ -1,8 +1,7 @@
 import numpy as np
 import pytest
 
-from nanomesh.mesh import TriangleMesh
-from nanomesh.plane import Plane
+from nanomesh import Plane, TriangleMesh
 
 
 def test_to_from_sitk(plane):

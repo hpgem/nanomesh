@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from helpers import get_expected_if_it_exists
 
-from nanomesh.mesh3d import BoundingBox, generate_3d_mesh
+from nanomesh.image2mesh.mesher3d import BoundingBox, volume2mesh
 
 
 def compare_mesh_results(mesh_container, expected_fn):
@@ -38,11 +38,11 @@ def compare_mesh_results(mesh_container, expected_fn):
     raises=AssertionError,
     reason=('No way of currently ensuring meshes on OSX / Linux / Windows '
             'are exactly the same.'))
-def test_generate_3d_mesh(segmented_image_3d):
+def test_volume2mesh(segmented_image_3d):
     """Test 3D mesh generation."""
     expected_fn = 'segmented_mesh_3d.msh'
 
-    mesh_container = generate_3d_mesh(segmented_image_3d)
+    mesh_container = volume2mesh(segmented_image_3d)
 
     assert 'tetgen:ref' in mesh_container.cell_data
 

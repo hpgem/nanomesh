@@ -88,15 +88,15 @@ class Plane(BaseImage):
         Parameters
         ----------
         **kwargs:
-            Keyword arguments are passed to `mesh2d.generate_2d_mesh`
+            Keyword arguments are passed to `mesh2d.plane2mesh`
 
         Returns
         -------
         mesh : TriangleMesh
             Description of the mesh.
         """
-        from nanomesh.mesh2d import generate_2d_mesh
-        return generate_2d_mesh(image=self.image, **kwargs)
+        from nanomesh.image2mesh import plane2mesh
+        return plane2mesh(image=self.image, **kwargs)
 
     def select_roi(self, from_points: np.ndarray = None):
         """Select region of interest in interactive matplotlib figure.
@@ -144,7 +144,7 @@ class Plane(BaseImage):
         `nanomesh.Plane`
             Cropped region as `nanomesh.Plane` object.
         """
-        from nanomesh.roi2d import extract_rectangle
+        from ._roi2d import extract_rectangle
         cropped = extract_rectangle(self.image, bbox=bbox)
         return Plane(cropped)
 
@@ -160,7 +160,7 @@ class Plane(BaseImage):
         -------
         ax : matplotlib.Axes
         """
-        from nanomesh.mesh2d import compare_mesh_with_image
+        from nanomesh.image2mesh import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
 
     def compare_with_digitized(self,

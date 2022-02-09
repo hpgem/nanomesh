@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from helpers import get_expected_if_it_exists
 
-from nanomesh.mesh2d import generate_2d_mesh
-from nanomesh.mesh2d.polygon import Polygon
+from nanomesh.image2mesh import plane2mesh
+from nanomesh.image2mesh.mesher2d import Polygon
 
 
 def block_image(shape=(10, 10)):
@@ -20,10 +20,10 @@ def block_image(shape=(10, 10)):
 @pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))
-def test_generate_2d_mesh(segmented_image):
+def test_plane2mesh(segmented_image):
     """Test 2D mesh generation and plot."""
     np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = generate_2d_mesh(segmented_image, max_contour_dist=4, plot=True)
+    mesh = plane2mesh(segmented_image, max_contour_dist=4, plot=True)
 
     fn = Path('segmented_mesh_2d.msh')
     expected_mesh = get_expected_if_it_exists(fn, result=mesh)

@@ -1,6 +1,6 @@
 import numpy as np
 
-from nanomesh.roi2d import extract_rectangle, minimum_bounding_rectangle
+from nanomesh.image import extract_rectangle, minimum_bounding_rectangle
 
 
 def test_minimum_bounding_rectangle():
@@ -8,7 +8,7 @@ def test_minimum_bounding_rectangle():
     verts = np.array([
         [60, 60],
         [110, 110],
-        [60, 145],  # <- should be 150
+        [60, 145],
         [10, 110],
     ])
 

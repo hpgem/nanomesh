@@ -6,8 +6,8 @@ from typing import Union
 
 import numpy as np
 
-from .image import Plane, Volume
-from .mesh._base import BaseMesh
+from ..image import Plane, Volume
+from ..mesh._base import BaseMesh
 
 logger = logging.getLogger(__name__)
 

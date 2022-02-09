@@ -109,15 +109,15 @@ class Volume(BaseImage):
         Parameters
         ----------
         **kwargs:
-            Keyword arguments are passed to `mesh3d.generate_3d_mesh`
+            Keyword arguments are passed to `mesh3d.volume2mesh`
 
         Returns
         -------
         meshio.Mesh
             Description of the mesh.
         """
-        from nanomesh.mesh3d import generate_3d_mesh
-        return generate_3d_mesh(image=self.image, **kwargs)
+        from nanomesh.image2mesh import volume2mesh
+        return volume2mesh(image=self.image, **kwargs)
 
     def select_plane(self,
                      x: int = None,

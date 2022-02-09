@@ -8,13 +8,13 @@ import meshio
 import numpy as np
 from skimage import measure, morphology
 
-from nanomesh._mesh_shared import BaseMesher
+from nanomesh import triangulate
 from nanomesh.image import Volume
+from nanomesh.region_markers import RegionMarker, RegionMarkerLike
 
-from .._triangle_wrapper import triangulate
-from ..region_markers import RegionMarker, RegionMarkerLike
-from .bounding_box import BoundingBox
-from .helpers import pad
+from .._base import BaseMesher
+from ._bounding_box import BoundingBox
+from ._helpers import pad
 
 logger = logging.getLogger(__name__)
 
@@ -351,7 +351,7 @@ class Mesher3D(BaseMesher):
         return mesh
 
 
-def generate_3d_mesh(
+def volume2mesh(
     image: np.ndarray,
     *,
     level: float = None,

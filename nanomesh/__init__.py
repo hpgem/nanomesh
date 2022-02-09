@@ -4,9 +4,8 @@ import sys
 from ._tetgen_wrapper import tetrahedralize
 from ._triangle_wrapper import triangulate
 from .image import Plane, Volume
+from .image2mesh import Mesher2D, Mesher3D, compare_mesh_with_image
 from .mesh import LineMesh, TetraMesh, TriangleMesh
-from .mesh2d import Mesher2D, compare_mesh_with_image
-from .mesh3d import Mesher3D
 from .mesh_container import MeshContainer
 from .region_markers import RegionMarker
 

@@ -3,8 +3,8 @@ import pytest
 from helpers import image_comparison2
 
 from nanomesh import Mesher2D
+from nanomesh.image2mesh import compare_mesh_with_image
 from nanomesh.mesh import TriangleMesh
-from nanomesh.mesh2d import compare_mesh_with_image
 from nanomesh.plotting import linetrianglemeshplot
 
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
@@ -9,20 +8,19 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from skimage import measure
 
-from .._mesh_shared import BaseMesher
-from ..region_markers import RegionMarker
-from .helpers import append_to_segment_markers, generate_segment_markers, pad
-from .polygon import Polygon
+from nanomesh.region_markers import RegionMarker
 
-logger = logging.getLogger(__name__)
+from .._base import BaseMesher
+from ._helpers import append_to_segment_markers, generate_segment_markers, pad
+from ._polygon import Polygon
 
 if TYPE_CHECKING:
     from ..mesh import LineMesh
     from ..mesh_container import MeshContainer
 
 
-def polygons_to_line_mesh(polygons: List[Polygon],
-                          bbox: np.ndarray) -> LineMesh:
+def _polygons_to_line_mesh(polygons: List[Polygon],
+                           bbox: np.ndarray) -> LineMesh:
     """Generate line-mesh from polygons and surrounding bbox. The polygons are
     stacked and missing corners are obtained from the bounding box coordinates.
 
@@ -43,7 +41,7 @@ def polygons_to_line_mesh(polygons: List[Polygon],
     """
     from nanomesh import LineMesh
 
-    segments = generate_segments(polygons)
+    segments = _generate_segments(polygons)
 
     all_points = np.vstack([polygon.points for polygon in polygons])
 
@@ -70,8 +68,8 @@ def polygons_to_line_mesh(polygons: List[Polygon],
     return mesh
 
 
-def generate_background_region(polygons: List[Polygon],
-                               bbox: np.ndarray) -> RegionMarker:
+def _generate_background_region(polygons: List[Polygon],
+                                bbox: np.ndarray) -> RegionMarker:
     """Generate marker for background. This point is inside the bbox, but
     outside the given polygons.
 
@@ -99,8 +97,8 @@ def generate_background_region(polygons: List[Polygon],
     return RegionMarker(label=0, point=point, name='background')
 
 
-def generate_regions(polygons: List[Polygon],
-                     same_label: bool = True) -> List[RegionMarker]:
+def _generate_regions(polygons: List[Polygon],
+                      same_label: bool = True) -> List[RegionMarker]:
     """Generate regions for triangle.
 
     Parameters
@@ -132,7 +130,7 @@ def generate_regions(polygons: List[Polygon],
     return regions
 
 
-def generate_segments(polygons: List[Polygon]) -> np.ndarray:
+def _generate_segments(polygons: List[Polygon]) -> np.ndarray:
     """Generate segments for triangle.
 
     Parameters
@@ -207,10 +205,10 @@ class Mesher2D(BaseMesher):
         ]
         polygons = [polygon.remove_duplicate_points() for polygon in polygons]
 
-        regions = generate_regions(polygons, same_label=True)
-        regions.append(generate_background_region(polygons, self.image_bbox))
+        regions = _generate_regions(polygons, same_label=True)
+        regions.append(_generate_background_region(polygons, self.image_bbox))
 
-        contour = polygons_to_line_mesh(polygons, self.image_bbox)
+        contour = _polygons_to_line_mesh(polygons, self.image_bbox)
         contour.add_region_markers(regions)
 
         self.polygons = polygons
@@ -311,12 +309,12 @@ class Mesher2D(BaseMesher):
         return ax
 
 
-def generate_2d_mesh(image: np.ndarray,
-                     *,
-                     level: float = None,
-                     max_contour_dist: int = 5,
-                     opts: str = 'q30a100',
-                     plot: bool = False) -> 'meshio.Mesh':
+def plane2mesh(image: np.ndarray,
+               *,
+               level: float = None,
+               max_contour_dist: int = 5,
+               opts: str = 'q30a100',
+               plot: bool = False) -> 'meshio.Mesh':
     """Generate mesh from binary (segmented) image.
 
     Parameters

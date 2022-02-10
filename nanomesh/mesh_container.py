@@ -12,7 +12,7 @@ from .mesh._base import BaseMesh
 from .mesh._mixin import PruneZ0Mixin
 
 
-class CellType(Enum):
+class _CellType(Enum):
     NULL = 0
     LINE = 1
     TRIANGLE = 2
@@ -33,7 +33,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         number_to_field = defaultdict(dict)
 
         for field, (number, dimension) in self.field_data.items():
-            dim_name = CellType(dimension).name.lower()
+            dim_name = _CellType(dimension).name.lower()
             number_to_field[dim_name][number] = field
 
         return MappingProxyType(
@@ -46,7 +46,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         field_to_number = defaultdict(dict)
 
         for field, (number, dimension) in self.field_data.items():
-            dim_name = CellType(dimension).name.lower()
+            dim_name = _CellType(dimension).name.lower()
             field_to_number[dim_name][field] = number
 
         return MappingProxyType(
@@ -77,14 +77,14 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         remove_me = []
 
         for field, (value, field_cell_type) in new_field_data.items():
-            if CellType(field_cell_type) == CellType[cell_type.upper()]:
+            if _CellType(field_cell_type) == _CellType[cell_type.upper()]:
                 remove_me.append(field)
 
         for field in remove_me:
             new_field_data.pop(field)
 
         for value, field in input_field_data.items():
-            CELL_TYPE = CellType[cell_type.upper()].value
+            CELL_TYPE = _CellType[cell_type.upper()].value
             new_field_data[field] = [value, CELL_TYPE]
 
         self.field_data: Dict[str, List[int]] = new_field_data

@@ -12,9 +12,9 @@
 
 Welcome to the nanomesh documentation!
 
+Nanomesh is a python workflow tool for generating meshes from 2D and 3D microscopy image data.
 
-Getting started
-===============
+
 .. toctree::
    :maxdepth: 2
    :caption: Getting Started
@@ -23,8 +23,6 @@ Getting started
    development
 
 
-Examples
-========
 .. toctree::
    :maxdepth: 1
    :caption: Examples
@@ -33,28 +31,21 @@ Examples
    examples/*
 
 
-API Reference
-=============
-
 .. toctree::
    :maxdepth: 1
    :caption: API reference
 
-   nanomesh.io.rst
-   nanomesh.mesh2d.rst
-   nanomesh.mesh3d.rst
-   nanomesh.mesh_container.rst
-   nanomesh.mesh_utils.rst
-   nanomesh.mesh_utils_3d.rst
-   nanomesh.metrics.rst
+   nanomesh.rst
    nanomesh.image.rst
-   nanomesh.roi2d.rst
-   nanomesh.tetgen.rst
+   nanomesh.image2mesh.rst
+   nanomesh.mesh.rst
+   nanomesh.io.rst
+   nanomesh.mesh_container.rst
+   nanomesh.metrics.rst
+   nanomesh.plotting.rst
    nanomesh.utils.rst
 
 
-Links
-=====
 .. toctree::
    :caption: Links
 

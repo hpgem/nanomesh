@@ -32,25 +32,20 @@ Nanomesh is a python workflow tool for generating meshes from 2D and 3D microsco
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API reference
 
    nanomesh.rst
-   nanomesh.image.rst
-   nanomesh.image2mesh.rst
-   nanomesh.mesh.rst
-   nanomesh.io.rst
-   nanomesh.mesh_container.rst
-   nanomesh.metrics.rst
-   nanomesh.plotting.rst
-   nanomesh.utils.rst
 
 
 .. toctree::
    :caption: Links
 
-   🔗 Source code <http://github.com/HPGEM/nanomesh>
-   🔗 Issues <http://github.com/HPGEM/nanomesh/issues>
+   👨‍💻 Source code <https://github.com/HPGEM/nanomesh>
+   💡 Issues <https://github.com/HPGEM/nanomesh/issues>
+   📢 Releases <https://github.com/hpgem/nanomesh/releases>
+   🐍 PyPI <https://pypi.org/project/nanomesh>
+   📚 documentation <https://nanomesh.readthedocs.io>
 
 
 Indices and tables

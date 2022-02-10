@@ -31,7 +31,9 @@ def run_apidoc(app):
 def copy_banner_to_static(app):
     import shutil
     src = Path('.').absolute().parent / 'notebooks' / 'banner' / 'banner.png'
-    shutil.copy2(src, STATICDIR)
+    target = Path(STATICDIR)
+    target.mkdir(exist_ok=True)
+    shutil.copy2(src, target)
 
 
 # https://www.sphinx-doc.org/en/master/extdev/appapi.html#sphinx-core-events

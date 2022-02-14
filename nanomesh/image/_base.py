@@ -68,7 +68,7 @@ class BaseImage:
         other :
             Other instance, can be a numpy array.
         op : callable
-            Operator (see operator module).
+            Operator (see :mod:`operator` module).
 
         Returns
         -------
@@ -81,13 +81,14 @@ class BaseImage:
         return self.__class__(op(this, other))
 
     def to_sitk_image(self):
-        """Return instance of `SimpleITK.Image` from `.image`."""
+        """Return instance of :class:`SimpleITK.Image` from
+        :meth:`BaseImage.image`."""
         import SimpleITK as sitk
         return sitk.GetImageFromArray(self.image)
 
     @classmethod
     def from_sitk_image(cls, sitk_image) -> 'BaseImage':
-        """Return instance from `SimpleITK.Image`."""
+        """Return instance from :class:`SimpleITK.Image`."""
         import SimpleITK as sitk
         image = sitk.GetArrayFromImage(sitk_image)
         return cls(image)
@@ -111,27 +112,27 @@ class BaseImage:
         filename : Pathlike
             Name of the file to load.
         **kwargs : dict
-            Extra keyword arguments passed to `np.load`.
+            Extra keyword arguments passed to :func:`numpy.load`.
         """
         image = np.load(filename, **kwargs)
         return cls(image)
 
     def apply(self, function: Callable, **kwargs):
-        """Apply function to `.image` array. Return an instance of `BaseImage`
-        if the result is of the same dimensions, otherwise return the result of
-        the operation.
+        """Apply function to :attr:`BaseImage.image` array. Return an instance
+        of :class:`BaseImage` if the result is of the same dimensions,
+        otherwise return the result of the operation.
 
         Parameters
         ----------
         function : callable
-            Function to apply to `self.image`.
+            Function to apply to :attr:`BaseImage.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
         Returns
         -------
         BaseImage
-            New instance of `BaseImage`.
+            New instance of :class:`BaseImage`.
         """
         ret = function(self.image, **kwargs)
         if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
@@ -147,12 +148,12 @@ class BaseImage:
         sigma : int
             Standard deviation for Gaussian kernel.
         **kwargs : dict
-            Extra arguments passed to `skimage.filters.gaussian`.
+            Extra arguments passed to :func:`skimage.filters.gaussian`.
 
         Returns
         -------
         BaseImage
-            New instance of `BaseImage`.
+            New instance of :class:`BaseImage`.
         """
         from skimage import filters
         return self.apply(filters.gaussian, sigma=sigma, **kwargs)
@@ -160,19 +161,19 @@ class BaseImage:
     def digitize(self, bins: Union[list, tuple], **kwargs):
         """Digitize image.
 
-        For more info see `numpy.digitize`.
+        For more info see :func:`numpy.digitize`.
 
         Parameters
         ----------
         bins : list, tuple
             List of bin values. Must be monotonic and one-dimensional.
         **kwargs : dict
-            Extra arguments passed to `numpy.digitize`.
+            Extra arguments passed to :func:`numpy.digitize`.
 
         Returns
         -------
         BaseImage
-            New instance of `BaseImage`.
+            New instance of :class:`BaseImage`.
         """
         return self.apply(np.digitize, bins=bins, **kwargs)
 
@@ -203,13 +204,13 @@ class BaseImage:
         ----------
         threshold : float, optional
             Threshold used for segmentation. If given as a string,
-            apply corresponding theshold via `BaseImage.threshold`.
-            Defaults to median.
+            apply corresponding theshold via :meth:`BaseImage.threshold`.
+            Defaults to `median`.
 
         Returns
         -------
         BaseImage
-            New instance of `BaseImage`.
+            New instance of :class:`BaseImage`.
         """
         if not threshold:
             threshold = np.median(self.image)
@@ -220,8 +221,7 @@ class BaseImage:
     def threshold(self, method: str = 'otsu', **kwargs) -> float:
         """Compute threshold value using given method.
 
-        For more info, see:
-            https://scikit-image.org/docs/dev/api/skimage.filters.html
+        For more info, see :mod:`skimage.filters`
 
         Parameters
         ----------

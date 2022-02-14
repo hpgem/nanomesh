@@ -27,7 +27,7 @@ class Plane(BaseImage):
         filename : Pathlike
             Name of the file to load.
         **kwargs : dict
-            Extra keyword arguments passed to `np.load`.
+            Extra keyword arguments passed to :func:`numpy.load`.
 
         Returns
         -------
@@ -38,20 +38,21 @@ class Plane(BaseImage):
         return cls(array)
 
     def apply(self, function: Callable, **kwargs):
-        """Apply function to `.image` array. Return an instance of `Plane` if
-        the result is a 2D image, otherwise return the result of the operation.
+        """Apply function to `.image` array. Return an instance of
+        :class:`nanomesh.image.Plane` if the result is a 2D image, otherwise
+        return the result of the operation.
 
         Parameters
         ----------
         function : callable
-            Function to apply to `self.image`.
+            Function to apply to :attr:`nanomesh.image.Plane.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
         Returns
         -------
         Plane
-            New instance of `Plane`.
+            New instance of :class:`nanomesh.image.Plane`.
         """
         return super().apply(function, **kwargs)
 
@@ -73,12 +74,13 @@ class Plane(BaseImage):
         title : str, optional
             Title for the plot.
         **kwargs : dict
-            Extra keyword arguments to pass to `plt.imshow`.
+            Extra keyword arguments to pass to
+            :func:`matplotlib.pyplot.imshow`.
 
         Returns
         -------
         ax : `matplotlib.axes.Axes`
-            Instance of `matplotlib.axes.Axes`
+            Instance of :class:`matplotlib.axes.Axes`
         """
         return show_image(self.image, ax=ax, title=title, **kwargs)
 
@@ -88,7 +90,8 @@ class Plane(BaseImage):
         Parameters
         ----------
         **kwargs:
-            Keyword arguments are passed to `mesh2d.plane2mesh`
+            Keyword arguments are passed to
+            :func:`nanomesh.image2mesh.plane2mesh`
 
         Returns
         -------
@@ -104,7 +107,8 @@ class Plane(BaseImage):
         Returns
         -------
         roi : `nanomesh.image._roi2d.ROISelector`
-            Region of interest object. Bounding box is stored in `roi.bbox`.
+            Region of interest object. Bounding box is stored in
+            :attr:`roi.bbox`.
         """
         from ._roi2d import ROISelector
         ax = self.show(title='Select region of interest')
@@ -142,7 +146,7 @@ class Plane(BaseImage):
         Returns
         -------
         `nanomesh.Plane`
-            Cropped region as `nanomesh.Plane` object.
+            Cropped region as :class:`nanomesh.image.Plane` object.
         """
         from ._roi2d import extract_rectangle
         cropped = extract_rectangle(self.image, bbox=bbox)
@@ -175,9 +179,9 @@ class Plane(BaseImage):
         digitized : np.ndarray, Plane
             Digitized image of the same dimensions to overlay
         cmap : str
-            Matplotlib color map for `ax.imshow`
+            Matplotlib color map for :meth:`matplotlib.pyplot.Axes.imshow`
         **kwargs : dict
-            Extra keyword arguments passed to `skimage.color.label2rgb`.
+            Extra keyword arguments passed to :func:`skimage.color.label2rgb`.
 
         Returns
         -------
@@ -213,7 +217,7 @@ class Plane(BaseImage):
         other : np.ndarray, Plane
             Other image of the same dimensions to overlay
         cmap : str
-            Matplotlib color map for `ax.imshow`
+            Matplotlib color map for `matplotlib.axes.Axes.imshow`
         **kwargs : dict
             Extra keyword arguments passed to `skimage.util.compare_images`.
 
@@ -251,12 +255,13 @@ class Plane(BaseImage):
         fill_val : int
             Cleared objects are set to this value.
         **kwargs
-            Extra arguments passed to `skimage.segmentation.clear_border`.
+            Extra arguments passed to
+            :func:`skimage.segmentation.clear_border`.
 
         Returns
         -------
         Plane
-            New instance of `Plane`.
+            New instance of :class:`nanomsh.image.Plane`.
         """
         from skimage import segmentation
 
@@ -269,13 +274,14 @@ class Plane(BaseImage):
         return self.__class__(out)
 
     def try_all_threshold(self, **kwargs):
-        """Produce a plot trying all available thresholds from `scikit- image`.
+        """Produce a plot trying all available thresholds using
+        :func:`skimage.filters.try_all_threshold`.
 
         Parameters
         ----------
         **kwargs : dict
             Extra keyword arguments passed to
-            `skimage.filters.try_all_threshold`.
+            :func:`skimage.filters.try_all_threshold`.
         """
         from skimage import filters
         kwargs.setdefault('verbose', False)

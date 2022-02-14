@@ -4,7 +4,8 @@
    contain the root `toctree` directive.
 
 
-|Documentation Status| |Linux| |MacOS| |Windows|
+|Documentation Status| |tests| |PyPI - Python Version| |PyPI|
+
 
 .. figure:: _static/banner.png
    :alt: Nanomesh banner
@@ -58,9 +59,9 @@ Indices and tables
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/nanomesh/badge/?version=latest
    :target: https://nanomesh.readthedocs.io/en/latest/?badge=latest
-.. |Linux| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml/badge.svg
-   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml
-.. |MacOS| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg
-   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml
-.. |Windows| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg
-   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml
+.. |tests| image:: https://github.com/hpgem/nanomesh/actions/workflows/test.yaml/badge.svg
+   :target: https://github.com/hpgem/nanomesh/actions/workflows/test.yaml
+.. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/nanomesh
+   :target: https://pypi.org/project/nanomesh/
+.. |PyPI| image:: https://img.shields.io/pypi/v/nanomesh.svg?style=flat
+   :target: https://pypi.org/project/nanomesh/

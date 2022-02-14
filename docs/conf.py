@@ -51,7 +51,7 @@ extensions = [
     # 'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'nbsphinx',
-    'nbsphinx_link',
+    # 'nbsphinx_link',
     # 'sphinx.ext.todo',
     # 'sphinx.ext.viewcode',
     'autodocsumm',

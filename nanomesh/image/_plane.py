@@ -56,7 +56,7 @@ class Plane(BaseImage):
         return super().apply(function, **kwargs)
 
     def plot(self, *args, **kwargs):
-        """Shortcut for `.show()."""
+        """Shortcut for `.show()`."""
         return self.show(*args, **kwargs)
 
     def show(self,
@@ -269,7 +269,7 @@ class Plane(BaseImage):
         return self.__class__(out)
 
     def try_all_threshold(self, **kwargs):
-        """Produce a plot trying all available thresholds from `scikit-image`.
+        """Produce a plot trying all available thresholds from `scikit- image`.
 
         Parameters
         ----------

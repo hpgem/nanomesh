@@ -85,7 +85,7 @@ class Volume(BaseImage):
         return sv
 
     def plot(self, *args, **kwargs):
-        """Shortcut for `.show()."""
+        """Shortcut for `.show()`."""
         return self.show(*args, **kwargs)
 
     def show(self, renderer: str = 'itkwidgets', **kwargs) -> None:

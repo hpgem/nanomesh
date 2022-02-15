@@ -5,3 +5,4 @@ nanomesh.mesh
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:

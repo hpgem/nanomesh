@@ -30,6 +30,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
     'nbsphinx',
     # 'nbsphinx_link',
     'autodocsumm',
@@ -81,7 +82,6 @@ html_theme = 'sphinx_rtd_theme'
 
 autodoc_default_options = {
     'autosummary': True,
-    'special-members': '__init__',
 }
 
 nbsphinx_allow_errors = True

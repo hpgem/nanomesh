@@ -235,6 +235,7 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
                  legend: str = 'fields',
                  show_labels: Sequence[int | str] = None,
                  hide_labels: Sequence[int | str] = None,
+                 show_region_markers: bool = True,
                  colors: Sequence[str] = None,
                  flip_xy: bool = True,
                  **kwargs) -> plt.Axes:
@@ -256,6 +257,8 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
         List of labels or field names of cell data to show
     hide_labels : Sequence[int | str]
         List of labels or field names of cell data to hide
+    show_region_markers : bool, default True
+        If True, show region markers on the plot
     colors : Sequence[str]
         List of colors to cycle through
     flip_xy : bool, optional
@@ -315,7 +318,7 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
             xy = _get_point(mesh, cell_data_val, method=method)
             _annotate(ax, name, xy, flip_xy=flip_xy)
 
-    if mesh.region_markers:
+    if show_region_markers and mesh.region_markers:
         mark_x, mark_y = np.array([m.point for m in mesh.region_markers]).T
         ax.scatter(mark_y,
                    mark_x,

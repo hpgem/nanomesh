@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, List, Union
 
 import matplotlib.pyplot as plt
-import meshio
 import numpy as np
 from skimage import measure, morphology
 
@@ -19,7 +18,7 @@ from ._helpers import pad
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from nanomesh.mesh import TriangleMesh
+    from nanomesh import MeshContainer, TriangleMesh
 
 
 def get_point_in_prop(
@@ -316,7 +315,7 @@ class Mesher3D(BaseMesher):
         for region_marker in region_markers:
             self.contour.add_region_marker(region_marker)
 
-    def tetrahedralize(self, **kwargs):
+    def tetrahedralize(self, **kwargs) -> MeshContainer:
         """Tetrahedralize a surface contour mesh.
 
         Parameters
@@ -327,7 +326,7 @@ class Mesher3D(BaseMesher):
 
         Returns
         -------
-        TetraMesh
+        MeshContainer
 
         Raises
         ------
@@ -356,7 +355,7 @@ def volume2mesh(
     *,
     level: float = None,
     **kwargs,
-) -> 'meshio.Mesh':
+) -> 'MeshContainer':
     """Generate mesh from binary (segmented) image.
 
     Parameters
@@ -373,8 +372,8 @@ def volume2mesh(
 
     Returns
     -------
-    volume_mesh : TetraMesh
-        Description of the mesh.
+    volume_mesh : MeshContainer
+        Instance of :class:`nanomesh.MeshContainer`
     """
     mesher = Mesher3D(image)
     mesher.generate_contour(level=level)

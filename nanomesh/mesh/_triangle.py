@@ -9,10 +9,11 @@ import scipy
 
 from ._base import BaseMesh
 from ._mixin import PruneZ0Mixin
-from ._tetra import TetraMesh
 
 if TYPE_CHECKING:
     import open3d
+
+    from nanomesh import MeshContainer
 
 
 class TriangleMesh(BaseMesh, PruneZ0Mixin):
@@ -125,7 +126,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         )
         return TriangleMesh(points=points, cells=cells)
 
-    def tetrahedralize(self, **kwargs) -> 'TetraMesh':
+    def tetrahedralize(self, **kwargs) -> 'MeshContainer':
         """Tetrahedralize a contour.
 
         Parameters
@@ -135,7 +136,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
 
         Returns
         -------
-        mesh : TetraMesh
+        mesh : MeshContainer
             Tetrahedralized mesh.
         """
         from .._tetgen_wrapper import tetrahedralize

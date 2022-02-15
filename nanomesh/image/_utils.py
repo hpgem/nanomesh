@@ -6,7 +6,7 @@ from ipywidgets import IntSlider, RadioButtons, interact
 
 
 class SliceViewer:
-    """Simple slice viewer for volumes using matplotlib.
+    """Simple slice viewer for volumes using :mod:`matplotlib`.
 
     Parameters
     ----------
@@ -104,7 +104,7 @@ def show_image(image,
                ax: plt.Axes = None,
                title: str = None,
                **kwargs) -> 'plt.Axes':
-    """Simple function to plot an image using matplotlib.
+    """Simple function to plot an image using :mod:`matplotlib`.
 
     Parameters
     ----------

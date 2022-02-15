@@ -20,22 +20,23 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
     cell_type = 'triangle'
 
     def plot(self, **kwargs):
-        """Shortcut for `.plot_mpl` or `.plot_itk` depending on dimensions."""
+        """Shortcut for :meth:`TriangleMesh.plot_mpl` or
+        :meth:`TriangleMesh.plot_itk` depending on dimensions."""
         if self.dimensions == 2:
             return self.plot_mpl(**kwargs)
         else:
             return self.plot_itk(**kwargs)
 
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:
-        """Simple triangle mesh plot using `matplotlib`. See
-        `.plotting.trianglemeshplot` for details.
+        """Simple triangle mesh plot using :mod::mod:`matplotlib`. See
+        :func:`plotting.trianglemeshplot` for details.
 
         Parameters
         ----------
         *args
-            Arguments passed to `.plotting.trianglemeshplot`
+            Arguments passed to :func:`plotting.trianglemeshplot`
         **kwargs
-            Keyword arguments passed to `.plotting.trianglemeshplot`
+            Keyword arguments passed to :func:`plotting.trianglemeshplot`
 
         Returns
         -------
@@ -45,12 +46,12 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         return trianglemeshplot(self, *args, **kwargs)
 
     def to_trimesh(self):
-        """Return instance of `trimesh.Trimesh`."""
+        """Return instance of :class:`trimesh.Trimesh`."""
         import trimesh
         return trimesh.Trimesh(vertices=self.points, faces=self.cells)
 
     def to_open3d(self) -> 'open3d.geometry.TriangleMesh':
-        """Return instance of `open3d.geometry.TriangleMesh`."""
+        """Return instance of :class:`open3d.geometry.TriangleMesh`."""
         import open3d
         return open3d.geometry.TriangleMesh(
             vertices=open3d.utility.Vector3dVector(self.points),
@@ -67,27 +68,28 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
 
     @classmethod
     def from_open3d(cls, mesh: 'open3d.geometry.TriangleMesh') -> TriangleMesh:
-        """Return instance of `TriangleMesh` from open3d."""
+        """Return instance of :class:`TriangleMesh` from open3d."""
         points = np.asarray(mesh.vertices)
         cells = np.asarray(mesh.triangles)
         return cls(points=points, cells=cells)
 
     @classmethod
     def from_scipy(cls, mesh: 'scipy.spatial.qhull.Delaunay') -> TriangleMesh:
-        """Return instance of `TriangleMesh` from `scipy.spatial.Delaunay`
-        object."""
+        """Return instance of :class:`TriangleMesh` from
+        :class:`scipy.spatial.Delaunay` object."""
         points = mesh.points
         cells = mesh.simplices
         return cls(points=points, cells=cells)
 
     @classmethod
     def from_trimesh(cls, mesh) -> TriangleMesh:
-        """Return instance of `TriangleMesh` from trimesh."""
+        """Return instance of :class:`TriangleMesh` from :mod:`trimesh`."""
         return cls(points=mesh.vertices, cells=mesh.faces)
 
     @classmethod
     def from_triangle_dict(cls, dct: dict) -> TriangleMesh:
-        """Return instance of `TriangleMesh` from triangle results dict."""
+        """Return instance of :class:`TriangleMesh` from triangle results
+        dict."""
         from .mesh_container import MeshContainer
         mesh = MeshContainer.from_triangle_dict(dct)
         return mesh.get('triangle')
@@ -98,7 +100,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
                  tol: float = 1.0e-3,
                  max_num_steps: int = 10,
                  **kwargs) -> TriangleMesh:
-        """Optimize mesh using `optimesh`.
+        """Optimize mesh using :mod:`optimesh`.
 
         Parameters
         ----------
@@ -109,7 +111,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         max_num_steps : int, optional
             Maximum number of optimization steps.
         **kwargs
-            Arguments to pass to `optimesh.optimize_points_cells`
+            Arguments to pass to :func:`optimesh.optimize_points_cells`
 
         Returns
         -------
@@ -132,7 +134,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         Parameters
         ----------
         **kwargs
-            Keyword arguments passed to `nanomesh.tetrahedralize`.
+            Keyword arguments passed to :func:`tetrahedralize`.
 
         Returns
         -------

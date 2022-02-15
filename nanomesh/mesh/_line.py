@@ -15,19 +15,20 @@ class LineMesh(BaseMesh):
     cell_type = 'line'
 
     def plot(self, *args, **kwargs):
-        """Shortcut for `.plot_mpl`"""
+        """Shortcut for :func:`LineMesh.plot_mpl`"""
         return self.plot_mpl(*args, **kwargs)
 
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:
-        """Simple line mesh plot using `matplotlib`. See
-        `.plotting.linemeshplot` for details.
+        """Simple line mesh plot using :mod:`matplotlib`.
+
+        Shortcut for :func:`plotting.linemeshplot`.
 
         Parameters
         ----------
         *args
-            Arguments passed to `.plotting.linemeshplot`
+            Arguments passed to :func:`plotting.linemeshplot`
         **kwargs
-            Keyword arguments passed to `.plotting.linemeshplot`
+            Keyword arguments passed to :func:`plotting.linemeshplot`
 
         Returns
         -------
@@ -48,8 +49,8 @@ class LineMesh(BaseMesh):
         ----------
         left : int | str, optional
             Labels left boundary segments with the given value. If a string
-            is passed, the `.fields` attribute is updated with the
-            field / value pair.
+            is passed, the :attr:`LineMesh.fields` attribute is updated with
+            the field / value pair.
         right : int | str, optional
             Same as above.
         top : int | str, optional
@@ -57,8 +58,8 @@ class LineMesh(BaseMesh):
         bottom : int | str, optional
             Same as above.
         key : str, optional
-            Key of the `.cell_data` dictionary to update. Defaults to
-            `.default_key`.
+            Key of the :attr:`LineMesh.cell_data` dictionary to update.
+            Defaults to :attr:`LineMesh.default_key`.
         """
         if not key:
             key = self.default_key
@@ -85,7 +86,18 @@ class LineMesh(BaseMesh):
             self.cell_data[key][side_idx] = int_label
 
     def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
-        """Triangulate mesh using `triangle`."""
+        """Triangulate mesh using :func:`triangulate`.
+
+        Parameters
+        ----------
+        opts : str, optional
+            Options for the triangulation. See
+            :func:`triangulate` for details.
+
+        Returns
+        -------
+        MeshContainer
+        """
         from .._triangle_wrapper import triangulate
         points = self.points
         segments = self.cells

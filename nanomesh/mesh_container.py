@@ -20,6 +20,28 @@ class _CellType(Enum):
 
 
 class MeshContainer(meshio.Mesh, PruneZ0Mixin):
+    """Low-level container for storing mesh data.
+
+    Can contain multiple cell types sharing a set of points.
+    It can store different types of cells and associated data.
+    :class:`MeshContainer` is based on :class:`meshio.Mesh`
+    (https://github.com/nschloe/meshio).
+
+    Parameters
+    ----------
+    points : np.ndarray
+        Array storing the mesh points (e.g. vertices)
+    cells : list
+        List of cell arrays
+    point_data : todo
+    cell_data : todo
+    field_data : dict
+        Dictionary mapping field names to cell data values.
+    point_sets : todo
+    cell_sets : todo
+    gmsh_periodic : todo
+    info : todo
+    """
 
     def __repr__(self):
         """Canonical string representation."""
@@ -29,7 +51,8 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
     @property
     def number_to_field(self):
-        """Mapping from numbers to fields, proxy to `.field_data`."""
+        """Mapping from numbers to fields, proxy to
+        :attr:`MeshContainer.field_data`."""
         number_to_field = defaultdict(dict)
 
         for field, (number, dimension) in self.field_data.items():
@@ -42,7 +65,8 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
     @property
     def field_to_number(self):
-        """Mapping from fields to numbers, proxy to `.field_data`."""
+        """Mapping from fields to numbers, proxy to
+        :attr:`MeshContainer.field_data`."""
         field_to_number = defaultdict(dict)
 
         for field, (number, dimension) in self.field_data.items():
@@ -54,7 +78,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
              for k, v in field_to_number.items()})
 
     def set_field_data(self, cell_type: str, field_data: Dict[int, str]):
-        """Update the values in `.field_data`.
+        """Update the values in :attr:`MeshContainer.field_data`.
 
         Parameters
         ----------
@@ -94,8 +118,20 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         """Return cell types in order."""
         return tuple(cell.type for cell in self.cells)
 
-    def set_cell_data(self, cell_type: str, key: str, value):
-        """Set `key` to `value` for `cell_type` in `.cell_data_dict`."""
+    def set_cell_data(self, cell_type: str, key: str, value: np.ndarray):
+        """Set the cell data to the given value.
+
+        Updates :attr:`MeshContainer.cell_data`.
+
+        Parameters
+        ----------
+        cell_type : str
+            Cell type, must be in :attr:`MeshContainer.cell_types`
+        key : str
+            The key of the value in :attr:`MeshContainer.cell_data`
+        value : np.ndarray
+            Array of values to set
+        """
         index = self.cell_types.index(cell_type)
         assert len(value) == len(self.cells_dict[cell_type])
 
@@ -117,7 +153,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
     def get_default_type(self) -> str:
         """Try to return highest dimension type.
 
-        Default to first type `cells_dict`.
+        Default to first type :attr:`MeshContainer.cells_dict`.
 
         Returns
         -------
@@ -140,7 +176,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         Returns
         -------
         BaseMesh
-            Dataclass with `points`/`cells` attributes
+            Mesh of the given type
         """
         if not cell_type:
             cell_type = self.get_default_type()
@@ -206,7 +242,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             return mesh.plot(**kwargs)
 
     def plot_mpl(self, cell_type: str = None, **kwargs):
-        """Plot data using matplotlib.
+        """Plot data using :mod:`matplotlib`.
 
         Parameters
         ----------
@@ -219,7 +255,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         return mesh.plot_mpl(**kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
-        """Plot data using itk.
+        """Plot data using `itk`.
 
         Parameters
         ----------
@@ -246,7 +282,8 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
     @classmethod
     def from_mesh(cls, mesh: BaseMesh):
-        """Convert from `BaseMesh` to `MeshContainer`.
+        """Convert from :class:`nanomesh.mesh._base.BaseMesh` to
+        :class:`MeshContainer`.
 
         Parameters
         ----------
@@ -264,7 +301,8 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
     @classmethod
     def from_triangle_dict(cls, triangle_dict: dict):
-        """Return instance of `MeshContainer` from triangle results dict.
+        """Return instance of :class:`MeshContainer` from triangle results
+        dict.
 
         Parameters
         ----------
@@ -311,12 +349,24 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         return mesh
 
     @classmethod
-    def read(cls, *args, **kwargs):
-        """Wrapper for `meshio.read`.
+    def read(cls, *args, **kwargs) -> MeshContainer:
+        """Wrapper for :func:`meshio.read`.
 
         For gmsh:
+
         - remaps `gmsh:physical` -> `physical`
         - remaps `gmsh:geometrical` -> `geometrical`
+
+        Parameters
+        ----------
+        *args
+            These parameters passed to reader
+        **kwargs
+            These parameters are passed to the reader
+
+        Returns
+        -------
+        MeshContainer
         """
         from meshio import read
         mesh = read(*args, **kwargs)
@@ -364,7 +414,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Specify file format. By default, this is guessed from the
             extension.
         **kwargs
-            These parameters are passed to `meshio.write`.
+            These parameters are passed to :func:`meshio.write`.
         """
         from pathlib import Path
 

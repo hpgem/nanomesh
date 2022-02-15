@@ -238,7 +238,7 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
                  colors: Sequence[str] = None,
                  flip_xy: bool = True,
                  **kwargs) -> plt.Axes:
-    """Simple line or triangle mesh plot using `matplotlib`.
+    """Simple line or triangle mesh plot using :mod:`matplotlib`.
 
     Parameters
     ----------

@@ -65,7 +65,7 @@ class Plane(BaseImage):
              ax: plt.Axes = None,
              title: str = None,
              **kwargs) -> 'plt.Axes':
-        """Plot the image using matplotlib.
+        """Plot the image using :mod:`matplotlib`.
 
         Parameters
         ----------

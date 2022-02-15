@@ -44,9 +44,28 @@ dedicated methods for working with a specific type of mesh and plotting them.
 Each can be generated from :class:`MeshContainer`.
 
 .. autoclass:: MeshContainer
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
 .. autoclass:: LineMesh
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
 .. autoclass:: TriangleMesh
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
 .. autoclass:: TetraMesh
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
 
 Making a mesh out of image data
 -------------------------------

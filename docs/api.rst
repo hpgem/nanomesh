@@ -19,9 +19,15 @@ These can be used to load, crop, transform, filter, and segment image data.
 
 .. autoclass:: Plane
    :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
 
 .. autoclass:: Volume
    :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
 
 Working with mesh data
 ----------------------

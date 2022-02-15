@@ -29,6 +29,11 @@ class BaseImage:
     ----------
     image : np.array
         N-dimensional numpy array containing image data.
+
+    Attributes
+    ----------
+    image : np.ndarray
+        The raw image data
     """
 
     def __init__(self, image: np.ndarray):

@@ -169,22 +169,22 @@ class BaseMesh:
         raise NotImplementedError
 
     def plot_itk(self, **kwargs):
-        """Wrapper for `pyvista.plot_itk`.
+        """Wrapper for :func:`pyvista.plot_itk`.
 
         Parameters
         ----------
         **kwargs
-            These parameters are passed to `pyvista.plot_itk`
+            These parameters are passed to :func:`pyvista.plot_itk`
         """
         return pv.plot_itk(self.to_meshio(), **kwargs)
 
     def plot_pyvista(self, **kwargs):
-        """Wrapper for `pyvista.plot`.
+        """Wrapper for :func:`pyvista.plot`.
 
         Parameters
         ----------
         **kwargs
-            These parameters are passed to `pyvista.plot`
+            These parameters are passed to :func:`pyvista.plot`
         """
         return pv.plot(self.to_meshio(), **kwargs)
 

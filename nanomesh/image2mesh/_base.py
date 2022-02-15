@@ -13,6 +13,22 @@ logger = logging.getLogger(__name__)
 
 
 class BaseMesher(ABC):
+    """Utility class to mesh image data and generate a mesh.
+
+    Parameters
+    ----------
+    image : np.array
+        N-dimensional numpy array containing image data.
+
+    Attributes
+    ----------
+    image : np.ndarray
+        Reference to image data
+    image_orig : np.ndarray
+        Keep reference to original image data
+    contour : BaseMesh
+        Stores the contour mesh.
+    """
 
     def __init__(self, image: Union[np.ndarray, Plane, Volume]):
         if isinstance(image, (Plane, Volume)):

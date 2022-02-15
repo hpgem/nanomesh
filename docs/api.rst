@@ -59,7 +59,16 @@ image data and :class:`Mesher3D` for volume data.
 .. autofunction:: volume2mesh
 
 .. autoclass:: Mesher2D
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
 .. autoclass:: Mesher3D
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
 
 Helper classes and functions
 ----------------------------

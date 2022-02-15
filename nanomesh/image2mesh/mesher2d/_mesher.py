@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
-import meshio
 import numpy as np
 from scipy.spatial.distance import cdist
 from skimage import measure
@@ -15,6 +14,7 @@ from ._helpers import append_to_segment_markers, generate_segment_markers, pad
 from ._polygon import Polygon
 
 if TYPE_CHECKING:
+    from ..image import Plane
     from ..mesh import LineMesh
     from ..mesh_container import MeshContainer
 
@@ -161,7 +161,7 @@ def _generate_segments(polygons: List[Polygon]) -> np.ndarray:
 
 class Mesher2D(BaseMesher):
 
-    def __init__(self, image: np.ndarray):
+    def __init__(self, image: np.ndarray | Plane):
         super().__init__(image)
         self.contour: LineMesh
 
@@ -181,7 +181,7 @@ class Mesher2D(BaseMesher):
         level : float, optional
             Contour value to search for isosurfaces (i.e. the threshold value).
             By default takes the average of the min and max value. Can be
-            ignored if a binary image is passed to `Mesher2D`.
+            ignored if a binary image is passed to :class:`Mesher2D`.
         contour_precision : int, optional
             Maximum distance from original points in polygon approximation
             routine.
@@ -238,22 +238,23 @@ class Mesher2D(BaseMesher):
         """Triangulate contours.
 
         Mandatory switches for `opts`:
-            - e: ensure edges get returned
-            - p: planar straight line graph
-            - A: assign regional attribute to each triangle
+            - `e`: ensure edges get returned
+            - `p`: planar straight line graph
+            - `A`: assign regional attribute to each triangle
 
         If missing, these will be added.
 
         Parameters
         ----------
         opts : str, optional
-            Options passed to `triangle.triangulate`
+            Options passed to :func:`triangulate`. For more info,
+            see: https://rufat.be/triangle/API.html#triangle.triangulate
         clip_line_data: bool
             If set, clips the line data to 0: body,
             1: external boundary, 2: internal boundary
             instead of individual numbers for each segment
         **kwargs
-            Keyword arguments passed to `triangle.triangulate`
+            These parameters are passed to :func:`triangulate`
 
         Returns
         -------
@@ -270,12 +271,14 @@ class Mesher2D(BaseMesher):
         return mesh
 
     def pad_contour(self, **kwargs):
-        """Pad the contour. See `.helpers.pad` for info.
+        """Pad the contour.
+
+        Shortcut for :func:`image2mesh.mesher2d.pad`.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments for `.helpers.pad`.
+            These parameters are passed to :func:`image2mesh.mesher2d.pad`.
         """
         self.contour = pad(self.contour, **kwargs)
 
@@ -287,9 +290,9 @@ class Mesher2D(BaseMesher):
         ax : matplotlib.Axes
             Axes to use for plotting.
         cmap : str
-            Matplotlib color map for `ax.imshow`
+            Matplotlib color map for :func:`matplotlib.pyplot.imshow`
         **kwargs
-            These parameters are passed to `.plotting.linemeshplot()`
+            These parameters are passed to :func:`plotting.linemeshplot`
 
         Returns
         -------
@@ -309,29 +312,29 @@ class Mesher2D(BaseMesher):
         return ax
 
 
-def plane2mesh(image: np.ndarray,
+def plane2mesh(image: np.ndarray | Plane,
                *,
                level: float = None,
                max_contour_dist: int = 5,
                opts: str = 'q30a100',
-               plot: bool = False) -> 'meshio.Mesh':
+               plot: bool = False) -> 'MeshContainer':
     """Generate mesh from binary (segmented) image.
 
     Parameters
     ----------
-    image : 2D np.ndarray
+    image : 2D np.ndarray or Plane
         Input image to mesh.
     level : float, optional
         Level to generate contours at from image
     max_contour_dist : int, optional
         Maximum distance between neighbouring pixels in contours.
     opts : str, optional
-        Options passed to `triangle.triangulate`
+        Options passed to :func:`triangulate`
 
     Returns
     -------
-    meshio.Mesh
-        Description of the mesh.
+    MeshContainer
+        Triangulated mesh.
     """
     mesher = Mesher2D(image)
     mesher.generate_contour(max_contour_dist=5, level=level)

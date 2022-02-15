@@ -10,4 +10,4 @@ nanomesh.image2mesh
    :members:
    :undoc-members:
    :show-inheritance:
-   :noindex:
+   :exclude-members: Mesher2D, Mesher3D

@@ -15,7 +15,7 @@ class SliceViewer:
     update_delay : int
         Minimum delay between events in milliseconds. Reduces lag
         by limiting the Limit update rate.
-    **kwargs :
+    **kwargs
         Passed to first call of `SliceViewer.update`.
     """
 
@@ -114,8 +114,8 @@ def show_image(image,
         Axes to use for plotting.
     title : str, optional
         Title for the plot.
-    **kwargs : dict
-        Extra keyword arguments to pass to `plt.imshow`.
+    **kwargs
+        These parameters are passed to `plt.imshow`.
 
     Returns
     -------

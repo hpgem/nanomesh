@@ -111,8 +111,8 @@ class BaseImage:
         ----------
         filename : Pathlike
             Name of the file to load.
-        **kwargs : dict
-            Extra keyword arguments passed to :func:`numpy.load`.
+        **kwargs
+            These parameters are passed to :func:`numpy.load`.
         """
         image = np.load(filename, **kwargs)
         return cls(image)
@@ -147,7 +147,7 @@ class BaseImage:
         ----------
         sigma : int
             Standard deviation for Gaussian kernel.
-        **kwargs : dict
+        **kwargs
             Extra arguments passed to :func:`skimage.filters.gaussian`.
 
         Returns
@@ -167,7 +167,7 @@ class BaseImage:
         ----------
         bins : list, tuple
             List of bin values. Must be monotonic and one-dimensional.
-        **kwargs : dict
+        **kwargs
             Extra arguments passed to :func:`numpy.digitize`.
 
         Returns
@@ -227,8 +227,8 @@ class BaseImage:
         ----------
         method : str
             Thresholding method to use. Defaults to `otsu`.
-        **kwargs : dict
-            Extra keyword arguments passed to threshold method.
+        **kwargs
+            These parameters are passed to threshold method.
 
         Returns
         -------

@@ -289,7 +289,7 @@ class Mesher2D(BaseMesher):
         cmap : str
             Matplotlib color map for `ax.imshow`
         **kwargs
-            Extra keyword arguments passed to `.plotting.linemeshplot()`
+            These parameters are passed to `.plotting.linemeshplot()`
 
         Returns
         -------

@@ -13,7 +13,7 @@ class PolygonSelectorWithSnapping(PolygonSelector):
         List of points to snap to .
     *args : list
         Arguments passed to `matplotlib.widgets.PolygonSelector`.
-    **kwargs : dict
+    **kwargs
         Keyword arguments passed to `matplotlib.widgets.PolygonSelector`.
         The parent axes for the widget.
     """

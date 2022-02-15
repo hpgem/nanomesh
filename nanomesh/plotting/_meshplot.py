@@ -112,7 +112,7 @@ def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
     ax : plt.Axes
         Matplotlib axes to apply legend to.
     **kwargs
-        Extra keyword arguments passed to `ax.legend()`.
+        These parameters are passed to `ax.legend()`.
     """
     handles_labels = ax.get_legend_handles_labels()
 
@@ -132,7 +132,7 @@ def _legend_with_field_names_only(ax: plt.Axes,
         Matplotlib axes to apply legend to.
 
     **kwargs
-        Extra keyword arguments passed to `ax.legend()`.
+        These parameters are passed to `ax.legend()`.
     """
     handles_labels = ax.get_legend_handles_labels()
 
@@ -196,7 +196,7 @@ def lineplot(ax: plt.Axes,
         Mask for line segments.
     label : str, optional
         Label for legend.
-    **kwargs : dict
+    **kwargs
         Extra keywords arguments passed to `ax.plot`
 
     Returns
@@ -262,7 +262,7 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
         Flip x/y coordinates. This is sometimes necessary to combine the
         plot with other plots.
     **kwargs
-        Extra keyword arguments passed to `.plotting.lineplot`
+        These parameters are passed to `.plotting.lineplot`
 
     Returns
     -------

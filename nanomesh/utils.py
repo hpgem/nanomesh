@@ -28,8 +28,8 @@ def compare_mesh_with_image(image: np.ndarray,
         Triangle mesh to plot on image
     cmap : str
         Matplotlib color map for `ax.imshow`
-    **kwargs :
-        Extra keyword arguments passed on to plotting function.
+    **kwargs
+        These parameters are passed on to plotting function.
 
     Returns
     -------

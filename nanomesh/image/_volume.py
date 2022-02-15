@@ -32,8 +32,8 @@ class Volume(BaseImage):
         ----------
         filename : PathLike
             Name of the file to load.
-        **kwargs : dict
-            Extra keyword arguments passed onto data readers.
+        **kwargs
+            These parameters are passed onto data readers.
 
         Returns
         -------
@@ -91,8 +91,18 @@ class Volume(BaseImage):
     def show(self, renderer: str = 'itkwidgets', **kwargs) -> None:
         """Show volume using `itkwidgets` or `ipyvolume`.
 
-        Extra keyword arguments (`kwargs`) are passed to
-        `itkwidgets.view` or `ipyvolume.quickvolshow`.
+        Parameters
+        ----------
+        renderer : str, optional
+            Select renderer (`ipvolume`, `itkwidgets`)
+        **kwargs
+            These parameters are passed to
+            :func:`itkwidgets.view` or :func:`ipyvolume.quickvolshow`.
+
+        Raises
+        ------
+        ValueError
+            Raised if the renderer is unknown.
         """
         if renderer in ('ipyvolume', 'ipv'):
             import ipyvolume as ipv

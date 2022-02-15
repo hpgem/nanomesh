@@ -26,8 +26,8 @@ class Plane(BaseImage):
         ----------
         filename : Pathlike
             Name of the file to load.
-        **kwargs : dict
-            Extra keyword arguments passed to :func:`numpy.load`.
+        **kwargs
+            These parameters are passed to :func:`numpy.load`.
 
         Returns
         -------
@@ -38,21 +38,21 @@ class Plane(BaseImage):
         return cls(array)
 
     def apply(self, function: Callable, **kwargs):
-        """Apply function to `.image` array. Return an instance of
+        """Apply function to `nanomesh.Plane.image` array. Return an instance of
         :class:`nanomesh.image.Plane` if the result is a 2D image, otherwise
         return the result of the operation.
 
         Parameters
         ----------
         function : callable
-            Function to apply to :attr:`nanomesh.image.Plane.image`.
+            Function to apply to :attr:`nanomesh.Plane.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
         Returns
         -------
         Plane
-            New instance of :class:`nanomesh.image.Plane`.
+            New instance of :class:`nanomesh.Plane` or :class:`Plane`.
         """
         return super().apply(function, **kwargs)
 
@@ -73,8 +73,8 @@ class Plane(BaseImage):
             Axes to use for plotting.
         title : str, optional
             Title for the plot.
-        **kwargs : dict
-            Extra keyword arguments to pass to
+        **kwargs
+            These parameters are passed to
             :func:`matplotlib.pyplot.imshow`.
 
         Returns
@@ -180,8 +180,8 @@ class Plane(BaseImage):
             Digitized image of the same dimensions to overlay
         cmap : str
             Matplotlib color map for :meth:`matplotlib.pyplot.Axes.imshow`
-        **kwargs : dict
-            Extra keyword arguments passed to :func:`skimage.color.label2rgb`.
+        **kwargs
+            These parameters are passed to :func:`skimage.color.label2rgb`.
 
         Returns
         -------
@@ -218,8 +218,8 @@ class Plane(BaseImage):
             Other image of the same dimensions to overlay
         cmap : str
             Matplotlib color map for `matplotlib.axes.Axes.imshow`
-        **kwargs : dict
-            Extra keyword arguments passed to `skimage.util.compare_images`.
+        **kwargs
+            These parameters are passed to `skimage.util.compare_images`.
 
         Returns
         -------
@@ -279,8 +279,8 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        **kwargs : dict
-            Extra keyword arguments passed to
+        **kwargs
+            These parameters are passed to
             :func:`skimage.filters.try_all_threshold`.
         """
         from skimage import filters

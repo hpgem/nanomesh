@@ -154,8 +154,8 @@ class Polygon:
         ----------
         *args : list
             Extra arguments padded to `skimage.measure.approximate_polygon`.
-        **kwargs : dict
-            Extra keyword arguments passed to
+        **kwargs
+            These parameters are passed to
             `skimage.measure.approximate_polygon`.
 
         Returns

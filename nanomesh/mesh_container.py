@@ -194,7 +194,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         cell_type : str, optional
             Cell type to plot.
         **kwargs
-            Extra keyword arguments passed to plotting method.
+            These parameters are passed to plotting method.
         """
         cell_types = {cell.type for cell in self.cells}
 
@@ -213,7 +213,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         cell_type : str, optional
             Cell type to plot.
         **kwargs
-            Extra keyword arguments passed to plotting method.
+            These parameters are passed to plotting method.
         """
         mesh = self.get(cell_type)
         return mesh.plot_mpl(**kwargs)
@@ -226,7 +226,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         cell_type : str, optional
             Cell type to plot.
         **kwargs
-            Extra keyword arguments passed to plotting method.
+            These parameters are passed to plotting method.
         """
         mesh = self.get(cell_type)
         return mesh.plot_itk(**kwargs)
@@ -239,7 +239,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         cell_type : str, optional
             Cell type to plot.
         **kwargs
-            Extra keyword arguments passed to plotting method.
+            These parameters are passed to plotting method.
         """
         mesh = self.get(cell_type)
         return mesh.plot_pyvista(**kwargs)
@@ -364,7 +364,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Specify file format. By default, this is guessed from the
             extension.
         **kwargs
-            Extra keyword arguments passed to `meshio.write`.
+            These parameters are passed to `meshio.write`.
         """
         from pathlib import Path
 

@@ -174,7 +174,7 @@ class BaseMesh:
         Parameters
         ----------
         **kwargs
-            Extra keyword arguments passed to `pyvista.plot_itk`
+            These parameters are passed to `pyvista.plot_itk`
         """
         return pv.plot_itk(self.to_meshio(), **kwargs)
 
@@ -184,7 +184,7 @@ class BaseMesh:
         Parameters
         ----------
         **kwargs
-            Extra keyword arguments passed to `pyvista.plot`
+            These parameters are passed to `pyvista.plot`
         """
         return pv.plot(self.to_meshio(), **kwargs)
 

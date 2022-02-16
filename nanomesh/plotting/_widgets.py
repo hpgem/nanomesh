@@ -5,16 +5,17 @@ from matplotlib.widgets import PolygonSelector
 class PolygonSelectorWithSnapping(PolygonSelector):
     """Select a polygon region of an axes with snapping to points.
 
-    For usage details see `matplotlib.widgets.PolygonSelector`
+    For usage details see :class:`matplotlib.widgets.PolygonSelector`
 
     Parameters
     ----------
-    snap_to : (n,2) np.ndarray
+    snap_to : (n,2) numpy.ndarray
         List of points to snap to .
     *args : list
-        Arguments passed to `matplotlib.widgets.PolygonSelector`.
+        Arguments passed to :class:`matplotlib.widgets.PolygonSelector`.
     **kwargs
-        Keyword arguments passed to `matplotlib.widgets.PolygonSelector`.
+        Keyword arguments passed to
+        :class:`matplotlib.widgets.PolygonSelector`.
         The parent axes for the widget.
     """
 

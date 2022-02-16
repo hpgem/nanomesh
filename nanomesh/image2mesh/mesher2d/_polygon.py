@@ -19,7 +19,7 @@ class Polygon:
 
         Returns
         -------
-        point : np.ndarray
+        point : numpy.ndarray
             Coordinate of point in the polygon
         """
         # start with guess in center of polygon
@@ -170,7 +170,7 @@ class Polygon:
 
         Parameters
         ----------
-        point : (2,) np.ndarray
+        point : (2,) numpy.ndarray
             Point coordinates
 
         Returns
@@ -185,12 +185,13 @@ class Polygon:
 
         Parameters
         ----------
-        points : (n,2) np.ndarray
+        points : (n,2) numpy.ndarray
             List of points
 
         Returns
         -------
-        mask : (n,) boolean np.ndarray
-            True if corresponding points lie inside the polygon
+        mask : (n,) numpy.ndarray[bool]
+            Boolean array where true corresponds to points
+            lying inside the polygon
         """
         return measure.points_in_poly(points, self.points)

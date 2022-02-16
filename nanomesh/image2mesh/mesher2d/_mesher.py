@@ -28,15 +28,15 @@ def _polygons_to_line_mesh(polygons: List[Polygon],
     ----------
     polygons : List[Polygon]
         List of polygons.
-    bbox : (n, 2) np.ndarray
+    bbox : (n, 2) numpy.ndarray
         Coordinates for the bounding box. These define the convex hull
         of the meshing area.
 
     Returns
     -------
-    points : (m,2) np.ndarray
+    points : (m,2) numpy.ndarray
         List of points.
-    segments : (n,2) np.ndarray
+    segments : (n,2) numpy.ndarray
         List of segments.
     """
     from nanomesh import LineMesh
@@ -77,7 +77,7 @@ def _generate_background_region(polygons: List[Polygon],
     ----------
     polygons : List[Polygon]
         List of polygons.
-    bbox : (n, 2) np.ndarray
+    bbox : (n, 2) numpy.ndarray
         Coordinates for the bounding box. These define the convex hull
         of the meshing area.
 
@@ -140,7 +140,7 @@ def _generate_segments(polygons: List[Polygon]) -> np.ndarray:
 
     Returns
     -------
-    segments : np.ndarray
+    segments : numpy.ndarray
         Segment connectivity array
     """
     i = 0
@@ -287,7 +287,7 @@ class Mesher2D(BaseMesher):
 
         Parameters
         ----------
-        ax : matplotlib.Axes
+        ax : matplotlib.axes.Axes
             Axes to use for plotting.
         cmap : str
             Matplotlib color map for :func:`matplotlib.pyplot.imshow`
@@ -296,7 +296,7 @@ class Mesher2D(BaseMesher):
 
         Returns
         -------
-        ax : matplotlib.Axes
+        ax : matplotlib.axes.Axes
         """
         if not ax:
             fig, ax = plt.subplots()
@@ -322,7 +322,7 @@ def plane2mesh(image: np.ndarray | Plane,
 
     Parameters
     ----------
-    image : 2D np.ndarray or Plane
+    image : (i,j) numpy.ndarray or Plane
         Input image to mesh.
     level : float, optional
         Level to generate contours at from image

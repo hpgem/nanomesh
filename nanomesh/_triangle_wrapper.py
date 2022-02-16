@@ -12,13 +12,13 @@ def triangulate(points: np.ndarray,
                 regions: Sequence[Tuple[float, float, int, float, ]] = None,
                 segment_markers: np.ndarray = None,
                 opts: str = '') -> MeshContainer:
-    """Simple triangulation using `triangle`.
+    """Simple triangulation using :mod:`triangle`.
 
     Parameters
     ----------
-    points : i,2 np.ndarray
+    points : (i,2) numpy.ndarray
         Vertex coordinates.
-    segments : j,2 np.ndarray, optional
+    segments : (j,2) numpy.ndarray, optional
         Index array describing segments.
         Segments are edges whose presence in the triangulation
         is enforced (although each segment may be subdivided into smaller
@@ -30,7 +30,7 @@ def triangulate(points: np.ndarray,
         region or polygon (i.e. enclosed by segments).
         The third number is the label given to the region, and the fourth
         number the maximum area constraint for the region.
-    segment_markers : j,1 np.ndarray, optional
+    segment_markers : (j,1) numpy.ndarray, optional
         Array with labels for segments.
     opts : str, optional
         Additional options passed to `triangle.triangulate` documented here:

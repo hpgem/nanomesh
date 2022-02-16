@@ -15,12 +15,12 @@ def minimum_bounding_rectangle(coords: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    coords : (n,2) np.ndarray
+    coords : (n,2) numpy.ndarray
         List of coordinates.
 
     Returns
     -------
-    bbox_coords: (4,2) np.ndarray
+    bbox_coords: (4,2) numpy.ndarray
         List of coordinates representing the corners of the bounding box.
     """
     # get the convex hull for the coords
@@ -75,19 +75,21 @@ def minimum_bounding_rectangle(coords: np.ndarray) -> np.ndarray:
 
 
 def extract_rectangle(image: np.ndarray, *, bbox: np.ndarray):
-    """Extract rectangle from image. The image is straightened using an
-    Euclidean transform.
+    """Extract rectangle from image.
+
+    The image is straightened using an Euclidean transform via
+    :func:`skimage.transform.EuclideanTransform()`.
 
     Parameters
     ----------
-    image : 2D np.ndarray
+    image : (i,j) numpy.ndarray
         Image to extract rectangle from.
-    bbox : (4,2) np.ndarray
+    bbox : (4,2) numpy.ndarray
         Four coordinate describing the corners of the bounding box.
 
     Returns
     -------
-    warped : 2D np.ndarray
+    warped : (i,j) numpy.ndarray
         The warped input image extracted from the bounding box.
     """
     a = int(np.linalg.norm(bbox[0] - bbox[1]))
@@ -114,7 +116,7 @@ class ROISelector:
 
     Attributes
     ----------
-    bbox : (4,2) np.ndarray
+    bbox : (4,2) numpy.ndarray
         Coordinates describing the corners of the polygon
     """
 
@@ -174,8 +176,8 @@ class ROISelector:
 
         Returns
         -------
-        np.ndarray
-            Description
+        (4,2) numpy.ndarray
+            Array containing the corners of the bounding rectangle.
         """
         if self.verts is None:
             raise ValueError('No vertices have been selected!')

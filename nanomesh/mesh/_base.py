@@ -17,9 +17,9 @@ class BaseMesh:
 
     Parameters
     ----------
-    points : (m, n) np.ndarray[float]
+    points : (m, n) numpy.ndarray[float]
         Array with points.
-    cells : (i, j) np.ndarray[int]
+    cells : (i, j) numpy.ndarray[int]
         Index array describing the cells of the mesh.
     fields : Dict[str, int]:
         Mapping from field names to labels
@@ -207,7 +207,7 @@ class BaseMesh:
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
         """
         try:
             return self.cell_data[self.default_key]

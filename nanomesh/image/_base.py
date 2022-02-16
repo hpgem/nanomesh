@@ -10,7 +10,7 @@ def _normalize_values(image: np.ndarray):
 
     Parameters
     ----------
-    image : (m, n) np.ndarray
+    image : (m, n) numpy.ndarray
         Input image.
 
     Returns
@@ -27,12 +27,12 @@ class BaseImage:
 
     Parameters
     ----------
-    image : np.array
+    image : numpy.array
         N-dimensional numpy array containing image data.
 
     Attributes
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         The raw image data
     """
 

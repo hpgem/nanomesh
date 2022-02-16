@@ -61,14 +61,13 @@ def load_vol(filename: os.PathLike,
         Numpy dtype of the data.
     mmap_mode : None, optional
         If not None, open the file using memory mapping. For more info on
-        the modes, see:
-        https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
+        the modes, see: :func:`numpy.memmap`
     shape : tuple, optional
         Tuple of three ints specifying the shape of the data (order: z, y, x).
 
     Returns
     -------
-    result : np.ndarray
+    result : numpy.ndarray
         Data stored in the file.
     """
     filename = Path(filename)

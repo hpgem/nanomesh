@@ -29,7 +29,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
     Parameters
     ----------
-    points : np.ndarray
+    points : numpy.ndarray
         Array storing the mesh points (e.g. vertices)
     cells : list
         List of cell arrays
@@ -129,7 +129,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
             Cell type, must be in :attr:`MeshContainer.cell_types`
         key : str
             The key of the value in :attr:`MeshContainer.cell_data`
-        value : np.ndarray
+        value : numpy.ndarray
             Array of values to set
         """
         index = self.cell_types.index(cell_type)

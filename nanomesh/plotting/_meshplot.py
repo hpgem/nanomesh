@@ -58,7 +58,7 @@ def _annotate(ax: plt.Axes,
 
     Parameters
     ----------
-    ax : plt.Axes
+    ax : matplotlib.axes.Axes
         Matplotlib axes
     name : str
         Annotation text
@@ -109,7 +109,7 @@ def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
 
     Parameters
     ----------
-    ax : plt.Axes
+    ax : matplotlib.axes.Axes
         Matplotlib axes to apply legend to.
     **kwargs
         These parameters are passed to `ax.legend()`.
@@ -128,7 +128,7 @@ def _legend_with_field_names_only(ax: plt.Axes,
 
     Parameters
     ----------
-    ax : plt.Axes
+    ax : matplotlib.axes.Axes
         Matplotlib axes to apply legend to.
 
     **kwargs
@@ -159,7 +159,7 @@ def _legend(ax: plt.Axes, title: str, triplot_fix: bool = False):
 
     Parameters
     ----------
-    ax : plt.Axes
+    ax : matplotlib.axes.Axes
         Matplotlib axes object
     title : str
         Legend title
@@ -184,15 +184,15 @@ def lineplot(ax: plt.Axes,
 
     Parameters
     ----------
-    ax : plt.Axes
+    ax : matplotlib.axes.Axes
         Description
-    x : (n, 1) np.ndarray
+    x : (n, 1) numpy.ndarray
         x-coordinates of points.
-    y : (n, 1) np.ndarray
+    y : (n, 1) numpy.ndarray
         y-coordinates of points.
-    cells : (m, 2) np.ndarray
+    cells : (m, 2) numpy.ndarray
         Integer array describing the connected lines.
-    mask : (m, 1) np.ndarray, optional
+    mask : (m, 1) numpy.ndarray, optional
         Mask for line segments.
     label : str, optional
         Label for legend.
@@ -201,7 +201,7 @@ def lineplot(ax: plt.Axes,
 
     Returns
     -------
-    list of `matplotlib.lines.Line2D`
+    list of :class:`matplotlib.lines.Line2D`
         A list of lines representing the plotted data.
     """
     kwargs.setdefault('marker', '.')
@@ -242,7 +242,7 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
 
     Parameters
     ----------
-    ax : plt.Axes, optional
+    ax : matplotlib.axes.Axes, optional
         Axes to use for plotting.
     key : str, optional
         Label of cell data item to plot, defaults to `.default_key`.

@@ -69,7 +69,7 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        ax : plt.Axes, optional
+        ax : matplotlib.axes.Axes, optional
             Axes to use for plotting.
         title : str, optional
             Title for the plot.
@@ -79,7 +79,7 @@ class Plane(BaseImage):
 
         Returns
         -------
-        ax : `matplotlib.axes.Axes`
+        ax : matplotlib.axes.Axes
             Instance of :class:`matplotlib.axes.Axes`
         """
         return show_image(self.image, ax=ax, title=title, **kwargs)
@@ -106,7 +106,7 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        from_points : (n, 2) np.ndarray, optional
+        from_points : (n, 2) numpy.ndarray, optional
             List of points that are used as anchors for the roi
             selection.
 
@@ -145,7 +145,7 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        bbox : (4,2) np.ndarray
+        bbox : (4,2) numpy.ndarray
             List of points describing region of interest. The bounding box
             may be rotated.
 
@@ -182,7 +182,7 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        digitized : np.ndarray, Plane
+        digitized : numpy.ndarray, Plane
             Digitized image of the same dimensions to overlay
         cmap : str
             Matplotlib color map for :func:`matplotlib.pyplot.imshow`
@@ -191,7 +191,7 @@ class Plane(BaseImage):
 
         Returns
         -------
-        ax : plt.Axes
+        ax : matplotlib.axes.Axes
         """
         from skimage.color import label2rgb
 
@@ -220,7 +220,7 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        other : np.ndarray, Plane
+        other : numpy.ndarray, Plane
             Other image of the same dimensions to overlay
         cmap : str
             Matplotlib color map for :func:`matplotlib.pyplot.imshow`
@@ -229,7 +229,7 @@ class Plane(BaseImage):
 
         Returns
         -------
-        ax : plt.Axes
+        ax : matplotlib.axes.Axes
         """
         from skimage.util import compare_images
 

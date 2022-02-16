@@ -8,13 +8,13 @@ from .mesh._base import BaseMesh
 
 
 class Metric:
-    """Factory function for metrics using `pyvista`.
+    """Factory function for metrics using :mod:`pyvista`.
 
     Parameters
     ----------
     metric : str
         Metric to calculate. For a full list,
-        see `pvmesh.compute_cell_quality`.
+        see :meth:`pyvista.DataSet.compute_cell_quality`.
     """
 
     def __init__(self, metric: str):
@@ -71,7 +71,7 @@ def max_min_edge_ratio(mesh: BaseMesh) -> np.ndarray:
 
 
 @dataclass
-class MetricDescriptor:
+class _MetricDescriptor:
     name: str
     description: str
     units: str
@@ -93,7 +93,7 @@ class MetricDescriptor:
 # www.feflow.info/html/help73/feflow/09_Parameters/Auxiliary_Data/condition_number.html
 _metric_dispatch = {
     'area':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Triangle area',
         description='Calculate the area of a triangle.',
         units='px^2',
@@ -102,7 +102,7 @@ _metric_dispatch = {
         func=area,
     ),
     'aspect_frobenius':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Frobenius aspect',
         description=(
             'Calculate the Frobenius condition number of the '
@@ -114,7 +114,7 @@ _metric_dispatch = {
         func=aspect_frobenius,
     ),
     'aspect_ratio':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Aspect ratio',
         description='Calculate the aspect ratio of a triangle.',
         units='',
@@ -123,7 +123,7 @@ _metric_dispatch = {
         func=aspect_ratio,
     ),
     'condition':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Condition number',
         description='Calculate the condition number of a triangle.',
         units='',
@@ -132,7 +132,7 @@ _metric_dispatch = {
         func=condition,
     ),
     'max_angle':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Maximum angle',
         description=(
             'Calculate the maximal (nonoriented) angle of a triangle.'),
@@ -142,7 +142,7 @@ _metric_dispatch = {
         func=max_angle,
     ),
     'min_angle':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Minimum angle',
         description=(
             'Calculate the minimal (nonoriented) angle of a triangle.'),
@@ -152,7 +152,7 @@ _metric_dispatch = {
         func=min_angle,
     ),
     'radius_ratio':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Radius ratio',
         description=(
             'Calculate the radius ratio of a triangle. The radius ratio of a '
@@ -164,7 +164,7 @@ _metric_dispatch = {
         func=radius_ratio,
     ),
     'scaled_jacobian':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Scaled Jacobian',
         description='Calculate the scaled Jacobian of a triangle.',
         units='',
@@ -173,7 +173,7 @@ _metric_dispatch = {
         func=scaled_jacobian,
     ),
     'shape':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Shape',
         description='Calculate the shape of a triangle.',
         units='',
@@ -182,7 +182,7 @@ _metric_dispatch = {
         func=shape,
     ),
     'relative_size_squared':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Relative size',
         description='Calculate the square of the relative size of a triangle.',
         units='',
@@ -191,7 +191,7 @@ _metric_dispatch = {
         func=relative_size_squared,
     ),
     'shape_and_size':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Shape and size',
         description=(
             'Calculate the product of shape and relative size of a triangle.'),
@@ -201,7 +201,7 @@ _metric_dispatch = {
         func=shape_and_size,
     ),
     'distortion':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Distortion',
         description='Calculate the distortion of a triangle.',
         units='px^2',
@@ -210,7 +210,7 @@ _metric_dispatch = {
         func=distortion,
     ),
     'max_min_edge_ratio':
-    MetricDescriptor(
+    _MetricDescriptor(
         name='Ratio max/min edge',
         description=('Calculate the ratio between the longest '
                      'and shortest edge lengths of a triangle.'),
@@ -232,7 +232,7 @@ mesh : BaseMesh
 
 Returns
 -------
-quality : np.ndarray
+quality : numpy.ndarray
     Array with cell qualities.
     """
 
@@ -245,7 +245,8 @@ def calculate_all_metrics(mesh: BaseMesh, inplace: bool = False) -> dict:
     mesh : BaseMesh
         Input mesh
     inplace : bool, optional
-        Updates the `cell_data` attribute on the mesh with the metrics.
+        Updates the :attr:`BaseMesh.cell_data` attribute on the mesh with
+        the metrics.
 
     Returns
     -------
@@ -278,18 +279,18 @@ def histogram(
         Input mesh
     metric : str
         Metric to calculate.
-    ax : `matplotlib.Axes`
+    ax : matplotlib.axes.Axes
         If specified, `ax` will be used to create the subplot.
     vmin, vmax : int, float
         Set the lower/upper boundary for the color value.
     cmap : str
         Set the color map.
     **kwargs
-        Keyword arguments passed on to `ax.hist`.
+        Keyword arguments passed on to :func:`matplotlib.pyplot.hist`.
 
     Returns
     -------
-    ax : `matplotlib.Axes`
+    ax : matplotlib.axes.Axes
     """
     kwargs.setdefault('bins', 50)
     kwargs.setdefault('rwidth', 0.8)
@@ -328,7 +329,7 @@ def plot2d(
         Input mesh
     metric : str
         Metric to calculate.
-    ax : `matplotlib.Axes`
+    ax : matplotlib.axes.Axes
         If specified, `ax` will be used to create the subplot.
     vmin, vmax : int, float
         Set the lower/upper boundary for the color value.
@@ -336,11 +337,11 @@ def plot2d(
     cmap : str
         Set the color map.
     **kwargs
-        Keyword arguments passed on to `ax.tripcolor`.
+        Keyword arguments passed on to :func:`matplotlib.pyplot.tripcolor`.
 
     Returns
     -------
-    ax : `matplotlib.Axes`
+    ax : matplotlib.axes.Axes
     """
     descriptor = _metric_dispatch[metric]
     quality = descriptor.func(mesh)  # type: ignore

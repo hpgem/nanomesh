@@ -10,13 +10,14 @@ class SliceViewer:
 
     Parameters
     ----------
-    data : 3D np.ndarray
+    data : (i,j,k) numpy.ndarray
         Volume to display.
     update_delay : int
         Minimum delay between events in milliseconds. Reduces lag
         by limiting the Limit update rate.
     **kwargs
-        Passed to first call of `SliceViewer.update`.
+        These parametes are passed to first call of
+        :meth:`SliceViewer.update`.
     """
 
     def __init__(
@@ -108,9 +109,9 @@ def show_image(image,
 
     Parameters
     ----------
-    image : 2D np.ndarray
+    image : (i,j) numpy.ndarray
         Image to display.
-    ax : plt.Axes, optional
+    ax : matplotlib.axes.Axes, optional
         Axes to use for plotting.
     title : str, optional
         Title for the plot.
@@ -119,7 +120,7 @@ def show_image(image,
 
     Returns
     -------
-    plt.Axes
+    ax : matplotlib.axes.Axes
     """
     kwargs.setdefault('interpolation', None)
 

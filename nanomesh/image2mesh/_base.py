@@ -22,9 +22,9 @@ class BaseMesher(ABC):
 
     Attributes
     ----------
-    image : np.ndarray
+    image : numpy.ndarray
         Reference to image data
-    image_orig : np.ndarray
+    image_orig : numpy.ndarray
         Keep reference to original image data
     contour : BaseMesh
         Stores the contour mesh.

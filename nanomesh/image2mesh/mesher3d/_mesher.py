@@ -127,7 +127,7 @@ def close_side(mesh: TriangleMesh,
         `left`, `right`, `top`, `bottom`, `front`, `back`.
     bbox : BoundingBox
         Coordinates of the bounding box.
-    ax : plt.Axes, optional
+    ax : matplotlib.axes.Axes, optional
         Plot the generated side on a matplotlib axis.
 
     Returns
@@ -366,7 +366,7 @@ def volume2mesh(
 
     Parameters
     ----------
-    image : 3D np.ndarray or Volume
+    image : (i,j,k) numpy.ndarray or Volume
         Input image to mesh.
     level : float, optional
         Contour value to search for isosurfaces (i.e. the threshold value).

@@ -138,14 +138,14 @@ def generate_segment_markers(segments: List[np.ndarray],
 
     Parameters
     ----------
-    segments : List[np.ndarray]
-        Description
+    segments : List[numpy.ndarray]
+        List of segment markers
     ones : bool, optional
         Assign the label (1) to all segments
 
     Returns
     -------
-    segment_markers : np.ndarray
+    segment_markers : numpy.ndarray
     """
     if ones:
         n_items = sum(len(segment) for segment in segments)
@@ -164,16 +164,16 @@ def append_to_segment_markers(segment_markers: np.ndarray,
 
     Parameters
     ----------
-    segment_markers : np.ndarray
+    segment_markers : numpy.ndarray
         List of existing markers
-    segments : List[np.ndarray]
+    segments : List[numpy.ndarray]
         List of segments to label sequentially and append to segment markers
     same_label : bool, optional
         Assign the next available integer label to all additional segments
 
     Returns
     -------
-    segment_markers : np.ndarray
+    segment_markers : numpy.ndarray
     """
     offset = segment_markers.max() + 1
 

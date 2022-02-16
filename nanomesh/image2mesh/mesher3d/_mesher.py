@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, List, Union
 
 import matplotlib.pyplot as plt
-import meshio
 import numpy as np
 from skimage import measure, morphology
 
@@ -19,7 +18,7 @@ from ._helpers import pad
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from nanomesh.mesh import TriangleMesh
+    from nanomesh import MeshContainer, TriangleMesh
 
 
 def get_point_in_prop(
@@ -29,7 +28,7 @@ def get_point_in_prop(
     Parameters
     ----------
     prop : RegionProperties
-        RegionProp from skimage.measure.regionproperties.
+        RegionProp from :mod:`skimage.measure.regionproperties`.
 
     Returns
     -------
@@ -128,7 +127,7 @@ def close_side(mesh: TriangleMesh,
         `left`, `right`, `top`, `bottom`, `front`, `back`.
     bbox : BoundingBox
         Coordinates of the bounding box.
-    ax : plt.Axes, optional
+    ax : matplotlib.axes.Axes, optional
         Plot the generated side on a matplotlib axis.
 
     Returns
@@ -240,7 +239,8 @@ class Mesher3D(BaseMesher):
         self,
         level: float = None,
     ):
-        """Generate contours using marching cubes algorithm.
+        """Generate contours using marching cubes algorithm
+        (:func:`skimage.measure.marching_cubes`).
 
         Also generates an envelope around the entire data volume
         corresponding to the bounding box. The bounding box equals
@@ -254,7 +254,7 @@ class Mesher3D(BaseMesher):
         level : float, optional
             Contour value to search for isosurfaces (i.e. the threshold value).
             By default takes the average of the min and max value. Can be
-            ignored if a binary image is passed to `Mesher3D`.
+            ignored if a binary image is passed to :class:`Mesher3D`.
         """
         from nanomesh.mesh import TriangleMesh
 
@@ -282,22 +282,27 @@ class Mesher3D(BaseMesher):
         self.contour = contour
 
     def pad_contour(self, **kwargs):
-        """Pad the contour. See `.helpers.pad` for info.
+        """Pad the contour.
+
+        Shortcut for :func:`image2mesh.mesher3d.pad`.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments for `.helpers.pad`.
+            These parameters are passed to :func:`image2mesh.mesher3d.pad`.
         """
         self.contour = pad(self.contour, **kwargs)
 
     def plot_contour(self, **kwargs):
-        """Pad the contour. See `nanomesh.BaseMesh.plot_pyvista` for info.
+        """Pad the contour using.
+
+        Shortcut for :meth:`mesh._base.BaseMesh.plot_pyvista`.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments for `nanomesh.BaseMesh.plot_pyvista`.
+            These parameters are passed to
+            :meth:`mesh._base.BaseMesh.plot_pyvista`.
         """
         self.contour.plot_pyvista(**kwargs)
 
@@ -316,18 +321,18 @@ class Mesher3D(BaseMesher):
         for region_marker in region_markers:
             self.contour.add_region_marker(region_marker)
 
-    def tetrahedralize(self, **kwargs):
+    def tetrahedralize(self, **kwargs) -> MeshContainer:
         """Tetrahedralize a surface contour mesh.
 
         Parameters
         ----------
         **kwargs
             Keyword arguments passed to
-            `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
+            :func:`tetrahedralize`.
 
         Returns
         -------
-        TetraMesh
+        MeshContainer
 
         Raises
         ------
@@ -352,16 +357,16 @@ class Mesher3D(BaseMesher):
 
 
 def volume2mesh(
-    image: np.ndarray,
+    image: np.ndarray | Volume,
     *,
     level: float = None,
     **kwargs,
-) -> 'meshio.Mesh':
+) -> 'MeshContainer':
     """Generate mesh from binary (segmented) image.
 
     Parameters
     ----------
-    image : 3D np.ndarray
+    image : (i,j,k) numpy.ndarray or Volume
         Input image to mesh.
     level : float, optional
         Contour value to search for isosurfaces (i.e. the threshold value).
@@ -369,12 +374,12 @@ def volume2mesh(
         ignored if a binary image is passed as `image`.
     **kwargs
         Optional keyword arguments passed to
-        `nanomesh.mesh_container.TriangleMesh.tetrahedralize`
+        :func:`tetrahedralize`
 
     Returns
     -------
-    volume_mesh : TetraMesh
-        Description of the mesh.
+    volume_mesh : MeshContainer
+        Instance of :class:`MeshContainer`
     """
     mesher = Mesher3D(image)
     mesher.generate_contour(level=level)

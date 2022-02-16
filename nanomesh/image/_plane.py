@@ -19,15 +19,15 @@ if TYPE_CHECKING:
 class Plane(BaseImage):
 
     @classmethod
-    def load(cls, filename: os.PathLike, **kwargs) -> 'Plane':
+    def load(cls, filename: os.PathLike, **kwargs) -> Plane:
         """Load the data. Supported filetypes: `.npy`.
 
         Parameters
         ----------
         filename : Pathlike
             Name of the file to load.
-        **kwargs : dict
-            Extra keyword arguments passed to `np.load`.
+        **kwargs
+            These parameters are passed to :func:`numpy.load`.
 
         Returns
         -------
@@ -38,25 +38,26 @@ class Plane(BaseImage):
         return cls(array)
 
     def apply(self, function: Callable, **kwargs):
-        """Apply function to `.image` array. Return an instance of `Plane` if
-        the result is a 2D image, otherwise return the result of the operation.
+        """Apply function to :attr:`Plane.image`. Return an instance of
+        :class:`Plane` if the result is a 2D image, otherwise
+        return the result of the operation.
 
         Parameters
         ----------
         function : callable
-            Function to apply to `self.image`.
+            Function to apply to :attr:`Plane.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
         Returns
         -------
         Plane
-            New instance of `Plane`.
+            New instance of :class:`Plane`.
         """
         return super().apply(function, **kwargs)
 
     def plot(self, *args, **kwargs):
-        """Shortcut for `.show()."""
+        """Shortcut for :meth:`Plane.show`."""
         return self.show(*args, **kwargs)
 
     def show(self,
@@ -64,21 +65,22 @@ class Plane(BaseImage):
              ax: plt.Axes = None,
              title: str = None,
              **kwargs) -> 'plt.Axes':
-        """Plot the image using matplotlib.
+        """Plot the image using :mod:`matplotlib`.
 
         Parameters
         ----------
-        ax : plt.Axes, optional
+        ax : matplotlib.axes.Axes, optional
             Axes to use for plotting.
         title : str, optional
             Title for the plot.
-        **kwargs : dict
-            Extra keyword arguments to pass to `plt.imshow`.
+        **kwargs
+            These parameters are passed to
+            :func:`matplotlib.pyplot.imshow`.
 
         Returns
         -------
-        ax : `matplotlib.axes.Axes`
-            Instance of `matplotlib.axes.Axes`
+        ax : matplotlib.axes.Axes
+            Instance of :class:`matplotlib.axes.Axes`
         """
         return show_image(self.image, ax=ax, title=title, **kwargs)
 
@@ -88,7 +90,8 @@ class Plane(BaseImage):
         Parameters
         ----------
         **kwargs:
-            Keyword arguments are passed to `mesh2d.plane2mesh`
+            Keyword arguments are passed to
+            :func:`nanomesh.plane2mesh`
 
         Returns
         -------
@@ -101,10 +104,17 @@ class Plane(BaseImage):
     def select_roi(self, from_points: np.ndarray = None):
         """Select region of interest in interactive matplotlib figure.
 
+        Parameters
+        ----------
+        from_points : (n, 2) numpy.ndarray, optional
+            List of points that are used as anchors for the roi
+            selection.
+
         Returns
         -------
         roi : `nanomesh.image._roi2d.ROISelector`
-            Region of interest object. Bounding box is stored in `roi.bbox`.
+            Region of interest object. Bounding box is stored in
+            :attr:`roi.bbox`.
         """
         from ._roi2d import ROISelector
         ax = self.show(title='Select region of interest')
@@ -115,7 +125,7 @@ class Plane(BaseImage):
         roi = ROISelector(ax, snap_to=from_points)
         return roi
 
-    def crop(self, left: int, top: int, right: int, bottom: int) -> 'Plane':
+    def crop(self, left: int, top: int, right: int, bottom: int) -> Plane:
         """Crop image to pixel indices.
 
         Parameters
@@ -126,23 +136,23 @@ class Plane(BaseImage):
         Returns
         -------
         Plane
-            New instance of `Plane`.
+            New instance of :class:`Plane`.
         """
         return Plane(self.image[top:bottom, left:right])
 
-    def crop_to_roi(self, bbox: np.ndarray) -> 'Plane':
+    def crop_to_roi(self, bbox: np.ndarray) -> Plane:
         """Crop plane to rectangle defined by bounding box.
 
         Parameters
         ----------
-        bbox : (4,2) np.ndarray
+        bbox : (4,2) numpy.ndarray
             List of points describing region of interest. The bounding box
             may be rotated.
 
         Returns
         -------
-        `nanomesh.Plane`
-            Cropped region as `nanomesh.Plane` object.
+        Plane
+            Cropped region as :class:`Plane` object.
         """
         from ._roi2d import extract_rectangle
         cropped = extract_rectangle(self.image, bbox=bbox)
@@ -158,7 +168,7 @@ class Plane(BaseImage):
 
         Returns
         -------
-        ax : matplotlib.Axes
+        plt.Axes
         """
         from ..utils import compare_mesh_with_image
         return compare_mesh_with_image(image=self.image, mesh=mesh)
@@ -172,16 +182,16 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        digitized : np.ndarray, Plane
+        digitized : numpy.ndarray, Plane
             Digitized image of the same dimensions to overlay
         cmap : str
-            Matplotlib color map for `ax.imshow`
-        **kwargs : dict
-            Extra keyword arguments passed to `skimage.color.label2rgb`.
+            Matplotlib color map for :func:`matplotlib.pyplot.imshow`
+        **kwargs
+            These parameters are passed to :func:`skimage.color.label2rgb`.
 
         Returns
         -------
-        ax : plt.Axes
+        ax : matplotlib.axes.Axes
         """
         from skimage.color import label2rgb
 
@@ -210,16 +220,16 @@ class Plane(BaseImage):
 
         Parameters
         ----------
-        other : np.ndarray, Plane
+        other : numpy.ndarray, Plane
             Other image of the same dimensions to overlay
         cmap : str
-            Matplotlib color map for `ax.imshow`
-        **kwargs : dict
-            Extra keyword arguments passed to `skimage.util.compare_images`.
+            Matplotlib color map for :func:`matplotlib.pyplot.imshow`
+        **kwargs
+            These parameters are passed to :func:`skimage.util.compare_images`.
 
         Returns
         -------
-        ax : plt.Axes
+        ax : matplotlib.axes.Axes
         """
         from skimage.util import compare_images
 
@@ -241,7 +251,7 @@ class Plane(BaseImage):
         return ax
 
     def clear_border(self, *, object_label: int, fill_val: int,
-                     **kwargs) -> 'Plane':
+                     **kwargs) -> Plane:
         """Remove objects at the border of the image.
 
         Parameters
@@ -251,12 +261,13 @@ class Plane(BaseImage):
         fill_val : int
             Cleared objects are set to this value.
         **kwargs
-            Extra arguments passed to `skimage.segmentation.clear_border`.
+            Extra arguments passed to
+            :func:`skimage.segmentation.clear_border`.
 
         Returns
         -------
         Plane
-            New instance of `Plane`.
+            New instance of :class:`Plane`.
         """
         from skimage import segmentation
 
@@ -269,13 +280,14 @@ class Plane(BaseImage):
         return self.__class__(out)
 
     def try_all_threshold(self, **kwargs):
-        """Produce a plot trying all available thresholds from `scikit-image`.
+        """Produce a plot trying all available thresholds using
+        :func:`skimage.filters.try_all_threshold`.
 
         Parameters
         ----------
-        **kwargs : dict
-            Extra keyword arguments passed to
-            `skimage.filters.try_all_threshold`.
+        **kwargs
+            These parameters are passed to
+            :func:`skimage.filters.try_all_threshold`.
         """
         from skimage import filters
         kwargs.setdefault('verbose', False)

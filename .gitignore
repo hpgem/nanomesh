@@ -27,9 +27,9 @@ playground/
 .DS_Store
 
 # mesh files
-*.mesh*
-*.msh*
-*.gmsh*
+*.mesh
+*.msh
+*.gmsh
 
 # matplotlib
 result_images/

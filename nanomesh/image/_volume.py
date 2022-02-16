@@ -1,14 +1,16 @@
 import logging
 import os
 from pathlib import Path
-from typing import Callable, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Tuple, Union
 
-import meshio
 import numpy as np
 
 from ..io import load_vol
 from ._base import BaseImage
 from ._plane import Plane
+
+if TYPE_CHECKING:
+    from nanomesh import MeshContainer
 
 logger = logging.getLogger(__name__)
 
@@ -25,20 +27,19 @@ class Volume(BaseImage):
             can still result in some slow / unexpected behaviour with some
             operations.
 
-            More info:
-            https://numpy.org/doc/stable/reference/generated/numpy.memmap.html
+            More info: :func:`numpy.memmap`
 
         Parameters
         ----------
         filename : PathLike
             Name of the file to load.
-        **kwargs : dict
-            Extra keyword arguments passed onto data readers.
+        **kwargs
+            These parameters are passed on to data readers.
 
         Returns
         -------
         Volume
-            Instance of this class.
+            Instance of :class:`Volume`.
 
         Raises
         ------
@@ -57,27 +58,38 @@ class Volume(BaseImage):
         return cls(array)
 
     def apply(self, function: Callable, **kwargs) -> 'Volume':
-        """Apply function to `.image` array. Return an instance of `Volume` if
-        the result is a 3D image, otherwise return the result of the operation.
+        """Apply function to `.image` array. Return an instance of
+        :class:`Volume` if the result is a 3D image, otherwise return the
+        result of the operation.
 
         Parameters
         ----------
         function : callable
-            Function to apply to `self.image`.
+            Function to apply to :attr:`Volume.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
         Returns
         -------
         Volume
-            New instance of `Volume`.
+            New instance of :class:`Volume`.
         """
         return super().apply(function, **kwargs)
 
     def show_slice(self, **kwargs):
-        """Show slice using `nanomesh.image.SliceViewer`.
+        """Show slice using :class:`nanomesh.image.SliceViewer`.
 
         Extra arguments are passed on.
+
+        Parameters
+        ----------
+        **kwargs
+            These parameters are passed to
+            :class:`nanomesh.image.SliceViewer`
+
+        Returns
+        -------
+        SliceViewer
         """
         from ._utils import SliceViewer
         sv = SliceViewer(self.image, **kwargs)
@@ -85,14 +97,24 @@ class Volume(BaseImage):
         return sv
 
     def plot(self, *args, **kwargs):
-        """Shortcut for `.show()."""
+        """Shortcut for :meth:`Volume.show`."""
         return self.show(*args, **kwargs)
 
     def show(self, renderer: str = 'itkwidgets', **kwargs) -> None:
         """Show volume using `itkwidgets` or `ipyvolume`.
 
-        Extra keyword arguments (`kwargs`) are passed to
-        `itkwidgets.view` or `ipyvolume.quickvolshow`.
+        Parameters
+        ----------
+        renderer : str, optional
+            Select renderer (`ipvolume`, `itkwidgets`)
+        **kwargs
+            These parameters are passed to
+            :func:`itkwidgets.view` or :func:`ipyvolume.quickvolshow`.
+
+        Raises
+        ------
+        ValueError
+            Raised if the renderer is unknown.
         """
         if renderer in ('ipyvolume', 'ipv'):
             import ipyvolume as ipv
@@ -103,18 +125,18 @@ class Volume(BaseImage):
         else:
             raise ValueError(f'No such renderer: {renderer!r}')
 
-    def generate_mesh(self, **kwargs) -> 'meshio.Mesh':
+    def generate_mesh(self, **kwargs) -> 'MeshContainer':
         """Generate mesh from binary (segmented) image.
 
         Parameters
         ----------
         **kwargs:
-            Keyword arguments are passed to `mesh3d.volume2mesh`
+            These parameters are passed to `mesh3d.volume2mesh`
 
         Returns
         -------
-        meshio.Mesh
-            Description of the mesh.
+        MeshContainer
+            Instance of :class:`MeshContainer`
         """
         from nanomesh.image2mesh import volume2mesh
         return volume2mesh(image=self.image, **kwargs)
@@ -138,7 +160,7 @@ class Volume(BaseImage):
         Returns
         -------
         Plane
-            Return 2D plane representation.
+            Return plane as :class:`Plane`.
 
         Raises
         ------
@@ -188,8 +210,8 @@ class Volume(BaseImage):
 
         Returns
         -------
-        Plane
-            Return 3D volume representation.
+        Volume
+            Subvolume as :class:`Volume`
         """
         default = slice(None)
         slices = tuple(slice(*r) if r else default for r in (zs, ys, xs))

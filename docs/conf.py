@@ -11,47 +11,28 @@ STATICDIR = '_static'
 SOURCEDIR = '../nanomesh'
 
 
-# -- Run apidoc plug-in manually, as readthedocs doesn't support it -------
-# See https://github.com/rtfd/readthedocs.org/issues/1139
-def run_apidoc(app):
-    ignore_paths = []
-
-    cmd = ('--separate --no-toc --force --module-first '
-           f'-t {TEMPLATESDIR} '
-           f'-o {DOCSDIR} '
-           f'{SOURCEDIR} ')
-
-    args = cmd.split() + ignore_paths
-
-    from sphinx.ext import apidoc
-    apidoc.main(args)
-
-
 # Include banner as static image
 def copy_banner_to_static(app):
     import shutil
     src = Path('.').absolute().parent / 'notebooks' / 'banner' / 'banner.png'
-    shutil.copy2(src, STATICDIR)
+    target = Path(STATICDIR)
+    target.mkdir(exist_ok=True)
+    shutil.copy2(src, target)
 
 
 # https://www.sphinx-doc.org/en/master/extdev/appapi.html#sphinx-core-events
 # https://github.com/readthedocs/readthedocs.org/issues/2276
 def setup(app):
     app.connect('builder-inited', copy_banner_to_static)
-    app.connect('builder-inited', run_apidoc)
 
 
 extensions = [
     'sphinx.ext.autodoc',
-    # 'sphinx.ext.coverage',
-    # 'sphinx.ext.doctest',
-    # 'sphinx.ext.intersphinx',
-    # 'sphinx.ext.mathjax',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
     'nbsphinx',
     'nbsphinx_link',
-    # 'sphinx.ext.todo',
-    # 'sphinx.ext.viewcode',
     'autodocsumm',
 ]
 
@@ -98,22 +79,9 @@ autoapi_dirs = [SOURCEDIR]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = 'sphinx_rtd_theme'
-# options for rtd-theme
-# html_theme_options = {
-#     'display_version': True,
-#     'prev_next_buttons_location': 'bottom',
-#     'style_external_links': False,
-#     # toc options
-#     'collapse_navigation': True,
-#     'sticky_navigation': True,
-#     'navigation_depth': 4,
-#     'includehidden': True,
-#     'titles_only': False,
-# }
 
 autodoc_default_options = {
     'autosummary': True,
-    'special-members': '__init__',
 }
 
 nbsphinx_allow_errors = True
@@ -127,8 +95,9 @@ autodoc_mock_imports = [
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'pyvista': ('https://docs.pyvista.org', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'scikit-image': ('https://scikit-image.org/docs/stable/', None),
     'scikit-learn': ('https://scikit-learn.org/stable/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),

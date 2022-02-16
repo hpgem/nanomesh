@@ -13,6 +13,23 @@ registry: Dict[str, Any] = {}
 
 
 class BaseMesh:
+    """Base class for meshes.
+
+    Parameters
+    ----------
+    points : (m, n) numpy.ndarray[float]
+        Array with points.
+    cells : (i, j) numpy.ndarray[int]
+        Index array describing the cells of the mesh.
+    fields : Dict[str, int]:
+        Mapping from field names to labels
+    region_markers : List[RegionMarker], optional
+        List of region markers used for assigning labels to regions.
+        Defaults to an empty list.
+    **cell_data
+        Additional cell data. Argument must be a 1D numpy array
+        matching the number of cells defined by `i`.
+    """
     cell_type: str = 'base'
 
     def __init__(self,
@@ -21,23 +38,6 @@ class BaseMesh:
                  fields: Dict[str, int] = None,
                  region_markers: List[RegionMarker] = None,
                  **cell_data):
-        """Base class for meshes.
-
-        Parameters
-        ----------
-        points : (m, n) np.ndarray[float]
-            Array with points.
-        cells : (i, j) np.ndarray[int]
-            Index array describing the cells of the mesh.
-        fields : Dict[str, int]:
-            Mapping from field names to labels
-        region_markers : List[RegionMarker], optional
-            List of region markers used for assigning labels to regions.
-            Defaults to an empty list.
-        **cell_data
-            Additional cell data. Argument must be a 1D numpy array
-            matching the number of cells defined by `i`.
-        """
         default_key = 'physical'
         if (not cell_data) or (default_key in cell_data):
             self.default_key = default_key
@@ -71,13 +71,14 @@ class BaseMesh:
 
     @property
     def number_to_field(self):
-        """Mapping from numbers to fields, proxy to `.field_to_number`."""
+        """Mapping from numbers to fields, proxy to
+        :attr:`BaseMesh.field_to_number`."""
         return MappingProxyType(
             {v: k
              for k, v in self.field_to_number.items()})
 
     def add_region_marker(self, region_marker: RegionMarkerLike):
-        """Add marker to list of region markers.
+        """Add marker to list of :attr:`BaseMesh.region_markers`.
 
         Parameters
         ----------
@@ -92,18 +93,19 @@ class BaseMesh:
         self.region_markers.append(region_marker)
 
     def add_region_markers(self, region_markers: Sequence[RegionMarkerLike]):
-        """Add marker to list of region markers.
+        """Add markers to list of :attr:`BaseMesh.region_markers`.
 
         Parameters
         ----------
         region_markers : List[RegionMarkerLike]
-            List of region markers passed to `.add_region_marker`.
+            List of region markers passed to
+            :meth:`BaseMesh.add_region_marker`.
         """
         for region_marker in region_markers:
             self.add_region_marker(region_marker)
 
     def to_meshio(self) -> 'meshio.Mesh':
-        """Return instance of `meshio.Mesh`."""
+        """Return instance of :func:`meshio.Mesh`."""
         cells = [
             (self.cell_type, self.cells),
         ]
@@ -117,7 +119,7 @@ class BaseMesh:
 
     @classmethod
     def from_meshio(cls, mesh: 'meshio.Mesh'):
-        """Return `BaseMesh` from meshio object."""
+        """Return :class:`BaseMesh` from meshio object."""
         points = mesh.points
         cells = mesh.cells[0].data
         cell_data = {}
@@ -144,17 +146,17 @@ class BaseMesh:
         return item_class(points=points, cells=cells, **cell_data)
 
     def write(self, *args, **kwargs):
-        """Simple wrapper around `meshio.write`."""
+        """Simple wrapper around :func:`meshio.write`."""
         self.to_meshio().write(*args, **kwargs)
 
     @classmethod
     def read(cls, filename, **kwargs):
-        """Simple wrapper around `meshio.read`."""
+        """Simple wrapper around :func:`meshio.read`."""
         mesh = meshio.read(filename, **kwargs)
         return cls.from_meshio(mesh)
 
     def to_pyvista_unstructured_grid(self) -> 'pv.PolyData':
-        """Return instance of `pyvista.UnstructuredGrid`.
+        """Return instance of :class:`pyvista.UnstructuredGrid`.
 
         References
         ----------
@@ -169,22 +171,22 @@ class BaseMesh:
         raise NotImplementedError
 
     def plot_itk(self, **kwargs):
-        """Wrapper for `pyvista.plot_itk`.
+        """Wrapper for :func:`pyvista.plot_itk`.
 
         Parameters
         ----------
         **kwargs
-            Extra keyword arguments passed to `pyvista.plot_itk`
+            These parameters are passed to :func:`pyvista.plot_itk`
         """
         return pv.plot_itk(self.to_meshio(), **kwargs)
 
     def plot_pyvista(self, **kwargs):
-        """Wrapper for `pyvista.plot`.
+        """Wrapper for :func:`pyvista.plot`.
 
         Parameters
         ----------
         **kwargs
-            Extra keyword arguments passed to `pyvista.plot`
+            These parameters are passed to :func:`pyvista.plot`
         """
         return pv.plot(self.to_meshio(), **kwargs)
 
@@ -205,7 +207,7 @@ class BaseMesh:
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
         """
         try:
             return self.cell_data[self.default_key]
@@ -213,12 +215,12 @@ class BaseMesh:
             return np.ones(len(self.cells), dtype=int) * default_value
 
     @property
-    def zero_labels(self):
+    def zero_labels(self) -> np.ndarray:
         """Return zero labels as fallback."""
         return np.zeros(len(self.cells), dtype=int)
 
     @property
-    def labels(self):
+    def labels(self) -> np.ndarray:
         """Shortcut for cell labels."""
         try:
             return self.cell_data[self.default_key]
@@ -227,16 +229,22 @@ class BaseMesh:
 
     @labels.setter
     def labels(self, data: np.ndarray):
-        """Shortcut for setting cell labels."""
+        """Shortcut for setting cell labels.
+
+        Updates :attr:`BaseMesh.cell_data`.
+        """
         self.cell_data[self.default_key] = data
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> int:
         """Return number of dimensions for point data."""
         return self.points.shape[1]
 
     def reverse_cell_order(self):
-        """Reverse order of cells and cell data."""
+        """Reverse order of cells and cell data.
+
+        Updates :attr:`BaseMesh.cell_data`.
+        """
         self.cells = self.cells[::-1]
         for key, data in self.cell_data.items():
             self.cell_data[key] = data[::-1]

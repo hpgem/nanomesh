@@ -4,7 +4,8 @@
    contain the root `toctree` directive.
 
 
-|Documentation Status| |Linux| |MacOS| |Windows|
+|Documentation Status| |tests| |PyPI - Python Version| |PyPI|
+
 
 .. figure:: _static/banner.png
    :alt: Nanomesh banner
@@ -12,54 +13,40 @@
 
 Welcome to the nanomesh documentation!
 
+Nanomesh is a python workflow tool for generating meshes from 2D and 3D microscopy image data.
 
-Getting started
-===============
+
 .. toctree::
    :maxdepth: 2
    :caption: Getting Started
 
    install
    development
+   hello_world
 
 
-Examples
-========
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Examples
-   :glob:
 
-   examples/*
+   examples/index
 
-
-API Reference
-=============
 
 .. toctree::
-   :maxdepth: 1
-   :caption: API reference
+   :maxdepth: 2
+   :caption: API
 
-   nanomesh.io.rst
-   nanomesh.mesh2d.rst
-   nanomesh.mesh3d.rst
-   nanomesh.mesh_container.rst
-   nanomesh.mesh_utils.rst
-   nanomesh.mesh_utils_3d.rst
-   nanomesh.metrics.rst
-   nanomesh.image.rst
-   nanomesh.roi2d.rst
-   nanomesh.tetgen.rst
-   nanomesh.utils.rst
+   api.rst
 
 
-Links
-=====
 .. toctree::
    :caption: Links
 
-   🔗 Source code <http://github.com/HPGEM/nanomesh>
-   🔗 Issues <http://github.com/HPGEM/nanomesh/issues>
+   👨‍💻 Source code <https://github.com/HPGEM/nanomesh>
+   💡 Issues <https://github.com/HPGEM/nanomesh/issues>
+   📢 Releases <https://github.com/hpgem/nanomesh/releases>
+   🐍 PyPI <https://pypi.org/project/nanomesh>
+   📚 documentation <https://nanomesh.readthedocs.io>
 
 
 Indices and tables
@@ -72,9 +59,9 @@ Indices and tables
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/nanomesh/badge/?version=latest
    :target: https://nanomesh.readthedocs.io/en/latest/?badge=latest
-.. |Linux| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml/badge.svg
-   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_linux.yml
-.. |MacOS| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml/badge.svg
-   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_macos.yaml
-.. |Windows| image:: https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml/badge.svg
-   :target: https://github.com/hpgem/nanomesh/actions/workflows/test_on_windows.yaml
+.. |tests| image:: https://github.com/hpgem/nanomesh/actions/workflows/test.yaml/badge.svg
+   :target: https://github.com/hpgem/nanomesh/actions/workflows/test.yaml
+.. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/nanomesh
+   :target: https://pypi.org/project/nanomesh/
+.. |PyPI| image:: https://img.shields.io/pypi/v/nanomesh.svg?style=flat
+   :target: https://pypi.org/project/nanomesh/

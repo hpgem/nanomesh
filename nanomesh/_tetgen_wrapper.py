@@ -93,10 +93,10 @@ def call_tetgen(fname: os.PathLike, opts: str = '-pAq1.2'):
 
         Some useful flags:
 
-        -A: Assigns attributes to tetrahedra in different regions.
-        -p: Tetrahedralizes a piecewise linear complex (PLC).
-        -q: Refines mesh (to improve mesh quality).
-        -a: Applies a maximum tetrahedron volume constraint.
+        - `-A`: Assigns attributes to tetrahedra in different regions.
+        - `-p`: Tetrahedralizes a piecewise linear complex (PLC).
+        - `-q`: Refines mesh (to improve mesh quality).
+        - `-a`: Applies a maximum tetrahedron volume constraint.
     """
     import subprocess as sp
     sp.run(['tetgen', opts, fname])
@@ -117,10 +117,10 @@ def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> MeshContainer:
 
         Some useful flags:
 
-        -A: Assigns attributes to tetrahedra in different regions.
-        -p: Tetrahedralizes a piecewise linear complex (PLC).
-        -q: Refines mesh (to improve mesh quality).
-        -a: Applies a maximum tetrahedron volume constraint.
+        - `-A`: Assigns attributes to tetrahedra in different regions.
+        - `-p`: Tetrahedralizes a piecewise linear complex (PLC).
+        - `-q`: Refines mesh (to improve mesh quality).
+        - `-a`: Applies a maximum tetrahedron volume constraint.
 
     Returns
     -------

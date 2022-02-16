@@ -27,13 +27,13 @@ def compare_mesh_with_image(image: np.ndarray,
     mesh : TriangleMesh
         Triangle mesh to plot on image
     cmap : str
-        Matplotlib color map for `ax.imshow`
-    **kwargs :
-        Extra keyword arguments passed on to plotting function.
+        Matplotlib color map for :func:`matplotlib.pyplot.imshow`
+    **kwargs
+        These parameters are passed on to plotting function.
 
     Returns
     -------
-    ax : matplotlib.Axes
+    ax : matplotlib.axes.Axes
     """
     fig, ax = plt.subplots()
 

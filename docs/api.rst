@@ -130,7 +130,7 @@ These metrics are currently available:
 :func:`~nanomesh.metrics.histogram` and :func:`~nanomesh.metrics.plot2d` are helpers
 to visualize the metrics.
 
-For more info, see <<TODO: LINK TO EXAMPLE WITH METRICS>>.
+For more info, see the example on :doc:`examples/calculate_cell_metrics`.
 
 .. autofunction:: nanomesh.metrics.calculate_all_metrics
 .. autofunction:: nanomesh.metrics.histogram

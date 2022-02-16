@@ -27,9 +27,8 @@ Nanomesh is a python workflow tool for generating meshes from 2D and 3D microsco
 .. toctree::
    :maxdepth: 2
    :caption: Examples
-   :glob:
 
-   examples/*
+   examples/index
 
 
 .. toctree::

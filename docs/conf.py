@@ -96,6 +96,7 @@ autodoc_mock_imports = [
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
+    'pyvista': ('https://docs.pyvista.org', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'scikit-image': ('https://scikit-image.org/docs/stable/', None),
     'scikit-learn': ('https://scikit-learn.org/stable/', None),

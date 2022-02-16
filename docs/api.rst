@@ -101,6 +101,55 @@ stores metadata about a region in a mesh. :func:`tetrahedralize` and
 .. autofunction:: tetrahedralize
 .. autofunction:: triangulate
 
+
+Metrics
+-------
+
+The :mod:`nanomesh.metrics` module helps with calculating different types of cell metrics.
+
+There are a few higher level functions available. While one could use
+:func:`~nanomesh.metrics.calculate_all_metrics` to calculate all available metrics,
+each function is also available by itself.
+
+These metrics are currently available:
+
+- :func:`~nanomesh.metrics.area`
+- :func:`~nanomesh.metrics.aspect_frobenius`
+- :func:`~nanomesh.metrics.aspect_ratio`
+- :func:`~nanomesh.metrics.condition`
+- :func:`~nanomesh.metrics.distortion`
+- :func:`~nanomesh.metrics.max_angle`
+- :func:`~nanomesh.metrics.max_min_edge_ratio`
+- :func:`~nanomesh.metrics.min_angle`
+- :func:`~nanomesh.metrics.radius_ratio`
+- :func:`~nanomesh.metrics.relative_size_squared`
+- :func:`~nanomesh.metrics.scaled_jacobian`
+- :func:`~nanomesh.metrics.shape`
+- :func:`~nanomesh.metrics.shape_and_size`
+
+:func:`~nanomesh.metrics.histogram` and :func:`~nanomesh.metrics.plot2d` are helpers
+to visualize the metrics.
+
+For more info, see <<TODO: LINK TO EXAMPLE WITH METRICS>>.
+
+.. autofunction:: nanomesh.metrics.calculate_all_metrics
+.. autofunction:: nanomesh.metrics.histogram
+.. autofunction:: nanomesh.metrics.plot2d
+
+.. autofunction:: nanomesh.metrics.area
+.. autofunction:: nanomesh.metrics.aspect_frobenius
+.. autofunction:: nanomesh.metrics.aspect_ratio
+.. autofunction:: nanomesh.metrics.condition
+.. autofunction:: nanomesh.metrics.distortion
+.. autofunction:: nanomesh.metrics.max_angle
+.. autofunction:: nanomesh.metrics.max_min_edge_ratio
+.. autofunction:: nanomesh.metrics.min_angle
+.. autofunction:: nanomesh.metrics.radius_ratio
+.. autofunction:: nanomesh.metrics.relative_size_squared
+.. autofunction:: nanomesh.metrics.scaled_jacobian
+.. autofunction:: nanomesh.metrics.shape
+.. autofunction:: nanomesh.metrics.shape_and_size
+
 Reference
 ---------
 

@@ -5,3 +5,4 @@ nanomesh.region\_markers
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:

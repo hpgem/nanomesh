@@ -32,7 +32,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'nbsphinx',
-    'nbsphinx_link',
+    # 'nbsphinx_link',
     'autodocsumm',
 ]
 

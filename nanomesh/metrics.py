@@ -135,7 +135,7 @@ _metric_dispatch = {
     _MetricDescriptor(
         name='Maximum angle',
         description=(
-            'Calculate the maximal (nonoriented) angle of a triangle.'),
+            'Calculate the maximal (non-oriented) angle of a triangle.'),
         units='degrees',
         optimal=(60, 90),
         range=(60, 180),
@@ -145,7 +145,7 @@ _metric_dispatch = {
     _MetricDescriptor(
         name='Minimum angle',
         description=(
-            'Calculate the minimal (nonoriented) angle of a triangle.'),
+            'Calculate the minimal (non-oriented) angle of a triangle.'),
         units='degrees',
         optimal=(30, 60),
         range=(0, 60),
@@ -156,8 +156,8 @@ _metric_dispatch = {
         name='Radius ratio',
         description=(
             'Calculate the radius ratio of a triangle. The radius ratio of a '
-            'triangle $t$ is: $\frac{R}{2r}$, where $R$ and $r$ respectively '
-            'denote the circumradius and the inradius of $t$.'),
+            'triangle `t` is: `R/2r`, where `R` and `r` respectively '
+            'denote the circumradius and the inradius of `t`.'),
         units='',
         optimal=(1.0, 2.0),
         range=(1, np.inf),

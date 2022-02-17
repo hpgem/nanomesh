@@ -8,6 +8,7 @@ import numpy as np
 from skimage import measure, morphology
 
 from nanomesh import triangulate
+from nanomesh._doc import doc
 from nanomesh.image import Volume
 from nanomesh.region_markers import RegionMarker, RegionMarkerLike
 
@@ -229,6 +230,7 @@ def generate_envelope(mesh: TriangleMesh,
     return mesh
 
 
+@doc(BaseMesher, prefix='tetrahedral mesh from 3D (volumetric) image data')
 class Mesher3D(BaseMesher):
 
     def __init__(self, image: np.ndarray):
@@ -362,7 +364,7 @@ def volume2mesh(
     level: float = None,
     **kwargs,
 ) -> 'MeshContainer':
-    """Generate mesh from binary (segmented) image.
+    """Generate a tetrahedral mesh from a 3D segmented image.
 
     Parameters
     ----------

@@ -6,14 +6,16 @@ from typing import Union
 
 import numpy as np
 
+from .._doc import doc
 from ..image import Plane, Volume
 from ..mesh._base import BaseMesh
 
 logger = logging.getLogger(__name__)
 
 
+@doc(prefix='mesh from image data')
 class BaseMesher(ABC):
-    """Utility class to mesh image data and generate a mesh.
+    """Utility class to generate a {prefix}.
 
     Parameters
     ----------

@@ -12,7 +12,7 @@ import numpy.typing as npt
 
 @dataclass
 class RegionMarker:
-    """Dataclass to store region info.
+    """Data class to store region info.
 
     A region is typically an area or volume bounded
     by segments or cells.

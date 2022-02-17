@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Callable, Union
 import matplotlib.pyplot as plt
 import numpy as np
 
+from .._doc import doc
 from ._base import BaseImage
 from ._utils import show_image
 
@@ -16,6 +17,9 @@ if TYPE_CHECKING:
     from .mesh import TriangleMesh
 
 
+@doc(BaseImage,
+     prefix='Data class for working with 2D image data',
+     shape='(i,j) ')
 class Plane(BaseImage):
 
     @classmethod

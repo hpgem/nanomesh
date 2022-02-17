@@ -4,6 +4,8 @@ from typing import Callable, Union
 
 import numpy as np
 
+from .._doc import BaseclassMeta, doc
+
 
 def _normalize_values(image: np.ndarray):
     """Rescale values to 0.0 to 1.0.
@@ -22,17 +24,18 @@ def _normalize_values(image: np.ndarray):
     return out
 
 
-class BaseImage:
-    """Data class for image data.
+@doc(prefix='Base class for image data', shape='')
+class BaseImage(object, metaclass=BaseclassMeta):
+    """{prefix}.
 
     Parameters
     ----------
-    image : numpy.array
+    image : {shape}numpy.array
         N-dimensional numpy array containing image data.
 
     Attributes
     ----------
-    image : numpy.ndarray
+    image : {shape}numpy.ndarray
         The raw image data
     """
 
@@ -77,7 +80,7 @@ class BaseImage:
 
         Returns
         -------
-        BaseImage
+        {cls}
             Image with boolean data.
         """
         this = self.image
@@ -87,7 +90,7 @@ class BaseImage:
 
     def to_sitk_image(self):
         """Return instance of :class:`SimpleITK.Image` from
-        :meth:`BaseImage.image`."""
+        :meth:`{cls}.image`."""
         import SimpleITK as sitk
         return sitk.GetImageFromArray(self.image)
 
@@ -123,21 +126,21 @@ class BaseImage:
         return cls(image)
 
     def apply(self, function: Callable, **kwargs):
-        """Apply function to :attr:`BaseImage.image` array. Return an instance
-        of :class:`BaseImage` if the result is of the same dimensions,
-        otherwise return the result of the operation.
+        """Apply function to :attr:`{cls}.image` array. Return an instance of
+        :class:`{cls}` if the result is of the same dimensions, otherwise
+        return the result of the operation.
 
         Parameters
         ----------
         function : callable
-            Function to apply to :attr:`BaseImage.image`.
+            Function to apply to :attr:`{cls}.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
         Returns
         -------
-        BaseImage
-            New instance of :class:`BaseImage`.
+        {cls}
+            New instance of :class:`{cls}`.
         """
         ret = function(self.image, **kwargs)
         if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
@@ -157,8 +160,8 @@ class BaseImage:
 
         Returns
         -------
-        BaseImage
-            New instance of :class:`BaseImage`.
+        {cls}
+            New instance of :class:`{cls}`.
         """
         from skimage import filters
         return self.apply(filters.gaussian, sigma=sigma, **kwargs)
@@ -177,8 +180,8 @@ class BaseImage:
 
         Returns
         -------
-        BaseImage
-            New instance of :class:`BaseImage`.
+        {cls}
+            New instance of :class:`{cls}`.
         """
         return self.apply(np.digitize, bins=bins, **kwargs)
 
@@ -187,7 +190,7 @@ class BaseImage:
 
         Returns
         -------
-        out : BaseImage
+        out : {cls}
             Normalized image
         """
         return self.apply(_normalize_values)
@@ -197,7 +200,7 @@ class BaseImage:
 
         Returns
         -------
-        out : BaseImage
+        out : {cls}
             Inverted image
         """
         return self.apply(lambda arr: arr.max() - arr)
@@ -209,13 +212,13 @@ class BaseImage:
         ----------
         threshold : float, optional
             Threshold used for segmentation. If given as a string,
-            apply corresponding theshold via :meth:`BaseImage.threshold`.
+            apply corresponding theshold via :meth:`{cls}.threshold`.
             Defaults to `median`.
 
         Returns
         -------
-        BaseImage
-            New instance of :class:`BaseImage`.
+        {cls}
+            New instance of :class:`{cls}`.
         """
         if not threshold:
             threshold = np.median(self.image)
@@ -266,7 +269,7 @@ class BaseImage:
 
         Returns
         -------
-        BaseImage
+        {cls}
             Real component of fourier transform with the zero-frequency
             component shifted to the center of the spectrum.
         """

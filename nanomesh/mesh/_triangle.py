@@ -7,6 +7,7 @@ import numpy as np
 import pyvista as pv
 import scipy
 
+from .._doc import doc
 from ._base import BaseMesh
 from ._mixin import PruneZ0Mixin
 
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
     from nanomesh import MeshContainer
 
 
+@doc(BaseMesh, prefix='Data class for triangle meshes')
 class TriangleMesh(BaseMesh, PruneZ0Mixin):
     cell_type = 'triangle'
 

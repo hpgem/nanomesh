@@ -7,6 +7,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from skimage import measure
 
+from nanomesh._doc import doc
 from nanomesh.region_markers import RegionMarker
 
 from .._base import BaseMesher
@@ -159,6 +160,7 @@ def _generate_segments(polygons: List[Polygon]) -> np.ndarray:
     return np.vstack(segments)
 
 
+@doc(BaseMesher, prefix='triangular mesh from 2D image data')
 class Mesher2D(BaseMesher):
 
     def __init__(self, image: np.ndarray | Plane):
@@ -318,7 +320,7 @@ def plane2mesh(image: np.ndarray | Plane,
                max_contour_dist: int = 5,
                opts: str = 'q30a100',
                plot: bool = False) -> 'MeshContainer':
-    """Generate mesh from binary (segmented) image.
+    """Generate a triangular mesh from a 2D segmented image.
 
     Parameters
     ----------

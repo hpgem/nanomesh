@@ -3,9 +3,11 @@ from __future__ import annotations
 import numpy as np
 import pyvista as pv
 
+from .._doc import doc
 from ._base import BaseMesh
 
 
+@doc(BaseMesh, prefix='Data class for tetrahedral meshes')
 class TetraMesh(BaseMesh):
     cell_type = 'tetra'
 

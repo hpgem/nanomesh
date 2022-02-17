@@ -5,12 +5,14 @@ from typing import TYPE_CHECKING, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 
+from .._doc import doc
 from ._base import BaseMesh
 
 if TYPE_CHECKING:
     from ..mesh_container import MeshContainer
 
 
+@doc(BaseMesh, prefix='Data class for line meshes')
 class LineMesh(BaseMesh):
     cell_type = 'line'
 

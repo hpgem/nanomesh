@@ -7,13 +7,15 @@ import meshio
 import numpy as np
 import pyvista as pv
 
+from .._doc import doc
 from ..region_markers import RegionMarker, RegionMarkerLike
 
 registry: Dict[str, Any] = {}
 
 
+@doc(prefix='Base class for meshes')
 class BaseMesh:
-    """Base class for meshes.
+    """{prefix}.
 
     Parameters
     ----------

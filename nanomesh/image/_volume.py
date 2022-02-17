@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, Tuple, Union
 
 import numpy as np
 
+from .._doc import doc
 from ..io import load_vol
 from ._base import BaseImage
 from ._plane import Plane
@@ -15,6 +16,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+@doc(BaseImage,
+     prefix='Data class for working with 3D (volumetric) image data',
+     shape='(i,j,k) ')
 class Volume(BaseImage):
 
     @classmethod
@@ -58,7 +62,7 @@ class Volume(BaseImage):
         return cls(array)
 
     def apply(self, function: Callable, **kwargs) -> 'Volume':
-        """Apply function to `.image` array. Return an instance of
+        """Apply function to :attr:`Volume.image` array. Return an instance of
         :class:`Volume` if the result is a 3D image, otherwise return the
         result of the operation.
 

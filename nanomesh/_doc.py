@@ -4,7 +4,7 @@ import functools
 import inspect
 import string
 from textwrap import dedent
-from types import FunctionType
+from types import FunctionType, MethodType
 from typing import Any, Callable, TypeVar
 
 
@@ -20,7 +20,7 @@ def copy_func(f: FunctionType) -> FunctionType:
     return g
 
 
-fmt = string.Formatter()
+Formatter = string.Formatter()
 
 
 class DocFormatterMeta(type):
@@ -33,14 +33,14 @@ class DocFormatterMeta(type):
         cls = super().__new__(mcls, classname, bases, cls_dict)
 
         for name, method in inspect.getmembers(cls):
-            private = name.startswith('_')
+            is_private = name.startswith('_')
             is_none = (not method) or (not method.__doc__)
 
-            if any((private, is_none)):
+            if any((is_private, is_none)):
                 continue
 
-            no_tokens = len(list(fmt.parse(method.__doc__))) <= 1
-            if no_tokens:
+            is_format_string = len(list(Formatter.parse(method.__doc__))) <= 1
+            if not is_format_string:
                 continue
 
             if inspect.isfunction(method) or inspect.ismethod(method):
@@ -71,6 +71,10 @@ class DocFormatterMeta(type):
             if hasattr(parent, name):
                 new_method = copy_func(method)
                 new_method.__doc__ = method.__doc__.format(classname=classname)
+
+                if inspect.ismethod(method):
+                    new_method = MethodType(new_method, cls)
+
                 setattr(cls, name, new_method)
                 return
 

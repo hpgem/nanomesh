@@ -5,12 +5,14 @@ from typing import TYPE_CHECKING, List
 import numpy as np
 from scipy.spatial.distance import cdist
 
+from nanomesh._doc import doc
 from nanomesh.region_markers import RegionMarker
 
 if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh
 
 
+@doc(prefix='Pad a triangle mesh (2D)')
 def pad(
     mesh: LineMesh,
     *,
@@ -19,7 +21,7 @@ def pad(
     label: int = None,
     name: str = None,
 ) -> LineMesh:
-    """Pad a triangle mesh (2D).
+    """{prefix}.
 
     Parameters
     ----------

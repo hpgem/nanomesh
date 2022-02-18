@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from nanomesh._doc import doc
 from nanomesh.region_markers import RegionMarker
 from nanomesh.utils import pairwise
 
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from nanomesh.mesh import TriangleMesh
 
 
+@doc(prefix='Pad a contour triangle mesh (3D)')
 def pad(
     mesh: TriangleMesh,
     *,
@@ -21,7 +23,7 @@ def pad(
     label: int = None,
     name: str = None,
 ) -> TriangleMesh:
-    """Pad a contour triangle mesh (3D).
+    """{prefix}.
 
     Note that tetgen will assign a different label for physically separate
     regions, even when they are given the same label/name.

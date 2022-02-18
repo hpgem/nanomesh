@@ -3,8 +3,8 @@ from ._line import LineMesh
 from ._tetra import TetraMesh
 from ._triangle import TriangleMesh
 
-for MeshClass in (LineMesh, TriangleMesh, TetraMesh):
-    registry[MeshClass.cell_type] = MeshClass
+for _mesh_class in (LineMesh, TriangleMesh, TetraMesh):
+    registry[_mesh_class.cell_type] = _mesh_class
 
 __all__ = [
     'LineMesh',

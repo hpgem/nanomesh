@@ -5,18 +5,19 @@ from typing import TYPE_CHECKING, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 
+from .._doc import doc
 from ._base import BaseMesh
 
 if TYPE_CHECKING:
     from ..mesh_container import MeshContainer
 
 
+@doc(BaseMesh,
+     prefix='Data class for line meshes',
+     dim_points='2 or 3',
+     dim_cells='2')
 class LineMesh(BaseMesh):
     cell_type = 'line'
-
-    def plot(self, *args, **kwargs):
-        """Shortcut for :func:`LineMesh.plot_mpl`"""
-        return self.plot_mpl(*args, **kwargs)
 
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:
         """Simple line mesh plot using :mod:`matplotlib`.
@@ -36,6 +37,10 @@ class LineMesh(BaseMesh):
         """
         from ..plotting import linemeshplot
         return linemeshplot(self, *args, **kwargs)
+
+    @doc(plot_mpl)
+    def plot(self, *args, **kwargs):
+        return self.plot_mpl(*args, **kwargs)
 
     def label_boundaries(self,
                          left: Optional[int | str] = None,
@@ -91,12 +96,13 @@ class LineMesh(BaseMesh):
         Parameters
         ----------
         opts : str, optional
-            Options for the triangulation. See
-            :func:`triangulate` for details.
+            Options passed to :func:`triangulate`. For more info,
+            see: https://rufat.be/triangle/API.html#triangle.triangulate
 
         Returns
         -------
-        MeshContainer
+        mesh : MeshContainer
+            2D mesh with domain labels.
         """
         from .._triangle_wrapper import triangulate
         points = self.points

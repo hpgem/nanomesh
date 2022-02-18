@@ -7,6 +7,8 @@ import numpy as np
 import pyvista as pv
 import scipy
 
+from .._doc import doc
+from .._tetgen_wrapper import tetrahedralize
 from ._base import BaseMesh
 from ._mixin import PruneZ0Mixin
 
@@ -16,6 +18,10 @@ if TYPE_CHECKING:
     from nanomesh import MeshContainer
 
 
+@doc(BaseMesh,
+     prefix='Data class for triangle meshes',
+     dim_points='2 or 3',
+     dim_cells='3')
 class TriangleMesh(BaseMesh, PruneZ0Mixin):
     cell_type = 'triangle'
 
@@ -58,7 +64,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
             triangles=open3d.utility.Vector3iVector(self.cells))
 
     def to_polydata(self) -> 'pv.PolyData':
-        """Return instance of `pyvista.Polydata`."""
+        """Return instance of :class:`pyvista.Polydata`."""
         points = self.points
         cells = self.cells
         # preprend 3 to indicate number of points per cell
@@ -128,19 +134,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         )
         return TriangleMesh(points=points, cells=cells)
 
+    @doc(tetrahedralize, prefix='Tetrahedralize a 3D triangle mesh')
     def tetrahedralize(self, **kwargs) -> 'MeshContainer':
-        """Tetrahedralize a contour.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to :func:`tetrahedralize`.
-
-        Returns
-        -------
-        mesh : MeshContainer
-            Tetrahedralized mesh.
-        """
-        from .._tetgen_wrapper import tetrahedralize
         mesh = tetrahedralize(self, **kwargs)
         return mesh

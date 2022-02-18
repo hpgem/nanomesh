@@ -7,8 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 if TYPE_CHECKING:
-    from nanomesh.mesh import LineMesh, TriangleMesh
-    from nanomesh.mesh_container import MeshContainer
+    from nanomesh import LineMesh, MeshContainer, TriangleMesh
 
 
 def _get_color_cycle(colors) -> cycle:

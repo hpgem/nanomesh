@@ -1,3 +1,5 @@
+"""Module to compute cell quality metrics."""
+
 from dataclasses import dataclass
 from typing import Callable, Optional, Tuple
 

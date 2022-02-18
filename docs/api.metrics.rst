@@ -38,7 +38,7 @@ These metrics are currently available:
    shape
    shape_and_size
 
-Other functions:
+Utility functions:
 
 .. autosummary::
 

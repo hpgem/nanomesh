@@ -7,19 +7,21 @@ import meshio
 import numpy as np
 import pyvista as pv
 
+from .._doc import DocFormatterMeta, doc
 from ..region_markers import RegionMarker, RegionMarkerLike
 
 registry: Dict[str, Any] = {}
 
 
-class BaseMesh:
-    """Base class for meshes.
+@doc(prefix='Base class for meshes', dim_points='n', dim_cells='j')
+class BaseMesh(object, metaclass=DocFormatterMeta):
+    """{prefix}.
 
     Parameters
     ----------
-    points : (m, n) numpy.ndarray[float]
+    points : (m, {dim_points}) numpy.ndarray[float]
         Array with points.
-    cells : (i, j) numpy.ndarray[int]
+    cells : (i, {dim_cells}) numpy.ndarray[int]
         Index array describing the cells of the mesh.
     fields : Dict[str, int]:
         Mapping from field names to labels
@@ -72,13 +74,13 @@ class BaseMesh:
     @property
     def number_to_field(self):
         """Mapping from numbers to fields, proxy to
-        :attr:`BaseMesh.field_to_number`."""
+        :attr:`{classname}.field_to_number`."""
         return MappingProxyType(
             {v: k
              for k, v in self.field_to_number.items()})
 
     def add_region_marker(self, region_marker: RegionMarkerLike):
-        """Add marker to list of :attr:`BaseMesh.region_markers`.
+        """Add marker to list of :attr:`{classname}.region_markers`.
 
         Parameters
         ----------
@@ -93,13 +95,13 @@ class BaseMesh:
         self.region_markers.append(region_marker)
 
     def add_region_markers(self, region_markers: Sequence[RegionMarkerLike]):
-        """Add markers to list of :attr:`BaseMesh.region_markers`.
+        """Add markers to list of :attr:`{classname}.region_markers`.
 
         Parameters
         ----------
         region_markers : List[RegionMarkerLike]
             List of region markers passed to
-            :meth:`BaseMesh.add_region_marker`.
+            :meth:`{classname}.add_region_marker`.
         """
         for region_marker in region_markers:
             self.add_region_marker(region_marker)
@@ -119,7 +121,7 @@ class BaseMesh:
 
     @classmethod
     def from_meshio(cls, mesh: 'meshio.Mesh'):
-        """Return :class:`BaseMesh` from meshio object."""
+        """Return :class:`{classname}` from meshio object."""
         points = mesh.points
         cells = mesh.cells[0].data
         cell_data = {}
@@ -231,7 +233,7 @@ class BaseMesh:
     def labels(self, data: np.ndarray):
         """Shortcut for setting cell labels.
 
-        Updates :attr:`BaseMesh.cell_data`.
+        Updates :attr:`{classname}.cell_data`.
         """
         self.cell_data[self.default_key] = data
 
@@ -243,7 +245,7 @@ class BaseMesh:
     def reverse_cell_order(self):
         """Reverse order of cells and cell data.
 
-        Updates :attr:`BaseMesh.cell_data`.
+        Updates :attr:`{classname}.cell_data`.
         """
         self.cells = self.cells[::-1]
         for key, data in self.cell_data.items():

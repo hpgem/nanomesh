@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+from .._doc import doc
 from ._base import BaseImage
 from ._utils import show_image
 
@@ -16,6 +17,9 @@ if TYPE_CHECKING:
     from .mesh import TriangleMesh
 
 
+@doc(BaseImage,
+     prefix='Data class for working with 2D image data',
+     shape='(i,j) ')
 class Plane(BaseImage):
 
     @classmethod
@@ -36,29 +40,6 @@ class Plane(BaseImage):
         """
         array = np.load(filename, **kwargs)
         return cls(array)
-
-    def apply(self, function: Callable, **kwargs):
-        """Apply function to :attr:`Plane.image`. Return an instance of
-        :class:`Plane` if the result is a 2D image, otherwise
-        return the result of the operation.
-
-        Parameters
-        ----------
-        function : callable
-            Function to apply to :attr:`Plane.image`.
-        **kwargs
-            Keyword arguments to pass to `function`.
-
-        Returns
-        -------
-        Plane
-            New instance of :class:`Plane`.
-        """
-        return super().apply(function, **kwargs)
-
-    def plot(self, *args, **kwargs):
-        """Shortcut for :meth:`Plane.show`."""
-        return self.show(*args, **kwargs)
 
     def show(self,
              *,
@@ -83,6 +64,10 @@ class Plane(BaseImage):
             Instance of :class:`matplotlib.axes.Axes`
         """
         return show_image(self.image, ax=ax, title=title, **kwargs)
+
+    @doc(show)
+    def plot(self, *args, **kwargs):
+        return self.show(*args, **kwargs)
 
     def generate_mesh(self, **kwargs) -> TriangleMesh:
         """Generate mesh from binary (segmented) image.
@@ -261,7 +246,7 @@ class Plane(BaseImage):
         fill_val : int
             Cleared objects are set to this value.
         **kwargs
-            Extra arguments passed to
+            These parameters are passed to
             :func:`skimage.segmentation.clear_border`.
 
         Returns

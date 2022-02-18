@@ -1,10 +1,11 @@
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Tuple, Union
+from typing import TYPE_CHECKING, Tuple, Union
 
 import numpy as np
 
+from .._doc import doc
 from ..io import load_vol
 from ._base import BaseImage
 from ._plane import Plane
@@ -15,6 +16,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+@doc(BaseImage,
+     prefix='Data class for working with 3D (volumetric) image data',
+     shape='(i,j,k) ')
 class Volume(BaseImage):
 
     @classmethod
@@ -56,25 +60,6 @@ class Volume(BaseImage):
         else:
             raise IOError(f'Unknown file extension: {suffix}')
         return cls(array)
-
-    def apply(self, function: Callable, **kwargs) -> 'Volume':
-        """Apply function to `.image` array. Return an instance of
-        :class:`Volume` if the result is a 3D image, otherwise return the
-        result of the operation.
-
-        Parameters
-        ----------
-        function : callable
-            Function to apply to :attr:`Volume.image`.
-        **kwargs
-            Keyword arguments to pass to `function`.
-
-        Returns
-        -------
-        Volume
-            New instance of :class:`Volume`.
-        """
-        return super().apply(function, **kwargs)
 
     def show_slice(self, **kwargs):
         """Show slice using :class:`nanomesh.image.SliceViewer`.
@@ -138,7 +123,7 @@ class Volume(BaseImage):
         MeshContainer
             Instance of :class:`MeshContainer`
         """
-        from nanomesh.image2mesh import volume2mesh
+        from nanomesh import volume2mesh
         return volume2mesh(image=self.image, **kwargs)
 
     def select_plane(self,

@@ -233,10 +233,7 @@ class Mesher2D(BaseMesher):
             (0, y - 1),
         ))
 
-    def triangulate(self,
-                    opts='pAq30a100',
-                    clip_line_data: bool = True,
-                    **kwargs) -> MeshContainer:
+    def triangulate(self, opts='pAq30a100', **kwargs) -> MeshContainer:
         """Triangulate contours.
 
         Mandatory switches for `opts`:
@@ -251,17 +248,11 @@ class Mesher2D(BaseMesher):
         opts : str, optional
             Options passed to :func:`triangulate`. For more info,
             see: https://rufat.be/triangle/API.html#triangle.triangulate
-        clip_line_data: bool
-            If set, clips the line data to 0: body,
-            1: external boundary, 2: internal boundary
-            instead of individual numbers for each segment
-        **kwargs
-            These parameters are passed to :func:`triangulate`
 
         Returns
         -------
         mesh : MeshContainer
-            Output 2D mesh with domain labels
+            Triangulated 2D mesh with domain labels
         """
         for var in 'pAe':
             if var not in opts:
@@ -272,16 +263,8 @@ class Mesher2D(BaseMesher):
 
         return mesh
 
+    @doc(pad, prefix='Pad the contour using :func:`image2mesh.mesher2d.pad`')
     def pad_contour(self, **kwargs):
-        """Pad the contour.
-
-        Shortcut for :func:`image2mesh.mesher2d.pad`.
-
-        Parameters
-        ----------
-        **kwargs
-            These parameters are passed to :func:`image2mesh.mesher2d.pad`.
-        """
         self.contour = pad(self.contour, **kwargs)
 
     def plot_contour(self, ax: plt.Axes = None, cmap: str = None, **kwargs):
@@ -331,12 +314,13 @@ def plane2mesh(image: np.ndarray | Plane,
     max_contour_dist : int, optional
         Maximum distance between neighbouring pixels in contours.
     opts : str, optional
-        Options passed to :func:`triangulate`
+        Options passed to :func:`triangulate`. For more info,
+        see: https://rufat.be/triangle/API.html#triangle.triangulate
 
     Returns
     -------
-    MeshContainer
-        Triangulated mesh.
+    mesh : MeshContainer
+        Triangulated 2D mesh with domain labels.
     """
     mesher = Mesher2D(image)
     mesher.generate_contour(max_contour_dist=5, level=level)

@@ -96,12 +96,13 @@ class LineMesh(BaseMesh):
         Parameters
         ----------
         opts : str, optional
-            Options for the triangulation. See
-            :func:`triangulate` for details.
+            Options passed to :func:`triangulate`. For more info,
+            see: https://rufat.be/triangle/API.html#triangle.triangulate
 
         Returns
         -------
-        MeshContainer
+        mesh : MeshContainer
+            2D mesh with domain labels.
         """
         from .._triangle_wrapper import triangulate
         points = self.points

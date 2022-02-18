@@ -1,25 +1,22 @@
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING, List, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage import measure, morphology
 
-from nanomesh import triangulate
+from nanomesh import Volume, tetrahedralize, triangulate
 from nanomesh._doc import doc
-from nanomesh.image import Volume
+from nanomesh.mesh import TriangleMesh
 from nanomesh.region_markers import RegionMarker, RegionMarkerLike
 
 from .._base import BaseMesher
 from ._bounding_box import BoundingBox
 from ._helpers import pad
 
-logger = logging.getLogger(__name__)
-
 if TYPE_CHECKING:
-    from nanomesh import MeshContainer, TriangleMesh
+    from nanomesh import MeshContainer
 
 
 def get_point_in_prop(
@@ -279,33 +276,15 @@ class Mesher3D(BaseMesher):
         region_markers = get_region_markers(segmented)
         contour.add_region_markers(region_markers)
 
-        logger.info(f'Generated contour with {len(contour.cells)} cells')
-
         self.contour = contour
 
+    @doc(pad, prefix='Pad the contour using :func:`image2mesh.mesher3d.pad`')
     def pad_contour(self, **kwargs):
-        """Pad the contour.
-
-        Shortcut for :func:`image2mesh.mesher3d.pad`.
-
-        Parameters
-        ----------
-        **kwargs
-            These parameters are passed to :func:`image2mesh.mesher3d.pad`.
-        """
         self.contour = pad(self.contour, **kwargs)
 
+    @doc(TriangleMesh.plot_pyvista,
+         prefix='Shortcut for :meth:`TriangleMesh.plot_pyvista`.')
     def plot_contour(self, **kwargs):
-        """Pad the contour using.
-
-        Shortcut for :meth:`mesh._base.BaseMesh.plot_pyvista`.
-
-        Parameters
-        ----------
-        **kwargs
-            These parameters are passed to
-            :meth:`mesh._base.BaseMesh.plot_pyvista`.
-        """
         self.contour.plot_pyvista(**kwargs)
 
     def set_region_markers(self, region_markers: List[RegionMarkerLike]):
@@ -323,24 +302,10 @@ class Mesher3D(BaseMesher):
         for region_marker in region_markers:
             self.contour.add_region_marker(region_marker)
 
+    @doc(tetrahedralize,
+         prefix=('Tetrahedralize surface contour mesh using'
+                 ':func:`tetrahedralize`'))
     def tetrahedralize(self, **kwargs) -> MeshContainer:
-        """Tetrahedralize a surface contour mesh.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to
-            :func:`tetrahedralize`.
-
-        Returns
-        -------
-        MeshContainer
-
-        Raises
-        ------
-        ValueError
-            Contour mesh has not been generated.
-        """
         if not self.contour:
             raise ValueError('No contour mesh available.'
                              'Run `Mesher3D.generate_contour()` first.')

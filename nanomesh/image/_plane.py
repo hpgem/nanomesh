@@ -41,10 +41,6 @@ class Plane(BaseImage):
         array = np.load(filename, **kwargs)
         return cls(array)
 
-    def plot(self, *args, **kwargs):
-        """Shortcut for :meth:`Plane.show`."""
-        return self.show(*args, **kwargs)
-
     def show(self,
              *,
              ax: plt.Axes = None,
@@ -68,6 +64,10 @@ class Plane(BaseImage):
             Instance of :class:`matplotlib.axes.Axes`
         """
         return show_image(self.image, ax=ax, title=title, **kwargs)
+
+    @doc(show)
+    def plot(self, *args, **kwargs):
+        return self.show(*args, **kwargs)
 
     def generate_mesh(self, **kwargs) -> TriangleMesh:
         """Generate mesh from binary (segmented) image.

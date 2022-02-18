@@ -123,7 +123,7 @@ class Volume(BaseImage):
         MeshContainer
             Instance of :class:`MeshContainer`
         """
-        from nanomesh.image2mesh import volume2mesh
+        from nanomesh import volume2mesh
         return volume2mesh(image=self.image, **kwargs)
 
     def select_plane(self,

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import pyvista as pv
 
-from nanomesh import TriangleMesh
+from nanomesh.mesh import TriangleMesh
 from nanomesh.mesh._base import BaseMesh
 
 

@@ -39,9 +39,9 @@ def triangulate(points: np.ndarray,
     Returns
     -------
     mesh : MeshContainer
-        Triangle mesh
+        Triangulated 2D mesh
     """
-    from nanomesh.mesh_container import MeshContainer
+    from nanomesh import MeshContainer
 
     triangle_dict_in: Dict['str', Any] = {'vertices': points}
 

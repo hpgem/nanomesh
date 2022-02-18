@@ -80,7 +80,7 @@ class BaseImage(object, metaclass=DocFormatterMeta):
 
         Returns
         -------
-        {cls}
+        {classname}
             Image with boolean data.
         """
         this = self.image
@@ -90,7 +90,7 @@ class BaseImage(object, metaclass=DocFormatterMeta):
 
     def to_sitk_image(self):
         """Return instance of :class:`SimpleITK.Image` from
-        :meth:`{cls}.image`."""
+        :meth:`{classname}.image`."""
         import SimpleITK as sitk
         return sitk.GetImageFromArray(self.image)
 
@@ -126,21 +126,21 @@ class BaseImage(object, metaclass=DocFormatterMeta):
         return cls(image)
 
     def apply(self, function: Callable, **kwargs):
-        """Apply function to :attr:`{cls}.image` array. Return an instance of
-        :class:`{cls}` if the result is of the same dimensions, otherwise
+        """Apply function to :attr:`{classname}.image` array. Return an instance of
+        :class:`{classname}` if the result is of the same dimensions, otherwise
         return the result of the operation.
 
         Parameters
         ----------
         function : callable
-            Function to apply to :attr:`{cls}.image`.
+            Function to apply to :attr:`{classname}.image`.
         **kwargs
             Keyword arguments to pass to `function`.
 
         Returns
         -------
-        {cls}
-            New instance of :class:`{cls}`.
+        {classname}
+            New instance of :class:`{classname}`.
         """
         ret = function(self.image, **kwargs)
         if isinstance(ret, np.ndarray) and (ret.ndim == self.image.ndim):
@@ -160,8 +160,8 @@ class BaseImage(object, metaclass=DocFormatterMeta):
 
         Returns
         -------
-        {cls}
-            New instance of :class:`{cls}`.
+        {classname}
+            New instance of :class:`{classname}`.
         """
         from skimage import filters
         return self.apply(filters.gaussian, sigma=sigma, **kwargs)
@@ -180,8 +180,8 @@ class BaseImage(object, metaclass=DocFormatterMeta):
 
         Returns
         -------
-        {cls}
-            New instance of :class:`{cls}`.
+        {classname}
+            New instance of :class:`{classname}`.
         """
         return self.apply(np.digitize, bins=bins, **kwargs)
 
@@ -190,7 +190,7 @@ class BaseImage(object, metaclass=DocFormatterMeta):
 
         Returns
         -------
-        out : {cls}
+        out : {classname}
             Normalized image
         """
         return self.apply(_normalize_values)
@@ -200,7 +200,7 @@ class BaseImage(object, metaclass=DocFormatterMeta):
 
         Returns
         -------
-        out : {cls}
+        out : {classname}
             Inverted image
         """
         return self.apply(lambda arr: arr.max() - arr)
@@ -212,13 +212,13 @@ class BaseImage(object, metaclass=DocFormatterMeta):
         ----------
         threshold : float, optional
             Threshold used for segmentation. If given as a string,
-            apply corresponding theshold via :meth:`{cls}.threshold`.
+            apply corresponding theshold via :meth:`{classname}.threshold`.
             Defaults to `median`.
 
         Returns
         -------
-        {cls}
-            New instance of :class:`{cls}`.
+        {classname}
+            New instance of :class:`{classname}`.
         """
         if not threshold:
             threshold = np.median(self.image)
@@ -269,7 +269,7 @@ class BaseImage(object, metaclass=DocFormatterMeta):
 
         Returns
         -------
-        {cls}
+        {classname}
             Real component of fourier transform with the zero-frequency
             component shifted to the center of the spectrum.
         """

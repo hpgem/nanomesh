@@ -22,30 +22,59 @@ def copy_func(f: FunctionType) -> FunctionType:
 class DocFormatterMeta(type):
     """Format docstrings with the classname of the derived class.
 
-    Updates instances of `{cls}` to `classname`.
+    Updates instances of `{classname}` to `classname`.
     """
 
     def __new__(mcls, classname, bases, cls_dict):
         cls = super().__new__(mcls, classname, bases, cls_dict)
 
         for name, method in inspect.getmembers(cls):
-            if name.startswith('_'):
-                continue
-
-            bound_classname = method.__qualname__.split('.')[0]
-
-            if bound_classname == classname:
-                continue
-
-            for parent in cls.mro()[1:]:
-                if hasattr(parent, name):
-                    new_method = copy_func(method)
-                    new_method.__doc__ = method.__doc__.format(cls=classname)
-                    setattr(cls, name, new_method)
-
-                    break
+            if inspect.isfunction(method):
+                mcls.update_docstring(mcls,
+                                      cls,
+                                      method,
+                                      name,
+                                      classname=classname)
+            elif isinstance(method, property):
+                # mcls.update_docstring(mcls,
+                #                       cls,
+                #                       method.fget,
+                #                       name,
+                #                       classname=classname)
+                # mcls.update_docstring(mcls,
+                #                       cls,
+                #                       method.fset,
+                #                       name,
+                #                       classname=classname)
+                pass
+            else:
+                pass
 
         return cls
+
+    def update_docstring(mcls, cls, method, name, *, classname):
+        """Copy method to subclass and replace tokens in parent method
+        docstring."""
+        if name.startswith('_'):
+            return
+
+        if (not method) or (not method.__doc__):
+            return
+
+        try:
+            bound_classname = method.__qualname__.split('.')[0]
+        except:
+            return
+
+        if bound_classname == classname:
+            return
+
+        for parent in cls.mro()[1:]:
+            if hasattr(parent, name):
+                new_method = copy_func(method)
+                new_method.__doc__ = method.__doc__.format(classname=classname)
+                setattr(cls, name, new_method)
+                return
 
 
 # `doc` is derived from pandas.util._decorators (1.4.1)

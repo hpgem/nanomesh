@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import inspect
+import string
 from textwrap import dedent
 from types import FunctionType
 from typing import Any, Callable, TypeVar
@@ -19,6 +20,9 @@ def copy_func(f: FunctionType) -> FunctionType:
     return g
 
 
+fmt = string.Formatter()
+
+
 class DocFormatterMeta(type):
     """Format docstrings with the classname of the derived class.
 
@@ -29,43 +33,37 @@ class DocFormatterMeta(type):
         cls = super().__new__(mcls, classname, bases, cls_dict)
 
         for name, method in inspect.getmembers(cls):
-            if inspect.isfunction(method):
-                mcls.update_docstring(mcls,
-                                      cls,
-                                      method,
-                                      name,
-                                      classname=classname)
+            private = name.startswith('_')
+            is_none = (not method) or (not method.__doc__)
+
+            if any((private, is_none)):
+                continue
+
+            no_tokens = len(list(fmt.parse(method.__doc__))) <= 1
+            if no_tokens:
+                continue
+
+            if inspect.isfunction(method) or inspect.ismethod(method):
+                mcls.update_method_docstring(mcls,
+                                             cls,
+                                             method,
+                                             name,
+                                             classname=classname)
             elif isinstance(method, property):
-                # mcls.update_docstring(mcls,
-                #                       cls,
-                #                       method.fget,
-                #                       name,
-                #                       classname=classname)
-                # mcls.update_docstring(mcls,
-                #                       cls,
-                #                       method.fset,
-                #                       name,
-                #                       classname=classname)
-                pass
+                mcls.update_property_docstring(mcls,
+                                               cls,
+                                               method,
+                                               name,
+                                               classname=classname)
             else:
                 pass
 
         return cls
 
-    def update_docstring(mcls, cls, method, name, *, classname):
+    def update_method_docstring(mcls, cls, method, name, *, classname):
         """Copy method to subclass and replace tokens in parent method
         docstring."""
-        if name.startswith('_'):
-            return
-
-        if (not method) or (not method.__doc__):
-            return
-
-        try:
-            bound_classname = method.__qualname__.split('.')[0]
-        except:
-            return
-
+        bound_classname = method.__qualname__.split('.')[0]
         if bound_classname == classname:
             return
 
@@ -74,6 +72,25 @@ class DocFormatterMeta(type):
                 new_method = copy_func(method)
                 new_method.__doc__ = method.__doc__.format(classname=classname)
                 setattr(cls, name, new_method)
+                return
+
+    def update_property_docstring(mcls, cls, method, name, *, classname):
+        for f in method.fget, method.fset, method.fdel:
+            if f:
+                bound_classname = f.__qualname__.split('.')[0]
+                break
+
+        if bound_classname == classname:
+            return
+
+        for parent in cls.mro():
+            if hasattr(parent, name):
+                doc = method.__doc__.format(classname=classname)
+                new_property = property(fget=method.fget,
+                                        fset=method.fset,
+                                        fdel=method.fdel,
+                                        doc=doc)
+                setattr(cls, name, new_property)
                 return
 
 

@@ -19,10 +19,6 @@ if TYPE_CHECKING:
 class LineMesh(BaseMesh):
     cell_type = 'line'
 
-    def plot(self, *args, **kwargs):
-        """Shortcut for :func:`LineMesh.plot_mpl`"""
-        return self.plot_mpl(*args, **kwargs)
-
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:
         """Simple line mesh plot using :mod:`matplotlib`.
 
@@ -41,6 +37,10 @@ class LineMesh(BaseMesh):
         """
         from ..plotting import linemeshplot
         return linemeshplot(self, *args, **kwargs)
+
+    @doc(plot_mpl)
+    def plot(self, *args, **kwargs):
+        return self.plot_mpl(*args, **kwargs)
 
     def label_boundaries(self,
                          left: Optional[int | str] = None,

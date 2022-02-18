@@ -14,7 +14,7 @@ registry: Dict[str, Any] = {}
 
 
 @doc(prefix='Base class for meshes', dim_points='n', dim_cells='j')
-class BaseMesh(metaclass=DocFormatterMeta):
+class BaseMesh(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
     Parameters

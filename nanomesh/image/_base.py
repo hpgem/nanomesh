@@ -156,7 +156,7 @@ class BaseImage(object, metaclass=BaseclassMeta):
         sigma : int
             Standard deviation for Gaussian kernel.
         **kwargs
-            Extra arguments passed to :func:`skimage.filters.gaussian`.
+            These parameters are passed to :func:`skimage.filters.gaussian`.
 
         Returns
         -------
@@ -176,7 +176,7 @@ class BaseImage(object, metaclass=BaseclassMeta):
         bins : list, tuple
             List of bin values. Must be monotonic and one-dimensional.
         **kwargs
-            Extra arguments passed to :func:`numpy.digitize`.
+            These parameters are passed to :func:`numpy.digitize`.
 
         Returns
         -------

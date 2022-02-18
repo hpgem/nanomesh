@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,25 +40,6 @@ class Plane(BaseImage):
         """
         array = np.load(filename, **kwargs)
         return cls(array)
-
-    def apply(self, function: Callable, **kwargs):
-        """Apply function to :attr:`Plane.image`. Return an instance of
-        :class:`Plane` if the result is a 2D image, otherwise
-        return the result of the operation.
-
-        Parameters
-        ----------
-        function : callable
-            Function to apply to :attr:`Plane.image`.
-        **kwargs
-            Keyword arguments to pass to `function`.
-
-        Returns
-        -------
-        Plane
-            New instance of :class:`Plane`.
-        """
-        return super().apply(function, **kwargs)
 
     def plot(self, *args, **kwargs):
         """Shortcut for :meth:`Plane.show`."""
@@ -265,7 +246,7 @@ class Plane(BaseImage):
         fill_val : int
             Cleared objects are set to this value.
         **kwargs
-            Extra arguments passed to
+            These parameters are passed to
             :func:`skimage.segmentation.clear_border`.
 
         Returns

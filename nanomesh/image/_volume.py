@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Tuple, Union
+from typing import TYPE_CHECKING, Tuple, Union
 
 import numpy as np
 
@@ -60,25 +60,6 @@ class Volume(BaseImage):
         else:
             raise IOError(f'Unknown file extension: {suffix}')
         return cls(array)
-
-    def apply(self, function: Callable, **kwargs) -> 'Volume':
-        """Apply function to :attr:`Volume.image` array. Return an instance of
-        :class:`Volume` if the result is a 3D image, otherwise return the
-        result of the operation.
-
-        Parameters
-        ----------
-        function : callable
-            Function to apply to :attr:`Volume.image`.
-        **kwargs
-            Keyword arguments to pass to `function`.
-
-        Returns
-        -------
-        Volume
-            New instance of :class:`Volume`.
-        """
-        return super().apply(function, **kwargs)
 
     def show_slice(self, **kwargs):
         """Show slice using :class:`nanomesh.image.SliceViewer`.

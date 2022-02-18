@@ -63,7 +63,7 @@ class DocFormatterMeta(type):
     def update_method_docstring(mcls, cls, method, name, *, classname):
         """Copy method to subclass and replace tokens in parent method
         docstring."""
-        bound_classname = method.__qualname__.split('.')[0]
+        bound_classname = method.__qualname__.split('.')[-2]
         if bound_classname == classname:
             return
 
@@ -77,7 +77,7 @@ class DocFormatterMeta(type):
     def update_property_docstring(mcls, cls, method, name, *, classname):
         for f in method.fget, method.fset, method.fdel:
             if f:
-                bound_classname = f.__qualname__.split('.')[0]
+                bound_classname = f.__qualname__.split('.')[-2]
                 break
 
         if bound_classname == classname:

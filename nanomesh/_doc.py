@@ -2,26 +2,28 @@ from __future__ import annotations
 
 import functools
 import inspect
-import types
 from textwrap import dedent
+from types import FunctionType
 from typing import Any, Callable, TypeVar
 
-# BaseclassMeta is derived from: https://stackoverflow.com/a/40613306
 
-
-def copy_func(f):
+def copy_func(f: FunctionType) -> FunctionType:
     """Make a copy of function `f`."""
-    g = types.FunctionType(f.__code__,
-                           f.__globals__,
-                           name=f.__name__,
-                           argdefs=f.__defaults__,
-                           closure=f.__closure__)
+    g = FunctionType(f.__code__,
+                     f.__globals__,
+                     name=f.__name__,
+                     argdefs=f.__defaults__,
+                     closure=f.__closure__)
     g = functools.update_wrapper(g, f)
     g.__kwdefaults__ = f.__kwdefaults__
     return g
 
 
-class BaseclassMeta(type):
+class DocFormatterMeta(type):
+    """Format docstrings with the classname of the derived class.
+
+    Updates instances of `{cls}` to `classname`.
+    """
 
     def __new__(mcls, classname, bases, cls_dict):
         cls = super().__new__(mcls, classname, bases, cls_dict)
@@ -46,11 +48,10 @@ class BaseclassMeta(type):
         return cls
 
 
-FuncType = Callable[..., Any]
-F = TypeVar('F', bound=FuncType)
-
 # `doc` is derived from pandas.util._decorators (1.4.1)
 # https://github.com/pandas-dev/pandas/blob/main/LICENSE
+FuncType = Callable[..., Any]
+F = TypeVar('F', bound=FuncType)
 
 
 def doc(*docstrings: str | Callable, **params) -> Callable[[F], F]:

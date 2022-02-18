@@ -17,7 +17,10 @@ if TYPE_CHECKING:
     from nanomesh import MeshContainer
 
 
-@doc(BaseMesh, prefix='Data class for triangle meshes')
+@doc(BaseMesh,
+     prefix='Data class for triangle meshes',
+     dim_points='2 or 3',
+     dim_cells='3')
 class TriangleMesh(BaseMesh, PruneZ0Mixin):
     cell_type = 'triangle'
 
@@ -60,7 +63,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
             triangles=open3d.utility.Vector3iVector(self.cells))
 
     def to_polydata(self) -> 'pv.PolyData':
-        """Return instance of `pyvista.Polydata`."""
+        """Return instance of :class:`pyvista.Polydata`."""
         points = self.points
         cells = self.cells
         # preprend 3 to indicate number of points per cell

@@ -4,7 +4,7 @@ from typing import Callable, Union
 
 import numpy as np
 
-from .._doc import BaseclassMeta, doc
+from .._doc import DocFormatterMeta, doc
 
 
 def _normalize_values(image: np.ndarray):
@@ -25,7 +25,7 @@ def _normalize_values(image: np.ndarray):
 
 
 @doc(prefix='Base class for image data', shape='')
-class BaseImage(object, metaclass=BaseclassMeta):
+class BaseImage(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
     Parameters

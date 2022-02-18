@@ -7,7 +7,10 @@ from .._doc import doc
 from ._base import BaseMesh
 
 
-@doc(BaseMesh, prefix='Data class for tetrahedral meshes')
+@doc(BaseMesh,
+     prefix='Data class for tetrahedral meshes',
+     dim_points='3',
+     dim_cells='4')
 class TetraMesh(BaseMesh):
     cell_type = 'tetra'
 

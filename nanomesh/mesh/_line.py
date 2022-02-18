@@ -12,7 +12,10 @@ if TYPE_CHECKING:
     from ..mesh_container import MeshContainer
 
 
-@doc(BaseMesh, prefix='Data class for line meshes')
+@doc(BaseMesh,
+     prefix='Data class for line meshes',
+     dim_points='2 or 3',
+     dim_cells='2')
 class LineMesh(BaseMesh):
     cell_type = 'line'
 

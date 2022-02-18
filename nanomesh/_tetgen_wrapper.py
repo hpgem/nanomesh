@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import TYPE_CHECKING, Any, List, Tuple
 
-from .mesh import TriangleMesh
-from .mesh_container import MeshContainer
+from ._doc import doc
 from .region_markers import RegionMarker
+
+if TYPE_CHECKING:
+    from .mesh import TriangleMesh
+    from .mesh_container import MeshContainer
 
 
 def write_smesh(filename: os.PathLike,
@@ -102,8 +107,9 @@ def call_tetgen(fname: os.PathLike, opts: str = '-pAq1.2'):
     sp.run(['tetgen', opts, fname])
 
 
+@doc(prefix='Tetrahedralize a surface mesh')
 def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> MeshContainer:
-    """Tetrahedralize a surface mesh.
+    """{prefix}.
 
     Parameters
     ----------
@@ -127,6 +133,8 @@ def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> MeshContainer:
     MeshContainer
         Tetrahedralized mesh.
     """
+    from .mesh_container import MeshContainer
+
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp, 'nanomesh.smesh')
         write_smesh(path, mesh)

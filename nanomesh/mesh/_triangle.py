@@ -8,6 +8,7 @@ import pyvista as pv
 import scipy
 
 from .._doc import doc
+from .._tetgen_wrapper import tetrahedralize
 from ._base import BaseMesh
 from ._mixin import PruneZ0Mixin
 
@@ -133,19 +134,7 @@ class TriangleMesh(BaseMesh, PruneZ0Mixin):
         )
         return TriangleMesh(points=points, cells=cells)
 
+    @doc(tetrahedralize, prefix='Tetrahedralize a 3D triangle mesh')
     def tetrahedralize(self, **kwargs) -> 'MeshContainer':
-        """Tetrahedralize a contour.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed to :func:`tetrahedralize`.
-
-        Returns
-        -------
-        mesh : MeshContainer
-            Tetrahedralized mesh.
-        """
-        from .._tetgen_wrapper import tetrahedralize
         mesh = tetrahedralize(self, **kwargs)
         return mesh

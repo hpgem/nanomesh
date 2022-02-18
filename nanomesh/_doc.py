@@ -39,7 +39,7 @@ class DocFormatterMeta(type):
             if any((is_private, is_none)):
                 continue
 
-            is_format_string = len(list(Formatter.parse(method.__doc__))) <= 1
+            is_format_string = len(list(Formatter.parse(method.__doc__))) > 1
             if not is_format_string:
                 continue
 

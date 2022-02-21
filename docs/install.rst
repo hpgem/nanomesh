@@ -31,7 +31,7 @@ lab <https://github.com/InsightSoftwareConsortium/itkwidgets#installation>`__:
 Tetgen
 ------
 
-For tetrahedral meshing, ``nanomesh`` requires `tetgen <https://wias-berlin.de/software/tetgen/>`__ to be
+For tetrahedral meshing, Nanomesh requires `tetgen <https://wias-berlin.de/software/tetgen/>`__ to be
 installed. Binaries are available `here <https://github.com/hpgem/tetgen/releases>`__
 
 Make sure `tetgen` is available on a directory on your system path. To verify tetgen is available, make sure that the following commands return a path:

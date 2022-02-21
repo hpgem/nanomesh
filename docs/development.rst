@@ -4,7 +4,7 @@ Development Notes
 Development Installation
 ------------------------
 
-Install ``nanomesh`` using the development dependencies:
+Install Nanomesh using the development dependencies:
 
 ::
 

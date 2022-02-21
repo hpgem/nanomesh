@@ -221,10 +221,10 @@ class BaseImage(object, metaclass=DocFormatterMeta):
             New instance of :class:`{classname}`.
         """
         if not threshold:
-            threshold = np.median(self.image)
+            threshold_value = np.median(self.image)
         if isinstance(threshold, str):
-            threshold = self.threshold(threshold)
-        return self.apply(np.digitize, bins=[threshold])
+            threshold_value = self.threshold(threshold)
+        return self.apply(np.digitize, bins=[threshold_value])
 
     def threshold(self, method: str = 'otsu', **kwargs) -> float:
         """Compute threshold value using given method.

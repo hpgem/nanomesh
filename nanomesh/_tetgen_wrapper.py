@@ -83,7 +83,7 @@ def write_smesh(filename: os.PathLike,
                   file=f)
 
 
-def call_tetgen(fname: os.PathLike, opts: str = '-pAq1.2'):
+def call_tetgen(fname: os.PathLike, opts: str = '-pAq'):
     """Call tetgen via subprocess.
 
     Parameters
@@ -108,7 +108,7 @@ def call_tetgen(fname: os.PathLike, opts: str = '-pAq1.2'):
 
 
 @doc(prefix='Tetrahedralize a surface mesh')
-def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq1.2') -> MeshContainer:
+def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq') -> MeshContainer:
     """{prefix}.
 
     Parameters

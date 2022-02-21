@@ -122,7 +122,7 @@ def test_pad_label(image_cube, side, label, name, expected_labels):
     mesher.generate_contour()
 
     mesher.pad_contour(side=side, width=1, label=label, name=name)
-    mesh = mesher.tetrahedralize(opts='-pAq1.2')
+    mesh = mesher.tetrahedralize(opts='-pAq')
 
     assert isinstance(mesh, MeshContainer)
 

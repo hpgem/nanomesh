@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Sequence, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
+from .._doc import doc
+
 if TYPE_CHECKING:
     from nanomesh import LineMesh, MeshContainer, TriangleMesh
 
@@ -65,6 +67,10 @@ def _annotate(ax: plt.Axes,
         The point (x, y) to annotate
     flip_xy : bool, optional
         If true, (x,y) -> (y,x)
+
+    Returns
+    -------
+    matplotlib.text.Annotation
     """
     if flip_xy:
         xy = xy[::-1]
@@ -111,7 +117,11 @@ def _legend_with_triplot_fix(ax: plt.Axes, **kwargs):
     ax : matplotlib.axes.Axes
         Matplotlib axes to apply legend to.
     **kwargs
-        These parameters are passed to `ax.legend()`.
+        These parameters are passed to :func:`matplotlib.pyplot.legend`.
+
+    Returns
+    -------
+    matplotlib.legend.Legend
     """
     handles_labels = ax.get_legend_handles_labels()
 
@@ -129,9 +139,12 @@ def _legend_with_field_names_only(ax: plt.Axes,
     ----------
     ax : matplotlib.axes.Axes
         Matplotlib axes to apply legend to.
-
     **kwargs
-        These parameters are passed to `ax.legend()`.
+        These parameters are passed to :func:`matplotlib.pyplot.legend`.
+
+    Returns
+    -------
+    matplotlib.legend.Legend
     """
     handles_labels = ax.get_legend_handles_labels()
 
@@ -171,15 +184,13 @@ def _legend(ax: plt.Axes, title: str, triplot_fix: bool = False):
         return ax.legend(title=title)
 
 
-def lineplot(ax: plt.Axes,
-             *,
-             x: np.ndarray,
-             y: np.ndarray,
-             cells: np.ndarray,
-             mask: np.ndarray = None,
-             label: str = None,
-             **kwargs):
-    """Plot collection of lines, similar to `ax.triplot`.
+@doc(cell_type='triangle',
+     cell_dim=3,
+     description='Shallow interface to :func:`matplotlib.pyplot.triplot`')
+def triplot(ax: plt.Axes, **kwargs):
+    """Plot collection of {cell_type}s.
+
+    {description}.
 
     Parameters
     ----------
@@ -189,20 +200,38 @@ def lineplot(ax: plt.Axes,
         x-coordinates of points.
     y : (n, 1) numpy.ndarray
         y-coordinates of points.
-    cells : (m, 2) numpy.ndarray
-        Integer array describing the connected lines.
+    cells : (m, {cell_dim}) numpy.ndarray
+        Integer array describing the {cell_type}s.
     mask : (m, 1) numpy.ndarray, optional
-        Mask for line segments.
+        Mask for {cell_type}s.
     label : str, optional
         Label for legend.
     **kwargs
-        Extra keywords arguments passed to `ax.plot`
+        Extra keywords arguments passed to :func:`matplotlib.pyplot.plot`
 
     Returns
     -------
     list of :class:`matplotlib.lines.Line2D`
-        A list of lines representing the plotted data.
+        A list of lines representing the {cell_type}s and nodes.
     """
+    x = kwargs.pop('x')
+    y = kwargs.pop('y')
+    kwargs['triangles'] = kwargs.pop('cells')
+    return ax.triplot(x, y, **kwargs)
+
+
+@doc(triplot,
+     cell_type='line segment',
+     cell_dim=3,
+     description='API mimicks :func:`triplot`')
+def lineplot(ax: plt.Axes,
+             *,
+             x: np.ndarray,
+             y: np.ndarray,
+             cells: np.ndarray,
+             mask: np.ndarray = None,
+             label: str = None,
+             **kwargs):
     kwargs.setdefault('marker', '.')
 
     if mask is not None:
@@ -220,32 +249,27 @@ def lineplot(ax: plt.Axes,
     return ax.plot(lines_x.ravel(), lines_y.ravel(), label=label, **kwargs)
 
 
-def triplot(ax: plt.Axes, **kwargs):
-    """Shallow wrapper for `ax.triplot`."""
-    x = kwargs.pop('x')
-    y = kwargs.pop('y')
-    kwargs['triangles'] = kwargs.pop('cells')
-    return ax.triplot(x, y, **kwargs)
-
-
-def generic_plot(mesh: LineMesh | TriangleMesh,
-                 ax: plt.Axes = None,
-                 key: str = None,
-                 legend: str = 'fields',
-                 show_labels: Sequence[int | str] = None,
-                 hide_labels: Sequence[int | str] = None,
-                 show_region_markers: bool = True,
-                 colors: Sequence[str] = None,
-                 flip_xy: bool = True,
-                 **kwargs) -> plt.Axes:
-    """Simple line or triangle mesh plot using :mod:`matplotlib`.
+def _meshplot(mesh: LineMesh | TriangleMesh,
+              ax: plt.Axes = None,
+              key: str = None,
+              legend: str = 'fields',
+              show_labels: Sequence[int | str] = None,
+              hide_labels: Sequence[int | str] = None,
+              show_region_markers: bool = True,
+              colors: Sequence[str] = None,
+              flip_xy: bool = True,
+              **kwargs) -> plt.Axes:
+    """Plot a :class:`nanomesh.TriangleMesh` or :class:`nanomesh.LineMesh`
+    using :mod:`matplotlib`.
 
     Parameters
     ----------
     ax : matplotlib.axes.Axes, optional
         Axes to use for plotting.
     key : str, optional
-        Label of cell data item to plot, defaults to `.default_key`.
+        Label of cell data item to plot, defaults to
+        :attr:`nanomesh.LineMesh.default_key` or
+        :attr:`nanomesh.TriangleMEsh.default_key`.
     legend : str
         Style for the legend.
         - off : No legend
@@ -264,11 +288,11 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
         Flip x/y coordinates. This is sometimes necessary to combine the
         plot with other plots.
     **kwargs
-        These parameters are passed to `.plotting.lineplot`
+        These parameters are passed to :func:`lineplot` or :func:`triplot`.
 
     Returns
     -------
-    plt.Axes
+    matplotlib.axes.Axes
     """
     dispatch: Dict[str, Callable] = {
         'line': lineplot,
@@ -349,8 +373,8 @@ def generic_plot(mesh: LineMesh | TriangleMesh,
     return ax
 
 
-trianglemeshplot = generic_plot
-linemeshplot = generic_plot
+trianglemeshplot = _meshplot
+linemeshplot = _meshplot
 
 
 def linetrianglemeshplot(mesh: MeshContainer,
@@ -363,12 +387,12 @@ def linetrianglemeshplot(mesh: MeshContainer,
         Input mesh containing line and triangle cells.
     **kwargs
         Exstra keyword arguments passed to
-        - .linemeshplot()
-        - .trianglemeshplot()
+        - :func:`linemeshplot`
+        - :func:`trianglemeshplot`
 
     Returns
     -------
-    Tuple(plt.Axes, plt.Axes)
+    Tuple(matplotlib.axes.Axes, matplotlib.axes.Axes)
         Tuple of matplotlib axes
     """
     fig, (ax1, ax2) = plt.subplots(ncols=2)

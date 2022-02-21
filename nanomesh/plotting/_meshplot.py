@@ -233,6 +233,7 @@ def lineplot(ax: plt.Axes,
              label: str = None,
              **kwargs):
     kwargs.setdefault('marker', '.')
+    kwargs.setdefault('markersize', 1)
 
     if mask is not None:
         cells = cells[~mask.squeeze()]

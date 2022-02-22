@@ -27,7 +27,7 @@ def binary_blobs2d(**kwargs):
     kwargs.setdefault('length', 50)
     kwargs.setdefault('n_dim', 2)
     kwargs.setdefault('volume_fraction', 0.2)
-    kwargs.setdefault('blob_size_fraction', 0.2)
+    kwargs.setdefault('blob_size_fraction', 0.3)
     return binary_blobs(**kwargs).astype(int)
 
 

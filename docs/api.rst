@@ -18,6 +18,7 @@ The side bar contains a listing of classes and functions by topic.
    api.meshing
    api.metrics
    api.helpers
+   api.data
 
 Most of Nanomesh' functionality can be accessed through the classes
 and functions listed below. See the :ref:`examples` for how to use them.
@@ -55,6 +56,7 @@ and functions listed below. See the :ref:`examples` for how to use them.
 .. autosummary::
 
    nanomesh.metrics
+   nanomesh.data
 
 
 Reference

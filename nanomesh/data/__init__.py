@@ -45,10 +45,22 @@ def nanopores() -> np.ndarray:
 
     Returns
     -------
-    nanopores : (i,j) np.ndarray
+    nanopores : np.ndarray
         2D image of nanopores
     """
-    return nanopores3d()[30]
+    i = 30
+    return nanopores3d()[i]
+
+
+def nanopores_gradient() -> np.ndarray:
+    """Fetch 2D slice of nanopore dataset with a gradient.
+
+    Returns
+    -------
+    nanopores : (i,j) np.ndarray
+        2D image of nanopores with gradient
+    """
+    return np.rot90(np.load(data_dir / 'nanopores_gradient.npy'))
 
 
 def nanopores3d() -> np.ndarray:

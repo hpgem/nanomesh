@@ -16,7 +16,7 @@ to visualize the metrics.
 
 .. seealso::
 
-    For more info, see the example on :doc:`examples/calculate_cell_metrics`.
+    For more info, see the example on :doc:`examples/nanopores_mesh_quality_indicators`.
 
 .. rubric:: Functions
 

@@ -60,7 +60,7 @@ and functions listed below. See the :ref:`examples` for how to use them.
 
 
 Reference
----------
+=========
 
 The complete API reference is listed below.
 

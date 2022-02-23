@@ -14,7 +14,7 @@ SOURCEDIR = '../nanomesh'
 # Include banner as static image
 def copy_banner_to_static(app):
     import shutil
-    src = Path('.').absolute().parent / 'notebooks' / 'banner' / 'banner.png'
+    src = Path('.').absolute().parent / 'notebooks' / 'other' / 'banner.png'
     target = Path(STATICDIR)
     target.mkdir(exist_ok=True)
     shutil.copy2(src, target)

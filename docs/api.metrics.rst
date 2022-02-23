@@ -16,7 +16,7 @@ to visualize the metrics.
 
 .. seealso::
 
-    For more info, see the example on :doc:`examples/nanopores_mesh_quality_indicators`.
+    For more info, see the example on :doc:`examples/nanopores_calculate_mesh_quality_metrics`.
 
 .. rubric:: Functions
 

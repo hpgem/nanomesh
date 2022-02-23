@@ -17,9 +17,13 @@ def extract_header(path):
 
 
 prefix = Path('../../notebooks')
-current_drc = Path(__file__)
+current_drc = Path(__file__).parent
 
-notebooks_drc = current_drc.absolute().parents[2] / 'notebooks'
+for path in current_drc.glob('*.nblink'):
+    print('Removing', path)
+    path.unlink()
+
+notebooks_drc = current_drc.absolute().parents[1] / 'notebooks'
 notebooks = notebooks_drc.glob('[!.]*/[!.]*.ipynb')
 
 rubrics = []
@@ -36,6 +40,7 @@ for path in notebooks:
     parts = [rubric, *header.lower().split()]
     filename = '_'.join(parts) + '.nblink'
 
+    print('Writing', filename)
     with open(filename, 'w') as f:
         json.dump(d, f)
 

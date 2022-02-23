@@ -1,5 +1,6 @@
 pytest --no-cov --nbmake `
-   ".\banner\Make banner.ipynb" `
+   ".\other\Make banner.ipynb" `
+   ".\other\Hello world.ipynb" `
    ".\examples\How to customize regions in 2D mesh.ipynb" `
    ".\examples\How to do 3D multi-domain meshing using simulated data.ipynb" `
    ".\examples\How to generate a tetrahedral mesh from 3d cells image.ipynb" `

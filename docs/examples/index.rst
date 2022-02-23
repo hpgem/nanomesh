@@ -26,21 +26,11 @@ Nanopores
 
    nanopores*
 
-Banner
-======
+Other
+=====
 
 .. toctree::
    :maxdepth: 1
    :glob:
 
-   banner*
-
-
-Docs
-====
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   docs*
+   other*

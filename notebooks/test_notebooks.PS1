@@ -1,17 +1,17 @@
 pytest --no-cov --nbmake `
-   ".\other\Make banner.ipynb" `
-   ".\other\Hello world.ipynb" `
-   ".\examples\How to customize regions in 2D mesh.ipynb" `
-   ".\examples\How to do 3D multi-domain meshing using simulated data.ipynb" `
-   ".\examples\How to generate a tetrahedral mesh from 3d cells image.ipynb" `
-   ".\examples\How to generate a tetrahedral mesh from a 3D image.ipynb" `
-   ".\examples\How to pad a 2D mesh.ipynb" `
-   ".\examples\How to pad a 3D mesh.ipynb"
-   ".\nanopores\How to calculate cell quality metrics.ipynb" `
-   ".\nanopores\How to examine nanopore properties using regionprops.ipynb" `
-   ".\nanopores\How to generate a tetrahedral mesh from 3D nanopores data.ipynb" `
-   ".\nanopores\How to generate a triangle mesh from a 2D nanopore data.ipynb" `
-   ".\nanopores\How to process a large data file.ipynb" `
-   ".\nanopores\How to segment image data using local thresholds.ipynb" `
-   ".\nanopores\How to select a region of interest from an image.ipynb" `
-   ".\nanopores\How to select a region of interest using FFTs.ipynb" `
+   ".\other\make banner.ipynb" `
+   ".\other\hello world.ipynb" `
+   ".\examples\how_to_customize_regions_in_2d_mesh.ipynb" `
+   ".\examples\how_to_do_3d_multi-domain_meshing_using_simulated_data.ipynb" `
+   ".\examples\how_to_generate_a_tetrahedral_mesh_from_3d_cells_image.ipynb" `
+   ".\examples\how_to_generate_a_tetrahedral_mesh_from_a_3d_image.ipynb" `
+   ".\examples\how_to_pad_a_2d_mesh.ipynb" `
+   ".\examples\how_to_pad_a_3d_mesh.ipynb" `
+   ".\nanopores\how_to_calculate_cell_quality_metrics.ipynb" `
+   ".\nanopores\how_to_examine_nanopore_properties_using_regionprops.ipynb" `
+   ".\nanopores\how_to_generate_a_tetrahedral_mesh_from_3d_nanopores data.ipynb" `
+   ".\nanopores\how_to_generate_a_triangle_mesh_from_a_2d_nanopore_data.ipynb" `
+   ".\nanopores\how_to_process_a_large_data_file.ipynb" `
+   ".\nanopores\how_to_segment_image_data_using_local_thresholds.ipynb" `
+   ".\nanopores\how_to_select_a_region_of_interest_from_an_image.ipynb" `
+   ".\nanopores\how_to_select_a_region_of_interest_using_ffts.ipynb" `

@@ -6,17 +6,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .._doc import doc
-from ._base import BaseMesh
+from ._base import GenericMesh
 
 if TYPE_CHECKING:
     from ..mesh_container import MeshContainer
 
 
-@doc(BaseMesh,
+@doc(GenericMesh,
      prefix='Data class for line meshes',
      dim_points='2 or 3',
      dim_cells='2')
-class LineMesh(BaseMesh):
+class LineMesh(GenericMesh):
     cell_type = 'line'
 
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:

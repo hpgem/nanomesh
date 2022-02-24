@@ -8,13 +8,13 @@ import numpy as np
 
 from .._doc import doc
 from ..image import Plane, Volume
-from ..mesh._base import BaseMesh
+from ..mesh._base import GenericMesh
 
 logger = logging.getLogger(__name__)
 
 
 @doc(prefix='mesh from image data')
-class BaseMesher(ABC):
+class AbstractMesher(ABC):
     """Utility class to generate a {prefix}.
 
     Parameters
@@ -28,7 +28,7 @@ class BaseMesher(ABC):
         Reference to image data
     image_orig : numpy.ndarray
         Keep reference to original image data
-    contour : BaseMesh
+    contour : GenericMesh
         Stores the contour mesh.
     """
 
@@ -36,7 +36,7 @@ class BaseMesher(ABC):
         if isinstance(image, (Plane, Volume)):
             image = image.image
 
-        self.contour: BaseMesh | None = None
+        self.contour: GenericMesh | None = None
         self.image_orig = image
         self.image = image
 

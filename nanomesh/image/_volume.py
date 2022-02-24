@@ -7,7 +7,7 @@ import numpy as np
 
 from .._doc import doc
 from ..io import load_vol
-from ._base import BaseImage
+from ._base import GenericImage
 from ._plane import Plane
 
 if TYPE_CHECKING:
@@ -16,10 +16,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@doc(BaseImage,
-     prefix='Data class for working with 3D (volumetric) image data',
+@doc(GenericImage,
+     prefix='Generic class for working with 3D (volumetric) image data',
      shape='(i,j,k) ')
-class Volume(BaseImage):
+class Volume(GenericImage):
 
     @classmethod
     def load(cls, filename: os.PathLike, **kwargs) -> 'Volume':

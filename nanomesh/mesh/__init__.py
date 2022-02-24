@@ -1,4 +1,4 @@
-from ._base import registry
+from ._base import GenericMesh, registry
 from ._line import LineMesh
 from ._tetra import TetraMesh
 from ._triangle import TriangleMesh
@@ -8,7 +8,8 @@ for _mesh_class in (LineMesh, TriangleMesh, TetraMesh):
 
 __all__ = [
     'LineMesh',
+    'GenericMesh',
+    'registry',
     'TetraMesh',
     'TriangleMesh',
-    'registry',
 ]

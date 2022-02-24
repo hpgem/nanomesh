@@ -3,7 +3,7 @@ import pytest
 import pyvista as pv
 
 from nanomesh.mesh import TriangleMesh
-from nanomesh.mesh._base import BaseMesh
+from nanomesh.mesh._base import GenericMesh
 
 
 @pytest.mark.parametrize('n_points,n_cells,expected', (
@@ -16,7 +16,7 @@ def test_create(n_points, n_cells, expected):
     points = np.arange(5 * n_points).reshape(5, n_points)
     cells = np.zeros((5, n_cells))
 
-    mesh = BaseMesh.create(points=points, cells=cells)
+    mesh = GenericMesh.create(points=points, cells=cells)
 
     assert mesh.cell_type == expected
 

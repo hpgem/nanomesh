@@ -29,8 +29,8 @@ notebooks = notebooks_drc.glob('[!.]*/[!.]*.ipynb')
 rubrics = []
 
 for path in notebooks:
-    relative_path = path.relative_to(notebooks_drc)
-    d = {'path': str(prefix / relative_path)}
+    relative_path = prefix / path.relative_to(notebooks_drc)
+    d = {'path': relative_path.as_posix()}
 
     header = extract_header(path)
 

@@ -1,4 +1,3 @@
-"""Tests for the nanomesh module."""
 from pathlib import Path
 
 import numpy as np
@@ -8,7 +7,7 @@ from nanomesh.io import load_vol
 
 def test_load_data():
     """Test loading of vol files."""
-    fn = (Path(__file__).parents[1] / 'notebooks' / 'sample_data' /
+    fn = (Path(__file__).parents[1] / 'notebooks' / 'nanopores' /
           'sample_data.vol')
 
     expected_fn = Path(__file__).parent / 'sample_data.npy'
@@ -27,7 +26,7 @@ def test_load_data():
 
 def test_load_data_shape():
     """Test loading of vol files."""
-    fn = (Path(__file__).parents[1] / 'notebooks' / 'sample_data' /
+    fn = (Path(__file__).parents[1] / 'notebooks' / 'nanopores' /
           'sample_data.vol')
 
     shape = (800, 200, 50)

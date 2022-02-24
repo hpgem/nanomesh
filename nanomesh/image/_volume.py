@@ -77,7 +77,8 @@ class Volume(BaseImage):
         SliceViewer
         """
         from ._utils import SliceViewer
-        sv = SliceViewer(self.image, **kwargs)
+        data = np.flip(self.image, axis=0)
+        sv = SliceViewer(data, **kwargs)
         sv.interact()
         return sv
 

@@ -258,6 +258,7 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
               hide_labels: Sequence[int | str] = None,
               show_region_markers: bool = True,
               colors: Sequence[str] = None,
+              color_map: Dict[str | int, str] = None,
               flip_xy: bool = True,
               **kwargs) -> plt.Axes:
     """Plot a :class:`nanomesh.TriangleMesh` or :class:`nanomesh.LineMesh`
@@ -285,6 +286,8 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
         If True, show region markers on the plot
     colors : Sequence[str]
         List of colors to cycle through
+    color_map : dict
+        Mapping of labels or field names to colors.
     flip_xy : bool, optional
         Flip x/y coordinates. This is sometimes necessary to combine the
         plot with other plots.
@@ -309,6 +312,9 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
 
     color_cycle = _get_color_cycle(colors)
 
+    if not color_map:
+        color_map = {}
+
     vert_x, vert_y = mesh.points.T
 
     if flip_xy:
@@ -326,6 +332,8 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
         if hide_labels and (name in hide_labels):
             continue
 
+        color = color_map.get(name, next(color_cycle))
+
         plotting_func(
             ax=ax,
             x=vert_x,
@@ -333,7 +341,7 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
             cells=mesh.cells,
             mask=cell_data != cell_data_val,
             label=name,
-            color=next(color_cycle),
+            color=color,
             **kwargs,
         )
 

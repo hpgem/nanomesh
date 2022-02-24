@@ -89,7 +89,7 @@ def test_tetgen_volume2mesh(triangle_mesh):
     triangle_mesh.add_region_marker((10, np.array([0.5, 0.5, 0.5])))
     triangle_mesh.add_region_marker((20, np.array([0.0, 2.0, 2.0])))
 
-    mesh_container = triangle_mesh.tetrahedralize()
+    mesh_container = triangle_mesh.tetrahedralize(opts='-pAq1.2')
 
     expected_mesh_container = get_expected_if_it_exists(expected_fn,
                                                         result=mesh_container)

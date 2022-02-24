@@ -1,12 +1,17 @@
 pytest --no-cov --nbmake \
-   "./banner/Make banner.ipynb" \
-   "./sample_data/How to calculate cell quality metrics (triangle mesh).ipynb" \
-   "./sample_data/How to do 3D multi-domain meshing from simulated data volume.ipynb" \
-   "./sample_data/How to examine nanopore properties using regionprops.ipynb" \
-   "./sample_data/How to process a large data file.ipynb" \
-   "./sample_data/How to generate a tetrahedral mesh from a 3D image.ipynb" \
-   "./sample_data/How to generate a triangle mesh from a 2D image.ipynb" \
-   "./sample_data/How to pad a 2D mesh.ipynb" \
-   "./sample_data/How to segment image data using local thresholds.ipynb" \
-   "./sample_data/How to select a region of interest from an image.ipynb" \
-   "./sample_data/How to select a region of interest using FFTs.ipynb \
+   "./other/make banner.ipynb" \
+   "./other/hello world.ipynb" \
+   "./examples/how_to_customize_regions_in_2d_mesh.ipynb" \
+   "./examples/how_to_do_3d_multi-domain_meshing_using_simulated_data.ipynb" \
+   "./examples/how_to_generate_a_tetrahedral_mesh_from_3d_cells_image.ipynb" \
+   "./examples/how_to_generate_a_tetrahedral_mesh_from_a_3d_image.ipynb" \
+   "./examples/how_to_pad_a_2d_mesh.ipynb" \
+   "./examples/how_to_pad_a_3d_mesh.ipynb" \
+   "./nanopores/how_to_calculate_cell_quality_metrics.ipynb" \
+   "./nanopores/how_to_examine_nanopore_properties_using_regionprops.ipynb" \
+   "./nanopores/how_to_generate_a_tetrahedral_mesh_from_3d_nanopores data.ipynb" \
+   "./nanopores/how_to_generate_a_triangle_mesh_from_a_2d_nanopore_data.ipynb" \
+   "./nanopores/how_to_process_a_large_data_file.ipynb" \
+   "./nanopores/how_to_segment_image_data_using_local_thresholds.ipynb" \
+   "./nanopores/how_to_select_a_region_of_interest_from_an_image.ipynb" \
+   "./nanopores/how_to_select_a_region_of_interest_using_ffts.ipynb"

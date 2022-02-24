@@ -222,8 +222,10 @@ class BaseImage(object, metaclass=DocFormatterMeta):
         """
         if not threshold:
             threshold_value = np.median(self.image)
-        if isinstance(threshold, str):
+        elif isinstance(threshold, str):
             threshold_value = self.threshold(threshold)
+        else:
+            threshold_value = threshold
         return self.apply(np.digitize, bins=[threshold_value])
 
     def threshold(self, method: str = 'otsu', **kwargs) -> float:

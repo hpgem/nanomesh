@@ -3,7 +3,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nanomesh)](https://pypi.org/project/nanomesh/)
 [![PyPI](https://img.shields.io/pypi/v/nanomesh.svg?style=flat)](https://pypi.org/project/nanomesh/)
 
-![Nanomesh banner](./notebooks/banner/banner.png)
+![Nanomesh banner](./notebooks/other/banner.png)
 
 # nanomesh
 

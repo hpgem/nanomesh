@@ -44,8 +44,7 @@ def get_point_in_prop(
     return point
 
 
-def get_region_markers(vol: Union[Volume, np.ndarray],
-                       same_label: bool = True) -> RegionMarkerList:
+def get_region_markers(vol: Union[Volume, np.ndarray]) -> RegionMarkerList:
     """Get region markers describing the featuers in the volume.
 
     The array will be labeled, and points inside the labeled region
@@ -83,14 +82,11 @@ def get_region_markers(vol: Union[Volume, np.ndarray],
 
         if label == 0:
             name = 'background'
-        elif same_label:
-            name = 'feature'
         else:
-            label = labels[i, j, k]
-            name = f'feature{label}'
+            name = 'feature'
 
-        region_marker = RegionMarker(label=label, point=point, name=name)
-        region_markers.append(region_marker)
+        region_markers.append(RegionMarker(label=label, point=point,
+                                           name=name))
 
     return region_markers
 

@@ -13,8 +13,8 @@ from ..region_markers import RegionMarker, RegionMarkerLike
 registry: Dict[str, Any] = {}
 
 
-@doc(prefix='Base class for meshes', dim_points='n', dim_cells='j')
-class BaseMesh(object, metaclass=DocFormatterMeta):
+@doc(prefix='Generic mesh class', dim_points='n', dim_cells='j')
+class GenericMesh(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
     Parameters
@@ -131,7 +131,7 @@ class BaseMesh(object, metaclass=DocFormatterMeta):
             key = key.replace(':ref', '-ref')
             cell_data[key] = value[0]
 
-        return BaseMesh.create(points=points, cells=cells, **cell_data)
+        return GenericMesh.create(points=points, cells=cells, **cell_data)
 
     @classmethod
     def create(cls, points, cells, **cell_data):
@@ -167,10 +167,14 @@ class BaseMesh(object, metaclass=DocFormatterMeta):
         return pv.from_meshio(self.to_meshio())
 
     def plot(self, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError(
+            f'Not implemented for {self.__class__.__name__}, '
+            'use one of the specific subclasses.')
 
     def plot_mpl(self, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError(
+            f'Not implemented for {self.__class__.__name__}, '
+            'use one of the specific subclasses.')
 
     def plot_itk(self, **kwargs):
         """Wrapper for :func:`pyvista.plot_itk`.

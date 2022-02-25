@@ -4,14 +4,14 @@ import numpy as np
 import pyvista as pv
 
 from .._doc import doc
-from ._base import BaseMesh
+from ._base import GenericMesh
 
 
-@doc(BaseMesh,
+@doc(GenericMesh,
      prefix='Data class for tetrahedral meshes',
      dim_points='3',
      dim_cells='4')
-class TetraMesh(BaseMesh):
+class TetraMesh(GenericMesh):
     cell_type = 'tetra'
 
     def to_open3d(self):

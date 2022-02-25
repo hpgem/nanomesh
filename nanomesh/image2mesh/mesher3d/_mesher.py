@@ -11,7 +11,7 @@ from nanomesh._doc import doc
 from nanomesh.mesh import TriangleMesh
 from nanomesh.region_markers import RegionMarker, RegionMarkerLike
 
-from .._base import BaseMesher
+from .._base import AbstractMesher
 from ._bounding_box import BoundingBox
 from ._helpers import pad
 
@@ -227,8 +227,8 @@ def generate_envelope(mesh: TriangleMesh,
     return mesh
 
 
-@doc(BaseMesher, prefix='tetrahedral mesh from 3D (volumetric) image data')
-class Mesher3D(BaseMesher):
+@doc(AbstractMesher, prefix='tetrahedral mesh from 3D (volumetric) image data')
+class Mesher3D(AbstractMesher):
 
     def __init__(self, image: np.ndarray):
         super().__init__(image)

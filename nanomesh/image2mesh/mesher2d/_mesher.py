@@ -10,7 +10,7 @@ from skimage import measure
 from nanomesh._doc import doc
 from nanomesh.region_markers import RegionMarker
 
-from .._base import BaseMesher
+from .._base import AbstractMesher
 from ._helpers import append_to_segment_markers, generate_segment_markers, pad
 from ._polygon import Polygon
 
@@ -160,8 +160,8 @@ def _generate_segments(polygons: List[Polygon]) -> np.ndarray:
     return np.vstack(segments)
 
 
-@doc(BaseMesher, prefix='triangular mesh from 2D image data')
-class Mesher2D(BaseMesher):
+@doc(AbstractMesher, prefix='triangular mesh from 2D image data')
+class Mesher2D(AbstractMesher):
 
     def __init__(self, image: np.ndarray | Plane):
         super().__init__(image)

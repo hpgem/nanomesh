@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict
 
 import meshio
 import numpy as np
 import pyvista as pv
 
 from .._doc import DocFormatterMeta, doc
-from ..region_markers import RegionMarker, RegionMarkerLike
+from ..region_markers import RegionMarkerList
 
 registry: Dict[str, Any] = {}
 
@@ -25,7 +25,7 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
         Index array describing the cells of the mesh.
     fields : Dict[str, int]:
         Mapping from field names to labels
-    region_markers : List[RegionMarker], optional
+    region_markers : RegionMarkerList, optional
         List of region markers used for assigning labels to regions.
         Defaults to an empty list.
     **cell_data
@@ -38,7 +38,7 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
                  points: np.ndarray,
                  cells: np.ndarray,
                  fields: Dict[str, int] = None,
-                 region_markers: List[RegionMarker] = None,
+                 region_markers: RegionMarkerList = None,
                  **cell_data):
         default_key = 'physical'
         if (not cell_data) or (default_key in cell_data):
@@ -51,7 +51,9 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
         self.points = points
         self.cells = cells
         self.field_to_number = MappingProxyType(self.fields)
-        self.region_markers = [] if region_markers is None else region_markers
+        self.region_markers = RegionMarkerList()
+        if region_markers:
+            self.region_markers.extend(region_markers)
         self.cell_data = cell_data
 
     def __repr__(self, indent: int = 0):
@@ -78,33 +80,6 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
         return MappingProxyType(
             {v: k
              for k, v in self.field_to_number.items()})
-
-    def add_region_marker(self, region_marker: RegionMarkerLike):
-        """Add marker to list of :attr:`{classname}.region_markers`.
-
-        Parameters
-        ----------
-        region_marker : RegionMarkerLike
-            Either a `RegionMarker` object or `(label, point)` tuple,
-            where the label must be an `int` and the point a 2- or
-            3-element numpy array.
-        """
-        if not isinstance(region_marker, RegionMarker):
-            region_marker = RegionMarker(*region_marker)
-
-        self.region_markers.append(region_marker)
-
-    def add_region_markers(self, region_markers: Sequence[RegionMarkerLike]):
-        """Add markers to list of :attr:`{classname}.region_markers`.
-
-        Parameters
-        ----------
-        region_markers : List[RegionMarkerLike]
-            List of region markers passed to
-            :meth:`{classname}.add_region_marker`.
-        """
-        for region_marker in region_markers:
-            self.add_region_marker(region_marker)
 
     def to_meshio(self) -> 'meshio.Mesh':
         """Return instance of :func:`meshio.Mesh`."""

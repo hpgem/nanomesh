@@ -102,8 +102,12 @@ class RegionMarkerList(List[RegionMarker]):
     def labels(self) -> set:
         return set(m.label for m in self)
 
+    @property
+    def names(self) -> set:
+        return set(m.name for m in self)
+
     def rename(self, old, new):
-        pass
+        raise NotImplementedError
 
 
 if __name__ == '__main__':

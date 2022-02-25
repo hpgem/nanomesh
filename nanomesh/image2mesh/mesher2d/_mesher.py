@@ -8,7 +8,7 @@ from scipy.spatial.distance import cdist
 from skimage import measure
 
 from nanomesh._doc import doc
-from nanomesh.region_markers import RegionMarker
+from nanomesh.region_markers import RegionMarker, RegionMarkerList
 
 from .._base import AbstractMesher
 from ._helpers import append_to_segment_markers, generate_segment_markers, pad
@@ -99,7 +99,7 @@ def _generate_background_region(polygons: List[Polygon],
 
 
 def _generate_regions(polygons: List[Polygon],
-                      same_label: bool = True) -> List[RegionMarker]:
+                      same_label: bool = True) -> RegionMarkerList:
     """Generate regions for triangle.
 
     Parameters
@@ -112,10 +112,10 @@ def _generate_regions(polygons: List[Polygon],
 
     Returns
     -------
-    regions : List[RegionMarker]
+    regions : RegionMarkerList
         List of region markers describing each feature
     """
-    regions = []
+    regions = RegionMarkerList()
 
     for i, polygon in enumerate(polygons):
         point = polygon.find_point()
@@ -211,7 +211,7 @@ class Mesher2D(AbstractMesher):
         regions.append(_generate_background_region(polygons, self.image_bbox))
 
         contour = _polygons_to_line_mesh(polygons, self.image_bbox)
-        contour.add_region_markers(regions)
+        contour.region_markers.extend(regions)
 
         self.polygons = polygons
         self.contour = contour

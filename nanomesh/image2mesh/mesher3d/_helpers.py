@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from nanomesh._doc import doc
-from nanomesh.region_markers import RegionMarker
+from nanomesh.region_markers import RegionMarker, RegionMarkerList
 from nanomesh.utils import pairwise
 
 from ._bounding_box import BoundingBox
@@ -54,8 +54,8 @@ def pad(
     ValueError
         When the value of `side` is invalid.
     """
-    labels = [m.label for m in mesh.region_markers]
-    names = [m.name for m in mesh.region_markers]
+    labels = mesh.region_markers.labels
+    names = mesh.region_markers.names
 
     if (label in labels) and (name is None):
         name = [m.name for m in mesh.region_markers if m.label == label][0]
@@ -171,7 +171,8 @@ def pad(
     center = extra_coords.mean(axis=0)
     center[col] = (center[col] + edge_value) / 2
 
-    region_markers = mesh.region_markers + [RegionMarker(label, center, name)]
+    region_markers = RegionMarkerList(
+        (*mesh.region_markers, RegionMarker(label, center, name)))
 
     new_mesh = mesh.__class__(
         points=all_points,

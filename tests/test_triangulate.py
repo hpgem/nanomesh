@@ -26,7 +26,7 @@ def test_triangulate_from_line_mesh(opts):
     ]
 
     line_mesh = LineMesh(points=points, cells=cells)
-    line_mesh.add_region_markers(region_markers)
+    line_mesh.region_markers.extend(region_markers)
 
     mesh = line_mesh.triangulate(opts=opts)
 

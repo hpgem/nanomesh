@@ -53,14 +53,34 @@ RegionMarkerLike = Union[RegionMarker, Tuple[int, Tuple[float, ...],
 
 
 class RegionMarkerList(List[RegionMarker]):
-    """List of region markers."""
+    """Collection of region markers.
+
+    Sub-classes :func:`list`.
+    """
 
     def __repr__(self):
         s = ',\n'.join(f'    {marker}' for marker in self)
         return f'{self.__class__.__name__}(\n{s}\n)'
 
     @singledispatchmethod
-    def relabel(self, old: abc.Callable, new: int):
+    def relabel(self, old: abc.Callable, new: int) -> RegionMarkerList:
+        """Relabel a sub-group of region markers.
+
+        Parameters
+        ----------
+        old : callable or list or int
+            The old label(s) to replace. The value can be of type:
+            - int, matches this exact label
+            - list, matches all labels in this list
+            - callable, returns True if label is a match
+        new : int
+            New label to assign
+
+        Returns
+        -------
+        RegionMarkerList
+            New list of region markers with updated labels.
+        """
         markers = (m.update(label=new) if old(m.label) else m for m in self)
         return RegionMarkerList(markers)
 
@@ -82,6 +102,25 @@ class RegionMarkerList(List[RegionMarker]):
 
     @singledispatchmethod
     def label_sequentially(self, old: abc.Callable):
+        """Re-label a set of regions sequentially.
+
+        `old` matches a sub-group of region markers and assigns new labels.
+        The new labels are incremented sequentially. E.g.:
+        [1,1,1,2] -> [3,4,5,6]
+
+        Parameters
+        ----------
+        old : callable or list or int
+            The old label(s) to replace. The value can be of type:
+            - int, matches this exact label
+            - list, matches all labels in this list
+            - callable, returns True if label is a match
+
+        Returns
+        -------
+        RegionMarkerList
+            New list of region markers with updated labels.
+        """
         markers = [copy(marker) for marker in self]
         i = max(self.labels) + 1
         for marker in markers:
@@ -100,14 +139,13 @@ class RegionMarkerList(List[RegionMarker]):
 
     @property
     def labels(self) -> set:
+        """Return all unique region labels."""
         return set(m.label for m in self)
 
     @property
     def names(self) -> set:
+        """Return all unique region names."""
         return set(m.name for m in self)
-
-    def rename(self, old, new):
-        raise NotImplementedError
 
 
 if __name__ == '__main__':

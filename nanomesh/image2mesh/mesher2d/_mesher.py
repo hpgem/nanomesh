@@ -207,7 +207,7 @@ class Mesher2D(AbstractMesher):
         regions.append(_generate_background_region(polygons, self.image_bbox))
 
         if not group_regions:
-            regions = regions.label_sequentially(1, fmt_name='feature{}')
+            regions = regions.label_sequentially(FEATURE, fmt_name='feature{}')
 
         contour = _polygons_to_line_mesh(polygons, self.image_bbox)
         contour.region_markers = regions

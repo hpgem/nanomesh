@@ -279,7 +279,7 @@ class Mesher3D(AbstractMesher):
         regions = get_region_markers(segmented)
 
         if not group_regions:
-            regions = regions.label_sequentially(1, fmt_name='fasdf{}')
+            regions = regions.label_sequentially(FEATURE, fmt_name='feature{}')
 
         contour.region_markers = regions
 

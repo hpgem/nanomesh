@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from helpers import get_expected_if_it_exists
 
+from nanomesh import RegionMarker
 from nanomesh.mesh import TriangleMesh
 
 
@@ -86,8 +87,10 @@ def test_tetgen_volume2mesh(triangle_mesh):
     """Test 3D mesh generation."""
     expected_fn = 'expected_tetra_mesh.msh'
 
-    triangle_mesh.add_region_marker((10, np.array([0.5, 0.5, 0.5])))
-    triangle_mesh.add_region_marker((20, np.array([0.0, 2.0, 2.0])))
+    triangle_mesh.region_markers.append(
+        RegionMarker(10, np.array([0.5, 0.5, 0.5])))
+    triangle_mesh.region_markers.append(
+        RegionMarker(20, np.array([0.0, 2.0, 2.0])))
 
     mesh_container = triangle_mesh.tetrahedralize(opts='-pAq1.2')
 

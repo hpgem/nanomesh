@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from nanomesh._doc import doc
-from nanomesh.region_markers import RegionMarker
+from nanomesh.region_markers import RegionMarker, RegionMarkerList
 
 if TYPE_CHECKING:
     from nanomesh.mesh import LineMesh
@@ -48,8 +48,8 @@ def pad(
     ValueError
         When the value of `side` is invalid.
     """
-    labels = [m.label for m in mesh.region_markers]
-    names = [m.name for m in mesh.region_markers]
+    labels = mesh.region_markers.labels
+    names = mesh.region_markers.names
 
     if (label in labels) and (name is None):
         name = [m.name for m in mesh.region_markers if m.label == label][0]
@@ -113,7 +113,8 @@ def pad(
     cells = np.vstack([mesh.cells, additional_segments])
 
     center = corners.mean(axis=0)
-    region_markers = mesh.region_markers + [RegionMarker(label, center, name)]
+    region_markers = RegionMarkerList(
+        (*mesh.region_markers, RegionMarker(label, center, name)))
 
     segment_markers = mesh.cell_data.get(
         'segment_markers',

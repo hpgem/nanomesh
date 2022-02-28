@@ -8,7 +8,7 @@ from scipy.spatial.distance import cdist
 from skimage import measure
 
 from nanomesh._doc import doc
-from nanomesh.region_markers import RegionMarker
+from nanomesh.region_markers import RegionMarker, RegionMarkerList
 
 from .._base import AbstractMesher
 from ._helpers import append_to_segment_markers, generate_segment_markers, pad
@@ -98,35 +98,25 @@ def _generate_background_region(polygons: List[Polygon],
     return RegionMarker(label=0, point=point, name='background')
 
 
-def _generate_regions(polygons: List[Polygon],
-                      same_label: bool = True) -> List[RegionMarker]:
+def _generate_regions(polygons: List[Polygon]) -> RegionMarkerList:
     """Generate regions for triangle.
 
     Parameters
     ----------
     polygons : List[Polygon]
         List of polygons.
-    same_label : bool, optional
-        If True, all labels equal 1.
-        If False, label regions sequentially from 1
 
     Returns
     -------
-    regions : List[RegionMarker]
+    regions : RegionMarkerList
         List of region markers describing each feature
     """
-    regions = []
+    regions = RegionMarkerList()
 
     for i, polygon in enumerate(polygons):
         point = polygon.find_point()
 
-        # in LineMesh format
-        if same_label:
-            regions.append(RegionMarker(label=1, point=point, name='feature'))
-        else:
-            label = i + 1
-            regions.append(
-                RegionMarker(label=label, point=point, name=f'feature{label}'))
+        regions.append(RegionMarker(label=1, point=point, name='feature'))
 
     return regions
 
@@ -172,6 +162,7 @@ class Mesher2D(AbstractMesher):
         level: float = None,
         contour_precision: int = 1,
         max_contour_dist: int = 5,
+        group_regions: bool = True,
     ):
         """Generate contours using marching cubes algorithm.
 
@@ -190,6 +181,9 @@ class Mesher2D(AbstractMesher):
         max_contour_dist : int, optional
             Divide long edges so that maximum distance between points does not
             exceed this value.
+        group_regions : bool, optional
+            If True, assign the same label to all features
+            If False, label regions sequentially
         """
         polygons = [
             Polygon(points)
@@ -207,11 +201,14 @@ class Mesher2D(AbstractMesher):
         ]
         polygons = [polygon.remove_duplicate_points() for polygon in polygons]
 
-        regions = _generate_regions(polygons, same_label=True)
+        regions = _generate_regions(polygons)
         regions.append(_generate_background_region(polygons, self.image_bbox))
 
+        if not group_regions:
+            regions = regions.label_sequentially(1, fmt_name='feature{}')
+
         contour = _polygons_to_line_mesh(polygons, self.image_bbox)
-        contour.add_region_markers(regions)
+        contour.region_markers = regions
 
         self.polygons = polygons
         self.contour = contour

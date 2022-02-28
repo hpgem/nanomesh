@@ -3,10 +3,10 @@ from __future__ import annotations
 import os
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Tuple
+from typing import TYPE_CHECKING, Any, Tuple
 
 from ._doc import doc
-from .region_markers import RegionMarker
+from .region_markers import RegionMarkerList
 
 if TYPE_CHECKING:
     from .mesh import TriangleMesh
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 def write_smesh(filename: os.PathLike,
                 mesh: TriangleMesh,
-                region_markers: List[RegionMarker] = None):
+                region_markers: RegionMarkerList = None):
     """Save a mesh to a `.smesh` format (Tetgen). http://wias-
     berlin.de/software/tetgen/1.5/doc/manual/manual006.html#ff_smesh.
 
@@ -25,7 +25,7 @@ def write_smesh(filename: os.PathLike,
         Filename to save the data to.
     mesh : TriangleMesh
         Mesh data to be saved.
-    region_markers : List[RegionMarker], optional
+    region_markers : RegionMarkerList, optional
         Override region markers from input mesh.
     """
     if region_markers is None:

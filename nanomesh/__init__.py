@@ -7,7 +7,7 @@ from .image import Plane, Volume
 from .image2mesh import Mesher2D, Mesher3D, plane2mesh, volume2mesh
 from .mesh import LineMesh, TetraMesh, TriangleMesh
 from .mesh_container import MeshContainer
-from .region_markers import RegionMarker
+from .region_markers import RegionMarker, RegionMarkerList
 
 logging.basicConfig(format='%(message)s',
                     level=logging.INFO,
@@ -28,6 +28,7 @@ __all__ = [
     'Plane',
     'plane2mesh',
     'RegionMarker',
+    'RegionMarkerList',
     'tetrahedralize',
     'TetraMesh',
     'TriangleMesh',

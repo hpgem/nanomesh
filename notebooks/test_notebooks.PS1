@@ -2,6 +2,7 @@ pytest --no-cov --nbmake `
    ".\other\make banner.ipynb" `
    ".\other\hello world.ipynb" `
    ".\examples\how_to_customize_regions_in_2d_mesh.ipynb" `
+   ".\how_to_generate_a_triangle_mesh_from_a_2d_image" `
    ".\examples\how_to_do_3d_multi-domain_meshing_using_simulated_data.ipynb" `
    ".\examples\how_to_generate_a_tetrahedral_mesh_from_3d_cells_image.ipynb" `
    ".\examples\how_to_generate_a_tetrahedral_mesh_from_a_3d_image.ipynb" `

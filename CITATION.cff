@@ -16,9 +16,9 @@ authors:
     orcid: "0000-0002-5413-9038"
   -
     affiliation: "University of Twente"
-    family-names: Corbijn van Willenswaard
-    given-names: Lars
-    orcid: "0000-xxxx-xxxx-xxxx"
+    family-names: "Corbijn van Willenswaard"
+    given-names: "Lars J."
+    orcid: "0000-0001-6554-1527"
 version: "0.5.0"
 repository-code: "https://github.com/hpgem/nanomesh"
 identifiers:

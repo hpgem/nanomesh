@@ -85,7 +85,7 @@ class RegionMarkerList(List[RegionMarker]):
         return RegionMarkerList(markers)
 
     @relabel.register
-    def _(self, old: list, new: int):
+    def _(self, old: abc.Sequence, new: int):
 
         def f(x):
             return x in old
@@ -130,7 +130,7 @@ class RegionMarkerList(List[RegionMarker]):
         return RegionMarkerList(markers)
 
     @label_sequentially.register
-    def _(self, old: list):
+    def _(self, old: abc.Sequence):
 
         def f(x):
             return x in old
@@ -146,14 +146,3 @@ class RegionMarkerList(List[RegionMarker]):
     def names(self) -> set:
         """Return all unique region names."""
         return set(m.name for m in self)
-
-
-if __name__ == '__main__':
-    k = [RegionMarker(x, point=(x, x)) for x in range(10)]
-    m = RegionMarkerList(k)
-
-    new1 = m.relabel(1, 11)
-    new2 = m.relabel([2, 3, 4], 11)
-    new3 = m.relabel(lambda x: x < 4, 11)
-
-    new4 = new3.label_sequentially(lambda x: x == 11)

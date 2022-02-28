@@ -66,45 +66,45 @@ def test_pad_width(image_square, width):
 
 @pytest.mark.parametrize('side,label,name,expected_labels', (
     ('left', None, None, {
-        0: 91,
-        1: 32,
-        2: 15
-    }),
-    ('top', 0, None, {
-        0: 108,
-        1: 34
+        1: 91,
+        2: 32,
+        3: 15
     }),
     ('top', 1, None, {
-        0: 93,
-        1: 49
+        1: 108,
+        2: 34
     }),
-    ('left', 2, None, {
-        0: 91,
-        1: 32,
-        2: 15
+    ('top', 2, None, {
+        1: 93,
+        2: 49
+    }),
+    ('left', 3, None, {
+        1: 91,
+        2: 32,
+        3: 15
     }),
     ('bottom', np.pi, None, {
-        0: 94,
-        1: 34,
+        1: 94,
+        2: 34,
         np.pi: 15
     }),
-    ('right', 2, None, {
-        0: 96,
-        1: 32,
-        2: 14
+    ('right', 3, None, {
+        1: 96,
+        2: 32,
+        3: 14
     }),
     ('bottom', None, 'moo', {
-        0: 94,
-        1: 34,
-        2: 15
+        1: 94,
+        2: 34,
+        3: 15
     }),
     ('bottom', None, 'background', {
-        0: 109,
-        1: 34,
+        1: 109,
+        2: 34,
     }),
     ('bottom', None, 'feature', {
-        0: 94,
-        1: 49,
+        1: 94,
+        2: 49,
     }),
 ))
 def test_pad_label(image_square, side, label, name, expected_labels):

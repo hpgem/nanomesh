@@ -5,7 +5,6 @@ pytest --no-cov --nbmake \
    "./examples/how_to_generate_a_triangle_mesh_from_a_2d_image" \
    "./examples/how_to_do_3d_multi-domain_meshing_using_simulated_data.ipynb" \
    "./examples/how_to_generate_a_tetrahedral_mesh_from_3d_cells_image.ipynb" \
-   "./examples/how_to_generate_a_tetrahedral_mesh_from_a_3d_image.ipynb" \
    "./examples/how_to_pad_a_2d_mesh.ipynb" \
    "./examples/how_to_pad_a_3d_mesh.ipynb" \
    "./nanopores/how_to_calculate_cell_quality_metrics.ipynb" \

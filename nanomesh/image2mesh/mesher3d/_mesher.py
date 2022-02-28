@@ -7,6 +7,7 @@ import numpy as np
 from skimage import measure, morphology
 
 from nanomesh import Volume, tetrahedralize, triangulate
+from nanomesh._constants import BACKGROUND, FEATURE
 from nanomesh._doc import doc
 from nanomesh.mesh import TriangleMesh
 from nanomesh.region_markers import RegionMarker, RegionMarkerList
@@ -82,8 +83,10 @@ def get_region_markers(vol: Union[Volume, np.ndarray]) -> RegionMarkerList:
 
         if label == 0:
             name = 'background'
+            label = BACKGROUND
         else:
             name = 'feature'
+            label = FEATURE
 
         region_markers.append(RegionMarker(label=label, point=point,
                                            name=name))
@@ -276,7 +279,7 @@ class Mesher3D(AbstractMesher):
         regions = get_region_markers(segmented)
 
         if not group_regions:
-            regions = regions.label_sequentially(1, fmt_name='fasdf{}')
+            regions = regions.label_sequentially(FEATURE, fmt_name='feature{}')
 
         contour.region_markers = regions
 

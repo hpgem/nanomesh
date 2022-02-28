@@ -75,45 +75,45 @@ def test_mesh3d_pad_invalid_side(mesh_box):
 
 @pytest.mark.parametrize('side,label,name,expected_labels', (
     ('left', None, None, {
-        0: 633,
-        1: 1729,
-        2: 290
+        1: 633,
+        2: 1729,
+        3: 290
     }),
-    ('front', 0, None, {
-        0: 857,
-        1: 1851
+    ('front', 1, None, {
+        1: 857,
+        2: 1851
     }),
-    ('back', 1, None, {
-        0: 620,
-        1: 1966
+    ('back', 2, None, {
+        1: 620,
+        2: 1966
     }),
-    ('left', 2, None, {
-        0: 633,
-        1: 1729,
-        2: 290
+    ('left', 3, None, {
+        1: 633,
+        2: 1729,
+        3: 290
     }),
     ('bottom', np.pi, None, {
-        0: 608,
-        1: 1794,
+        1: 608,
+        2: 1794,
         3: 277
     }),
-    ('right', 2, None, {
-        0: 611,
-        1: 1760,
-        2: 300
+    ('right', 3, None, {
+        1: 611,
+        2: 1760,
+        3: 300
     }),
     ('bottom', None, 'moo', {
-        0: 608,
-        1: 1794,
-        2: 277
+        1: 608,
+        2: 1794,
+        3: 277
     }),
     ('bottom', None, 'background', {
-        0: 885,
-        1: 1794,
+        1: 885,
+        2: 1794,
     }),
     ('bottom', None, 'feature', {
-        0: 608,
-        1: 2071,
+        1: 608,
+        2: 2071,
     }),
 ))
 def test_pad_label(image_cube, side, label, name, expected_labels):

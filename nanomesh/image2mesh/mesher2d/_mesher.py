@@ -7,6 +7,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from skimage import measure
 
+from nanomesh._constants import BACKGROUND, FEATURE
 from nanomesh._doc import doc
 from nanomesh.region_markers import RegionMarker, RegionMarkerList
 
@@ -95,7 +96,7 @@ def _generate_background_region(polygons: List[Polygon],
     while any(polygon.contains_point(point) for polygon in polygons):
         point = np.random.uniform(xmin, xmax), np.random.uniform(ymin, ymax)
 
-    return RegionMarker(label=0, point=point, name='background')
+    return RegionMarker(label=BACKGROUND, point=point, name='background')
 
 
 def _generate_regions(polygons: List[Polygon]) -> RegionMarkerList:
@@ -116,7 +117,8 @@ def _generate_regions(polygons: List[Polygon]) -> RegionMarkerList:
     for i, polygon in enumerate(polygons):
         point = polygon.find_point()
 
-        regions.append(RegionMarker(label=1, point=point, name='feature'))
+        regions.append(RegionMarker(label=FEATURE, point=point,
+                                    name='feature'))
 
     return regions
 
@@ -205,7 +207,7 @@ class Mesher2D(AbstractMesher):
         regions.append(_generate_background_region(polygons, self.image_bbox))
 
         if not group_regions:
-            regions = regions.label_sequentially(1, fmt_name='feature{}')
+            regions = regions.label_sequentially(FEATURE, fmt_name='feature{}')
 
         contour = _polygons_to_line_mesh(polygons, self.image_bbox)
         contour.region_markers = regions

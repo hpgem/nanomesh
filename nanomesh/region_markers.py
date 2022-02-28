@@ -86,10 +86,14 @@ class RegionMarkerList(List[RegionMarker]):
         RegionMarkerList
             New list of region markers with updated labels.
         """
-        if (not name) and (len(self.names) == 0):
-            name = tuple(self.names)[0]
+        if not name:
+            names = [m.name for m in self if old(m.label)]
+            if len(set(names)) == 1:
+                name = tuple(names)[0]
+
         markers = (m.update(label=new, name=name) if old(m.label) else m
                    for m in self)
+
         return RegionMarkerList(markers)
 
     @relabel.register

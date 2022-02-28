@@ -33,6 +33,10 @@ class TestRegionMarkerList:
         labels = tuple(m.label for m in new_region_markers)
         assert labels == expected
 
+    def test_relabel_name(self, region_markers):
+        new_region_markers = region_markers.relabel(1, 7)
+        assert new_region_markers.names == {'two', 'three', 'one'}
+
     @pytest.mark.parametrize('old,expected', (
         (1, (4, 5, 2, 2, 3)),
         (3, (1, 1, 2, 2, 4)),
@@ -46,6 +50,11 @@ class TestRegionMarkerList:
         new_region_markers = region_markers.label_sequentially(old)
         labels = tuple(m.label for m in new_region_markers)
         assert labels == expected
+
+    def test_label_sequentially_name(self, region_markers):
+        new_region_markers = region_markers.label_sequentially(1,
+                                                               fmt_name='f{}')
+        assert new_region_markers.names == {'f4', 'f5', 'two', 'three'}
 
     def test_labels_prop(self, region_markers):
         assert region_markers.labels == {1, 2, 3}

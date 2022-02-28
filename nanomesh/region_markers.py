@@ -63,7 +63,10 @@ class RegionMarkerList(List[RegionMarker]):
         return f'{self.__class__.__name__}(\n{s}\n)'
 
     @singledispatchmethod
-    def relabel(self, old: abc.Callable, new: int) -> RegionMarkerList:
+    def relabel(self,
+                old: abc.Callable,
+                new: int,
+                name: str = None) -> RegionMarkerList:
         """Relabel a sub-group of region markers.
 
         Parameters
@@ -75,33 +78,38 @@ class RegionMarkerList(List[RegionMarker]):
             - callable, returns True if label is a match
         new : int
             New label to assign
+        name : str, optional
+            Optional name to assign to the new region markers.
 
         Returns
         -------
         RegionMarkerList
             New list of region markers with updated labels.
         """
-        markers = (m.update(label=new) if old(m.label) else m for m in self)
+        if (not name) and (len(self.names) == 0):
+            name = tuple(self.names)[0]
+        markers = (m.update(label=new, name=name) if old(m.label) else m
+                   for m in self)
         return RegionMarkerList(markers)
 
     @relabel.register
-    def _(self, old: abc.Sequence, new: int):
+    def _(self, old: abc.Sequence, new: int, *args, **kwargs):
 
         def f(x):
             return x in old
 
-        return self.relabel(f, new)
+        return self.relabel(f, new, *args, **kwargs)
 
     @relabel.register
-    def _(self, old: int, new: int):
+    def _(self, old: int, new: int, *args, **kwargs):
 
         def f(x):
             return x == old
 
-        return self.relabel(f, new)
+        return self.relabel(f, new, *args, **kwargs)
 
     @singledispatchmethod
-    def label_sequentially(self, old: abc.Callable):
+    def label_sequentially(self, old: abc.Callable, fmt_name: str = None):
         """Re-label a set of regions sequentially.
 
         `old` matches a sub-group of region markers and assigns new labels.
@@ -115,6 +123,9 @@ class RegionMarkerList(List[RegionMarker]):
             - int, matches this exact label
             - list, matches all labels in this list
             - callable, returns True if label is a match
+        fmt_name : str, optional
+            Optional format string for the label name, e.g. 'feature{}'. The
+            placeholder (`{}`) will be substituted by the new label.
 
         Returns
         -------
@@ -124,18 +135,31 @@ class RegionMarkerList(List[RegionMarker]):
         markers = [copy(marker) for marker in self]
         i = max(self.labels) + 1
         for marker in markers:
-            if old(marker.label):
-                marker.label = i
-                i += 1
+            if not old(marker.label):
+                continue
+
+            marker.label = i
+            if fmt_name:
+                marker.name = fmt_name.format(i)
+
+            i += 1
         return RegionMarkerList(markers)
 
     @label_sequentially.register
-    def _(self, old: abc.Sequence):
+    def _(self, old: abc.Sequence, *args, **kwargs):
 
         def f(x):
             return x in old
 
-        return self.label_sequentially(f)
+        return self.label_sequentially(f, *args, **kwargs)
+
+    @label_sequentially.register
+    def _(self, old: int, *args, **kwargs):
+
+        def f(x):
+            return x == old
+
+        return self.label_sequentially(f, *args, **kwargs)
 
     @property
     def labels(self) -> set:

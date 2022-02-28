@@ -162,6 +162,7 @@ class Mesher2D(AbstractMesher):
         level: float = None,
         contour_precision: int = 1,
         max_contour_dist: int = 5,
+        group_regions: bool = True,
     ):
         """Generate contours using marching cubes algorithm.
 
@@ -180,6 +181,9 @@ class Mesher2D(AbstractMesher):
         max_contour_dist : int, optional
             Divide long edges so that maximum distance between points does not
             exceed this value.
+        group_regions : bool, optional
+            If True, assign the same label to all features
+            If False, label regions sequentially
         """
         polygons = [
             Polygon(points)
@@ -200,8 +204,11 @@ class Mesher2D(AbstractMesher):
         regions = _generate_regions(polygons)
         regions.append(_generate_background_region(polygons, self.image_bbox))
 
+        if not group_regions:
+            regions = regions.label_sequentially(1, fmt_name='feature{}')
+
         contour = _polygons_to_line_mesh(polygons, self.image_bbox)
-        contour.region_markers.extend(regions)
+        contour.region_markers = regions
 
         self.polygons = polygons
         self.contour = contour

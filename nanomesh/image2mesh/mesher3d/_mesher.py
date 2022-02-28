@@ -233,6 +233,7 @@ class Mesher3D(AbstractMesher):
     def generate_contour(
         self,
         level: float = None,
+        group_regions: bool = True,
     ):
         """Generate contours using marching cubes algorithm
         (:func:`skimage.measure.marching_cubes`).
@@ -250,6 +251,9 @@ class Mesher3D(AbstractMesher):
             Contour value to search for isosurfaces (i.e. the threshold value).
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to :class:`Mesher3D`.
+        group_regions : bool, optional
+            If True, assign the same label to all features
+            If False, label regions sequentially
         """
         from nanomesh.mesh import TriangleMesh
 
@@ -269,8 +273,12 @@ class Mesher3D(AbstractMesher):
         else:
             segmented = self.image
 
-        region_markers = get_region_markers(segmented)
-        contour.region_markers.extend(region_markers)
+        regions = get_region_markers(segmented)
+
+        if not group_regions:
+            regions = regions.label_sequentially(1, fmt_name='fasdf{}')
+
+        contour.region_markers = regions
 
         self.contour = contour
 

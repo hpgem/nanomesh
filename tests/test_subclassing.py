@@ -46,6 +46,7 @@ other = np.array((
 @pytest.mark.parametrize('data,instance', (
     (im1d, GenericImage),
     (im2d, Plane),
+    (im2d, Plane),
     (im3d, Volume),
 ))
 def test_image_subclassing(data, instance):
@@ -64,12 +65,12 @@ def test_mesh_subclassing(data, instance):
     assert isinstance(mesh, instance)
 
 
-# @pytest.mark.parametrize('data,instance', (
-#     (im2d, Mesher2D),
-#     (Plane(im2d, Mesher2D),
-#     (im3d), Mesher3D),
-#     (Volume(im3d), Mesher3D),
-# ))
-# def test_mesher_subclassing(data, instance):
-#     image = GenericMesher(data)
-#     assert isinstance(image, instance)
+@pytest.mark.parametrize('data,instance', (
+    (im2d, Mesher2D),
+    (Plane(im2d), Mesher2D),
+    (im3d, Mesher3D),
+    (Volume(im3d), Mesher3D),
+))
+def test_mesher_subclassing(data, instance):
+    image = GenericMesher(data)
+    assert isinstance(image, instance)

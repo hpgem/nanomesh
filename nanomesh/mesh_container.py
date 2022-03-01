@@ -194,10 +194,10 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
         fields = self.field_to_number.get(cell_type, None)
 
-        return GenericMesh.create(cells=cells,
-                                  points=points,
-                                  fields=fields,
-                                  **cell_data)
+        return GenericMesh(cells=cells,
+                           points=points,
+                           fields=fields,
+                           **cell_data)
 
     def get_all_cell_data(self, cell_type: str = None) -> dict:
         """Get all cell data for given `cell_type`.

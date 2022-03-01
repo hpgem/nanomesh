@@ -28,7 +28,7 @@ def line_mesh():
     cells = np.zeros((5, 2), dtype=int)
     cell_data = {LABEL_KEY: np.arange(5)}
 
-    mesh = LineMesh.create(cells=cells, points=points, **cell_data)
+    mesh = LineMesh(cells=cells, points=points, **cell_data)
     mesh.default_key = LABEL_KEY
     assert isinstance(mesh, LineMesh)
     return mesh
@@ -40,7 +40,7 @@ def triangle_mesh_2d():
     cells = np.zeros((5, 3), dtype=int)
     cell_data = {LABEL_KEY: np.arange(5)}
 
-    mesh = TriangleMesh.create(cells=cells, points=points, **cell_data)
+    mesh = TriangleMesh(cells=cells, points=points, **cell_data)
     mesh.default_key = LABEL_KEY
     assert isinstance(mesh, TriangleMesh)
     return mesh
@@ -52,7 +52,7 @@ def triangle_mesh_3d():
     cells = np.zeros((5, 3), dtype=int)
     cell_data = {LABEL_KEY: np.arange(5)}
 
-    mesh = TriangleMesh.create(cells=cells, points=points, **cell_data)
+    mesh = TriangleMesh(cells=cells, points=points, **cell_data)
     mesh.default_key = LABEL_KEY
     assert isinstance(mesh, TriangleMesh)
     return mesh
@@ -64,7 +64,7 @@ def tetra_mesh():
     cells = np.zeros((5, 4), dtype=int)
     cell_data = {LABEL_KEY: np.arange(5)}
 
-    mesh = TetraMesh.create(cells=cells, points=points, **cell_data)
+    mesh = TetraMesh(cells=cells, points=points, **cell_data)
     assert isinstance(mesh, TetraMesh)
     return mesh
 

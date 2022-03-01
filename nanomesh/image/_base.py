@@ -1,6 +1,6 @@
 import operator
 import os
-from typing import Callable, Union
+from typing import Any, Callable, Dict, Union
 
 import numpy as np
 
@@ -38,6 +38,15 @@ class GenericImage(object, metaclass=DocFormatterMeta):
     image : {shape}numpy.ndarray
         The raw image data
     """
+    _registry: Dict[int, Any] = {}
+
+    def __init_subclass__(cls, ndim: int, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._registry[ndim] = cls
+
+    def __new__(cls, image: np.ndarray):
+        subclass = cls._registry.get(image.ndim, cls)
+        return super().__new__(subclass)
 
     def __init__(self, image: np.ndarray):
         self.image = image

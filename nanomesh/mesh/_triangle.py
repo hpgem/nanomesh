@@ -22,7 +22,7 @@ if TYPE_CHECKING:
      prefix='Data class for triangle meshes',
      dim_points='2 or 3',
      dim_cells='3')
-class TriangleMesh(GenericMesh, PruneZ0Mixin):
+class TriangleMesh(GenericMesh, PruneZ0Mixin, cell_dim=3):
     cell_type = 'triangle'
 
     def plot(self, **kwargs):

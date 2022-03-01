@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 import logging
-from abc import ABC, abstractmethod
-from typing import Union
+from abc import abstractmethod
+from typing import Any, Dict, Union
 
 import numpy as np
 
 from .._doc import doc
-from ..image import Plane, Volume
+from ..image import GenericImage
 from ..mesh._base import GenericMesh
 
 logger = logging.getLogger(__name__)
 
 
 @doc(prefix='mesh from image data')
-class AbstractMesher(ABC):
+class AbstractMesher:
     """Utility class to generate a {prefix}.
 
     Parameters
@@ -31,9 +31,21 @@ class AbstractMesher(ABC):
     contour : GenericMesh
         Stores the contour mesh.
     """
+    _registry: Dict[int, Any] = {}
 
-    def __init__(self, image: Union[np.ndarray, Plane, Volume]):
-        if isinstance(image, (Plane, Volume)):
+    def __init_subclass__(cls, ndim: int, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._registry[ndim] = cls
+
+    def __new__(cls, image: Union[np.ndarray, GenericImage]):
+        if isinstance(image, GenericImage):
+            image = image.image
+        ndim = image.ndim
+        subclass = cls._registry.get(ndim, cls)
+        return super().__new__(subclass)
+
+    def __init__(self, image: Union[np.ndarray, GenericImage]):
+        if isinstance(image, GenericImage):
             image = image.image
 
         self.contour: GenericMesh | None = None
@@ -42,10 +54,11 @@ class AbstractMesher(ABC):
 
     def __repr__(self):
         """Canonical string representation."""
+        contour_str = self.contour.__repr__(indent=4) if self.contour else None
         s = (
             f'{self.__class__.__name__}(',
             f'    image = {self.image!r},',
-            f'    contour = {self.contour.__repr__(indent=4)}'
+            f'    contour = {contour_str}'
             ')',
         )
         return '\n'.join(s)

@@ -16,7 +16,7 @@ def test_create(n_points, n_cells, expected):
     points = np.arange(5 * n_points).reshape(5, n_points)
     cells = np.zeros((5, n_cells))
 
-    mesh = GenericMesh.create(points=points, cells=cells)
+    mesh = GenericMesh(points=points, cells=cells)
 
     assert mesh.cell_type == expected
 

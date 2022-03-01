@@ -1,6 +1,6 @@
 import operator
 import os
-from typing import Callable, Union
+from typing import Any, Callable, Dict, Union
 
 import numpy as np
 
@@ -25,8 +25,7 @@ def _normalize_values(image: np.ndarray):
 
 
 @doc(prefix='Generic image class', shape='')
-# class GenericImage(object, metaclass=DocFormatterMeta):
-class GenericImage:
+class GenericImage(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
     Parameters
@@ -39,7 +38,7 @@ class GenericImage:
     image : {shape}numpy.ndarray
         The raw image data
     """
-    _registry = {}
+    _registry: Dict[int, Any] = {}
 
     def __init_subclass__(cls, ndim: int, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -47,9 +46,7 @@ class GenericImage:
 
     def __new__(cls, image: np.ndarray):
         subclass = cls._registry.get(image.ndim, cls)
-        obj = object.__new__(subclass)
-        obj.__init__(image)
-        return obj
+        return super().__new__(subclass)
 
     def __init__(self, image: np.ndarray):
         self.image = image

@@ -10,12 +10,9 @@ import pyvista as pv
 from .._doc import DocFormatterMeta, doc
 from ..region_markers import RegionMarkerList
 
-registry: Dict[str, Any] = {}
-
 
 @doc(prefix='Generic mesh class', dim_points='n', dim_cells='j')
-# class GenericMesh(object, metaclass=DocFormatterMeta):
-class GenericMesh:
+class GenericMesh(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
     Parameters
@@ -33,19 +30,17 @@ class GenericMesh:
         Additional cell data. Argument must be a 1D numpy array
         matching the number of cells defined by `i`.
     """
-    _registry = {}
+    _registry: Dict[int, Any] = {}
     cell_type: str = 'base'
 
     def __init_subclass__(cls, cell_dim: int, **kwargs):
         super().__init_subclass__(**kwargs)
         cls._registry[cell_dim] = cls
 
-    def __new__(cls, points, cells, *args, **kwargs):
+    def __new__(cls, points: np.ndarray, cells: np.ndarray, *args, **kwargs):
         cell_dim = cells.shape[1]
         subclass = cls._registry.get(cell_dim, cls)
-        obj = object.__new__(subclass)
-        obj.__init__(points, cells, *args, **kwargs)
-        return obj
+        return super().__new__(subclass)
 
     def __init__(self,
                  points: np.ndarray,
@@ -120,21 +115,7 @@ class GenericMesh:
             key = key.replace(':ref', '-ref')
             cell_data[key] = value[0]
 
-        return GenericMesh.create(points=points, cells=cells, **cell_data)
-
-    @classmethod
-    def create(cls, points, cells, **cell_data):
-        """Class dispatcher."""
-        cell_dimensions = cells.shape[1]
-        if cell_dimensions == 2:
-            item_class = registry['line']
-        elif cell_dimensions == 3:
-            item_class = registry['triangle']
-        elif cell_dimensions == 4:
-            item_class = registry['tetra']
-        else:
-            item_class = cls
-        return item_class(points=points, cells=cells, **cell_data)
+        return GenericMesh(points=points, cells=cells, **cell_data)
 
     def write(self, *args, **kwargs):
         """Simple wrapper around :func:`meshio.write`."""

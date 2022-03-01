@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-from abc import ABC, abstractmethod
-from typing import Union
+from abc import abstractmethod
+from typing import Any, Dict, Union
 
 import numpy as np
 
@@ -31,18 +31,16 @@ class AbstractMesher:
     contour : GenericMesh
         Stores the contour mesh.
     """
-    _registry = {}
+    _registry: Dict[int, Any] = {}
 
-    def __init_subclass__(cls, ndim, **kwargs):
+    def __init_subclass__(cls, ndim: int, **kwargs):
         super().__init_subclass__(**kwargs)
         cls._registry[ndim] = cls
 
-    def __new__(cls, image):
+    def __new__(cls, image: np.ndarray):
         ndim = image.ndim
         subclass = cls._registry.get(ndim, cls)
-        obj = object.__new__(subclass)
-        obj.__init__(image)
-        return obj
+        return super().__new__(subclass)
 
     def __init__(self, image: Union[np.ndarray, Plane, Volume]):
         if isinstance(image, (Plane, Volume)):

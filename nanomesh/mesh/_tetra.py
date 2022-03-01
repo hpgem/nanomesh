@@ -11,7 +11,7 @@ from ._base import GenericMesh
      prefix='Data class for tetrahedral meshes',
      dim_points='3',
      dim_cells='4')
-class TetraMesh(GenericMesh):
+class TetraMesh(GenericMesh, cell_dim=4):
     cell_type = 'tetra'
 
     def to_open3d(self):

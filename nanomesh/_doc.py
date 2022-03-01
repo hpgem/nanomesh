@@ -29,11 +29,15 @@ class DocFormatterMeta(type):
     Updates instances of `{classname}` to `classname`.
     """
 
-    def __new__(mcls, classname, bases, cls_dict):
-        cls = super().__new__(mcls, classname, bases, cls_dict)
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        return cls
+
+    def __new__(mcls, classname, bases, cls_dict, **kwargs):
+        cls = super().__new__(mcls, classname, bases, cls_dict, **kwargs)
 
         for name, method in inspect.getmembers(cls):
-            is_private = name.startswith('_')
+            is_private = name.startswith('__')
             is_none = (not method) or (not method.__doc__)
 
             if any((is_private, is_none)):

@@ -153,7 +153,7 @@ def _generate_segments(polygons: List[Polygon]) -> np.ndarray:
 
 
 @doc(AbstractMesher, prefix='triangular mesh from 2D image data')
-class Mesher2D(AbstractMesher):
+class Mesher2D(AbstractMesher, ndim=2):
 
     def __init__(self, image: np.ndarray | Plane):
         super().__init__(image)

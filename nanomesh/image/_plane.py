@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 @doc(GenericImage,
      prefix='Data class for working with 2D image data',
      shape='(i,j) ')
-class Plane(GenericImage):
+class Plane(GenericImage, ndim=2):
 
     @classmethod
     def load(cls, filename: os.PathLike, **kwargs) -> Plane:

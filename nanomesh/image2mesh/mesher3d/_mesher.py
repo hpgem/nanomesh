@@ -227,7 +227,7 @@ def generate_envelope(mesh: TriangleMesh,
 
 
 @doc(AbstractMesher, prefix='tetrahedral mesh from 3D (volumetric) image data')
-class Mesher3D(AbstractMesher):
+class Mesher3D(AbstractMesher, ndim=3):
 
     def __init__(self, image: np.ndarray):
         super().__init__(image)

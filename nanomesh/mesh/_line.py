@@ -16,7 +16,7 @@ if TYPE_CHECKING:
      prefix='Data class for line meshes',
      dim_points='2 or 3',
      dim_cells='2')
-class LineMesh(GenericMesh):
+class LineMesh(GenericMesh, cell_dim=2):
     cell_type = 'line'
 
     def plot_mpl(self, *args, **kwargs) -> plt.Axes:

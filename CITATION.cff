@@ -14,7 +14,7 @@ authors:
     family-names: Smeets
     given-names: Stef
     orcid: "0000-0002-5413-9038"
-version: "0.5.0"
+version: "0.6.0"
 repository-code: "https://github.com/hpgem/nanomesh"
 identifiers:
 keywords:

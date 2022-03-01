@@ -47,7 +47,9 @@ class GenericImage:
 
     def __new__(cls, image: np.ndarray):
         subclass = cls._registry.get(image.ndim, cls)
-        return subclass
+        obj = object.__new__(subclass)
+        obj.__init__(image)
+        return obj
 
     def __init__(self, image: np.ndarray):
         self.image = image

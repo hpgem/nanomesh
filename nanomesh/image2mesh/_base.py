@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @doc(prefix='mesh from image data')
-class AbstractMesher(ABC):
+class AbstractMesher:
     """Utility class to generate a {prefix}.
 
     Parameters
@@ -31,6 +31,18 @@ class AbstractMesher(ABC):
     contour : GenericMesh
         Stores the contour mesh.
     """
+    _registry = {}
+
+    def __init_subclass__(cls, ndim, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._registry[ndim] = cls
+
+    def __new__(cls, image):
+        ndim = image.ndim
+        subclass = cls._registry.get(ndim, cls)
+        obj = object.__new__(subclass)
+        obj.__init__(image)
+        return obj
 
     def __init__(self, image: Union[np.ndarray, Plane, Volume]):
         if isinstance(image, (Plane, Volume)):

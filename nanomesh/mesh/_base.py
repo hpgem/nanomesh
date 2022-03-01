@@ -14,7 +14,8 @@ registry: Dict[str, Any] = {}
 
 
 @doc(prefix='Generic mesh class', dim_points='n', dim_cells='j')
-class GenericMesh(object, metaclass=DocFormatterMeta):
+# class GenericMesh(object, metaclass=DocFormatterMeta):
+class GenericMesh:
     """{prefix}.
 
     Parameters
@@ -32,11 +33,24 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
         Additional cell data. Argument must be a 1D numpy array
         matching the number of cells defined by `i`.
     """
+    _registry = {}
     cell_type: str = 'base'
+
+    def __init_subclass__(cls, cell_dim: int, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._registry[cell_dim] = cls
+
+    def __new__(cls, points, cells, *args, **kwargs):
+        cell_dim = cells.shape[1]
+        subclass = cls._registry.get(cell_dim, cls)
+        obj = object.__new__(subclass)
+        obj.__init__(points, cells, *args, **kwargs)
+        return obj
 
     def __init__(self,
                  points: np.ndarray,
                  cells: np.ndarray,
+                 *,
                  fields: Dict[str, int] = None,
                  region_markers: RegionMarkerList = None,
                  **cell_data):

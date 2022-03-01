@@ -25,7 +25,8 @@ def _normalize_values(image: np.ndarray):
 
 
 @doc(prefix='Generic image class', shape='')
-class GenericImage(object, metaclass=DocFormatterMeta):
+# class GenericImage(object, metaclass=DocFormatterMeta):
+class GenericImage:
     """{prefix}.
 
     Parameters
@@ -38,6 +39,15 @@ class GenericImage(object, metaclass=DocFormatterMeta):
     image : {shape}numpy.ndarray
         The raw image data
     """
+    _registry = {}
+
+    def __init_subclass__(cls, ndim: int, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._registry[ndim] = cls
+
+    def __new__(cls, image: np.ndarray):
+        subclass = cls._registry.get(image.ndim, cls)
+        return subclass
 
     def __init__(self, image: np.ndarray):
         self.image = image

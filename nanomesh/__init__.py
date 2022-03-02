@@ -3,7 +3,7 @@ import sys
 
 from ._tetgen_wrapper import tetrahedralize
 from ._triangle_wrapper import triangulate
-from .image import Plane, Volume
+from .image import Image, Plane, Volume
 from .image2mesh import Mesher2D, Mesher3D, plane2mesh, volume2mesh
 from .mesh import LineMesh, TetraMesh, TriangleMesh
 from .mesh_container import MeshContainer
@@ -25,6 +25,7 @@ __all__ = [
     'MeshContainer',
     'Mesher2D',
     'Mesher3D',
+    'Image',
     'Plane',
     'plane2mesh',
     'RegionMarker',

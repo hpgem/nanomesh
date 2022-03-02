@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .._doc import doc
-from ._base import GenericImage
+from ._image import Image
 from ._utils import show_image
 
 logger = logging.getLogger(__name__)
@@ -17,10 +17,8 @@ if TYPE_CHECKING:
     from .mesh import TriangleMesh
 
 
-@doc(GenericImage,
-     prefix='Data class for working with 2D image data',
-     shape='(i,j) ')
-class Plane(GenericImage, ndim=2):
+@doc(Image, prefix='Data class for working with 2D image data', shape='(i,j) ')
+class Plane(Image, ndim=2):
 
     @classmethod
     def load(cls, filename: os.PathLike, **kwargs) -> Plane:

@@ -7,7 +7,7 @@ from typing import Any, Dict, Union
 import numpy as np
 
 from .._doc import doc
-from ..image import GenericImage
+from ..image import Image
 from ..mesh._base import GenericMesh
 
 logger = logging.getLogger(__name__)
@@ -37,15 +37,15 @@ class AbstractMesher:
         super().__init_subclass__(**kwargs)
         cls._registry[ndim] = cls
 
-    def __new__(cls, image: Union[np.ndarray, GenericImage]):
-        if isinstance(image, GenericImage):
+    def __new__(cls, image: Union[np.ndarray, Image]):
+        if isinstance(image, Image):
             image = image.image
         ndim = image.ndim
         subclass = cls._registry.get(ndim, cls)
         return super().__new__(subclass)
 
-    def __init__(self, image: Union[np.ndarray, GenericImage]):
-        if isinstance(image, GenericImage):
+    def __init__(self, image: Union[np.ndarray, Image]):
+        if isinstance(image, Image):
             image = image.image
 
         self.contour: GenericMesh | None = None

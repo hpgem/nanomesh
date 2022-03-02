@@ -3,7 +3,7 @@ import pytest
 
 from nanomesh import (LineMesh, Mesher2D, Mesher3D, Plane, TetraMesh,
                       TriangleMesh, Volume)
-from nanomesh.image import GenericImage
+from nanomesh.image import Image
 from nanomesh.image2mesh._base import AbstractMesher as GenericMesher
 from nanomesh.mesh import GenericMesh
 
@@ -44,13 +44,13 @@ other = np.array((
 
 
 @pytest.mark.parametrize('data,instance', (
-    (im1d, GenericImage),
+    (im1d, Image),
     (im2d, Plane),
     (im2d, Plane),
     (im3d, Volume),
 ))
 def test_image_subclassing(data, instance):
-    image = GenericImage(data)
+    image = Image(data)
     assert isinstance(image, instance)
 
 

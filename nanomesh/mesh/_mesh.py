@@ -12,7 +12,7 @@ from ..region_markers import RegionMarkerList
 
 
 @doc(prefix='Generic mesh class', dim_points='n', dim_cells='j')
-class GenericMesh(object, metaclass=DocFormatterMeta):
+class Mesh(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
     Parameters
@@ -115,7 +115,7 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
             key = key.replace(':ref', '-ref')
             cell_data[key] = value[0]
 
-        return GenericMesh(points=points, cells=cells, **cell_data)
+        return Mesh(points=points, cells=cells, **cell_data)
 
     def write(self, *args, **kwargs):
         """Simple wrapper around :func:`meshio.write`."""

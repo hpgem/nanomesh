@@ -8,8 +8,7 @@ from typing import Dict, List
 import meshio
 import numpy as np
 
-from .mesh._base import GenericMesh
-from .mesh._mixin import PruneZ0Mixin
+from .mesh import Mesh, PruneZ0Mixin
 
 
 class _CellType(Enum):
@@ -175,7 +174,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
         Returns
         -------
-        GenericMesh
+        Mesh
             Mesh of the given type
         """
         if not cell_type:
@@ -194,10 +193,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
 
         fields = self.field_to_number.get(cell_type, None)
 
-        return GenericMesh(cells=cells,
-                           points=points,
-                           fields=fields,
-                           **cell_data)
+        return Mesh(cells=cells, points=points, fields=fields, **cell_data)
 
     def get_all_cell_data(self, cell_type: str = None) -> dict:
         """Get all cell data for given `cell_type`.
@@ -281,15 +277,15 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         return mesh.plot_pyvista(**kwargs)
 
     @classmethod
-    def from_mesh(cls, mesh: GenericMesh):
-        """Convert from :class:`nanomesh.mesh.GenericMesh` to
+    def from_mesh(cls, mesh: Mesh):
+        """Convert from :class:`nanomesh.mesh.Mesh` to
         :class:`MeshContainer`.
 
         Parameters
         ----------
         mesh : Mesh
             Input mesh, must be a subclass of
-            :class:`nanomesh.mesh.GenericMesh`.
+            :class:`nanomesh.mesh.Mesh`.
 
         Returns
         -------

@@ -9,7 +9,7 @@ import scipy
 
 from .._doc import doc
 from .._tetgen_wrapper import tetrahedralize
-from ._base import GenericMesh
+from ._mesh import Mesh
 from ._mixin import PruneZ0Mixin
 
 if TYPE_CHECKING:
@@ -18,11 +18,11 @@ if TYPE_CHECKING:
     from nanomesh import MeshContainer
 
 
-@doc(GenericMesh,
+@doc(Mesh,
      prefix='Data class for triangle meshes',
      dim_points='2 or 3',
      dim_cells='3')
-class TriangleMesh(GenericMesh, PruneZ0Mixin, cell_dim=3):
+class TriangleMesh(Mesh, PruneZ0Mixin, cell_dim=3):
     cell_type = 'triangle'
 
     def plot(self, **kwargs):

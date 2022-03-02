@@ -4,8 +4,8 @@ import pytest
 from nanomesh import (LineMesh, Mesher2D, Mesher3D, Plane, TetraMesh,
                       TriangleMesh, Volume)
 from nanomesh.image import Image
-from nanomesh.image2mesh._base import AbstractMesher as GenericMesher
-from nanomesh.mesh import GenericMesh
+from nanomesh.image2mesh._base import AbstractMesher as Mesher
+from nanomesh.mesh import Mesh
 
 im1d = np.arange(24)
 im2d = np.arange(24).reshape(6, 4)
@@ -55,13 +55,13 @@ def test_image_subclassing(data, instance):
 
 
 @pytest.mark.parametrize('data,instance', (
-    ((points, other), GenericMesh),
+    ((points, other), Mesh),
     ((points, lines), LineMesh),
     ((points, triangles), TriangleMesh),
     ((points, tetras), TetraMesh),
 ))
 def test_mesh_subclassing(data, instance):
-    mesh = GenericMesh(*data)
+    mesh = Mesh(*data)
     assert isinstance(mesh, instance)
 
 
@@ -72,5 +72,5 @@ def test_mesh_subclassing(data, instance):
     (Volume(im3d), Mesher3D),
 ))
 def test_mesher_subclassing(data, instance):
-    image = GenericMesher(data)
+    image = Mesher(data)
     assert isinstance(image, instance)

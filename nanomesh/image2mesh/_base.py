@@ -8,7 +8,7 @@ import numpy as np
 
 from .._doc import doc
 from ..image import Image
-from ..mesh._base import GenericMesh
+from ..mesh import Mesh
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class AbstractMesher:
         Reference to image data
     image_orig : numpy.ndarray
         Keep reference to original image data
-    contour : GenericMesh
+    contour : Mesh
         Stores the contour mesh.
     """
     _registry: Dict[int, Any] = {}
@@ -48,7 +48,7 @@ class AbstractMesher:
         if isinstance(image, Image):
             image = image.image
 
-        self.contour: GenericMesh | None = None
+        self.contour: Mesh | None = None
         self.image_orig = image
         self.image = image
 

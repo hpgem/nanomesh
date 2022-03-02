@@ -28,6 +28,9 @@ def _normalize_values(image: np.ndarray):
 class Image(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
+    Depending on the dimensions of the image data, the appropriate
+    subclass will be chosen if possible.
+
     Parameters
     ----------
     image : {shape}numpy.array

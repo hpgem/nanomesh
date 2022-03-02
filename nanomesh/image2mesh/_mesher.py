@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 class Mesher:
     """Utility class to generate a {prefix}.
 
+    Depending on the number of the image data, the appropriate
+    subclass will be chosen if possible.
+
     Parameters
     ----------
     image : np.array

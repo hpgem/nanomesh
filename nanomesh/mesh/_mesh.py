@@ -15,6 +15,9 @@ from ..region_markers import RegionMarkerList
 class Mesh(object, metaclass=DocFormatterMeta):
     """{prefix}.
 
+    Depending on the number of dimensions of the cells, the appropriate
+    subclass will be chosen if possible.
+
     Parameters
     ----------
     points : (m, {dim_points}) numpy.ndarray[float]

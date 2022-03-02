@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @doc(prefix='mesh from image data')
-class AbstractMesher:
+class Mesher:
     """Utility class to generate a {prefix}.
 
     Parameters

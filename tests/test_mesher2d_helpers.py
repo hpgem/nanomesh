@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 
 from nanomesh import LineMesh, MeshContainer, Mesher2D, TriangleMesh
-from nanomesh.image2mesh.mesher2d._helpers import (append_to_segment_markers,
-                                                   generate_segment_markers)
+from nanomesh.image2mesh._mesher2d._helpers import (append_to_segment_markers,
+                                                    generate_segment_markers)
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from helpers import get_expected_if_it_exists
 
-from nanomesh.image2mesh.mesher3d import BoundingBox, volume2mesh
+from nanomesh.image2mesh._mesher3d import BoundingBox, volume2mesh
 
 
 def compare_mesh_results(mesh_container, expected_fn):

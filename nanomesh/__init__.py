@@ -4,8 +4,8 @@ import sys
 from ._tetgen_wrapper import tetrahedralize
 from ._triangle_wrapper import triangulate
 from .image import Image, Plane, Volume
-from .image2mesh import Mesher2D, Mesher3D, plane2mesh, volume2mesh
-from .mesh import LineMesh, TetraMesh, TriangleMesh
+from .image2mesh import Mesher, Mesher2D, Mesher3D, plane2mesh, volume2mesh
+from .mesh import LineMesh, Mesh, TetraMesh, TriangleMesh
 from .mesh_container import MeshContainer
 from .region_markers import RegionMarker, RegionMarkerList
 
@@ -21,10 +21,12 @@ __all__ = [
     '__author__',
     '__email__',
     '__version__',
+    'Mesh',
     'LineMesh',
     'MeshContainer',
     'Mesher2D',
     'Mesher3D',
+    'Mesher',
     'Image',
     'Plane',
     'plane2mesh',

@@ -1,11 +1,8 @@
 import numpy as np
 import pytest
 
-from nanomesh import (LineMesh, Mesher2D, Mesher3D, Plane, TetraMesh,
-                      TriangleMesh, Volume)
-from nanomesh.image import Image
-from nanomesh.image2mesh._base import AbstractMesher as Mesher
-from nanomesh.mesh import Mesh
+from nanomesh import (Image, LineMesh, Mesh, Mesher, Mesher2D, Mesher3D, Plane,
+                      TetraMesh, TriangleMesh, Volume)
 
 im1d = np.arange(24)
 im2d = np.arange(24).reshape(6, 4)

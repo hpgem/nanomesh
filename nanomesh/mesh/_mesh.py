@@ -12,8 +12,11 @@ from ..region_markers import RegionMarkerList
 
 
 @doc(prefix='Generic mesh class', dim_points='n', dim_cells='j')
-class GenericMesh(object, metaclass=DocFormatterMeta):
+class Mesh(object, metaclass=DocFormatterMeta):
     """{prefix}.
+
+    Depending on the number of dimensions of the cells, the appropriate
+    subclass will be chosen if possible.
 
     Parameters
     ----------
@@ -31,7 +34,7 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
         matching the number of cells defined by `i`.
     """
     _registry: Dict[int, Any] = {}
-    cell_type: str = 'base'
+    cell_type: str = 'generic'
 
     def __init_subclass__(cls, cell_dim: int, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -115,7 +118,7 @@ class GenericMesh(object, metaclass=DocFormatterMeta):
             key = key.replace(':ref', '-ref')
             cell_data[key] = value[0]
 
-        return GenericMesh(points=points, cells=cells, **cell_data)
+        return Mesh(points=points, cells=cells, **cell_data)
 
     def write(self, *args, **kwargs):
         """Simple wrapper around :func:`meshio.write`."""

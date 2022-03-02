@@ -11,7 +11,7 @@ from nanomesh._constants import BACKGROUND, FEATURE
 from nanomesh._doc import doc
 from nanomesh.region_markers import RegionMarker, RegionMarkerList
 
-from .._base import AbstractMesher
+from .._mesher import Mesher
 from ._helpers import append_to_segment_markers, generate_segment_markers, pad
 from ._polygon import Polygon
 
@@ -152,8 +152,8 @@ def _generate_segments(polygons: List[Polygon]) -> np.ndarray:
     return np.vstack(segments)
 
 
-@doc(AbstractMesher, prefix='triangular mesh from 2D image data')
-class Mesher2D(AbstractMesher, ndim=2):
+@doc(Mesher, prefix='triangular mesh from 2D image data')
+class Mesher2D(Mesher, ndim=2):
 
     def __init__(self, image: np.ndarray | Plane):
         super().__init__(image)
@@ -262,7 +262,7 @@ class Mesher2D(AbstractMesher, ndim=2):
 
         return mesh
 
-    @doc(pad, prefix='Pad the contour using :func:`image2mesh.mesher2d.pad`')
+    @doc(pad, prefix='Pad the contour using :func:`image2mesh._mesher2d.pad`')
     def pad_contour(self, **kwargs):
         self.contour = pad(self.contour, **kwargs)
 

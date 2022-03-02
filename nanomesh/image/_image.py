@@ -25,8 +25,11 @@ def _normalize_values(image: np.ndarray):
 
 
 @doc(prefix='Generic image class', shape='')
-class GenericImage(object, metaclass=DocFormatterMeta):
+class Image(object, metaclass=DocFormatterMeta):
     """{prefix}.
+
+    Depending on the dimensions of the image data, the appropriate
+    subclass will be chosen if possible.
 
     Parameters
     ----------
@@ -104,7 +107,7 @@ class GenericImage(object, metaclass=DocFormatterMeta):
         return sitk.GetImageFromArray(self.image)
 
     @classmethod
-    def from_sitk_image(cls, sitk_image) -> 'GenericImage':
+    def from_sitk_image(cls, sitk_image) -> 'Image':
         """Return instance from :class:`SimpleITK.Image`."""
         import SimpleITK as sitk
         image = sitk.GetArrayFromImage(sitk_image)
@@ -275,7 +278,7 @@ class GenericImage(object, metaclass=DocFormatterMeta):
 
         return self.apply(func, **kwargs)
 
-    def fft(self) -> 'GenericImage':
+    def fft(self) -> 'Image':
         """Apply fourier transform to image.
 
         Returns

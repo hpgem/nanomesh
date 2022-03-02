@@ -5,7 +5,7 @@ import pytest
 from helpers import get_expected_if_it_exists
 
 from nanomesh.image2mesh import plane2mesh
-from nanomesh.image2mesh.mesher2d import Polygon
+from nanomesh.image2mesh._mesher2d import Polygon
 
 
 def block_image(shape=(10, 10)):

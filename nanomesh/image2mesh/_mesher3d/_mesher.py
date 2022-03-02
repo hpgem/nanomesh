@@ -12,7 +12,7 @@ from nanomesh._doc import doc
 from nanomesh.mesh import TriangleMesh
 from nanomesh.region_markers import RegionMarker, RegionMarkerList
 
-from .._base import AbstractMesher
+from .._mesher import Mesher
 from ._bounding_box import BoundingBox
 from ._helpers import pad
 
@@ -226,8 +226,8 @@ def generate_envelope(mesh: TriangleMesh,
     return mesh
 
 
-@doc(AbstractMesher, prefix='tetrahedral mesh from 3D (volumetric) image data')
-class Mesher3D(AbstractMesher, ndim=3):
+@doc(Mesher, prefix='tetrahedral mesh from 3D (volumetric) image data')
+class Mesher3D(Mesher, ndim=3):
 
     def __init__(self, image: np.ndarray):
         super().__init__(image)
@@ -285,7 +285,7 @@ class Mesher3D(AbstractMesher, ndim=3):
 
         self.contour = contour
 
-    @doc(pad, prefix='Pad the contour using :func:`image2mesh.mesher3d.pad`')
+    @doc(pad, prefix='Pad the contour using :func:`image2mesh._mesher3d.pad`')
     def pad_contour(self, **kwargs):
         self.contour = pad(self.contour, **kwargs)
 

@@ -7,15 +7,18 @@ from typing import Any, Dict, Union
 import numpy as np
 
 from .._doc import doc
-from ..image import GenericImage
-from ..mesh._base import GenericMesh
+from ..image import Image
+from ..mesh import Mesh
 
 logger = logging.getLogger(__name__)
 
 
 @doc(prefix='mesh from image data')
-class AbstractMesher:
+class Mesher:
     """Utility class to generate a {prefix}.
+
+    Depending on the number of the image data, the appropriate
+    subclass will be chosen if possible.
 
     Parameters
     ----------
@@ -28,7 +31,7 @@ class AbstractMesher:
         Reference to image data
     image_orig : numpy.ndarray
         Keep reference to original image data
-    contour : GenericMesh
+    contour : Mesh
         Stores the contour mesh.
     """
     _registry: Dict[int, Any] = {}
@@ -37,18 +40,18 @@ class AbstractMesher:
         super().__init_subclass__(**kwargs)
         cls._registry[ndim] = cls
 
-    def __new__(cls, image: Union[np.ndarray, GenericImage]):
-        if isinstance(image, GenericImage):
+    def __new__(cls, image: Union[np.ndarray, Image]):
+        if isinstance(image, Image):
             image = image.image
         ndim = image.ndim
         subclass = cls._registry.get(ndim, cls)
         return super().__new__(subclass)
 
-    def __init__(self, image: Union[np.ndarray, GenericImage]):
-        if isinstance(image, GenericImage):
+    def __init__(self, image: Union[np.ndarray, Image]):
+        if isinstance(image, Image):
             image = image.image
 
-        self.contour: GenericMesh | None = None
+        self.contour: Mesh | None = None
         self.image_orig = image
         self.image = image
 

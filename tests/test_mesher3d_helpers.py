@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from nanomesh import MeshContainer, Mesher3D, TetraMesh, TriangleMesh
-from nanomesh.image2mesh.mesher3d import BoundingBox, pad
+from nanomesh.image2mesh._mesher3d import BoundingBox, pad
 
 
 @pytest.fixture

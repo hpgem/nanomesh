@@ -6,7 +6,7 @@ from typing import Callable, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .mesh._base import GenericMesh
+from .mesh import Mesh
 
 
 class Metric:
@@ -23,7 +23,7 @@ class Metric:
         super().__init__()
         self.metric = metric
 
-    def __call__(self, mesh: GenericMesh) -> np.ndarray:
+    def __call__(self, mesh: Mesh) -> np.ndarray:
         grid = mesh.to_pyvista_unstructured_grid()
         ret = grid.compute_cell_quality(self.metric)
         quality = ret.cell_data['CellQuality']
@@ -64,7 +64,7 @@ shape = Metric('shape')
 shape_and_size = Metric('shape_and_size')
 
 
-def max_min_edge_ratio(mesh: GenericMesh) -> np.ndarray:
+def max_min_edge_ratio(mesh: Mesh) -> np.ndarray:
     """Place holder, updated dynamically."""
     cell_points = mesh.points[mesh.cells]
     diff = cell_points - np.roll(cell_points, shift=1, axis=1)
@@ -229,7 +229,7 @@ for descriptor in _metric_dispatch.values():
 
 Parameters
 ----------
-mesh : GenericMesh
+mesh : Mesh
     Input mesh
 
 Returns
@@ -239,15 +239,15 @@ quality : numpy.ndarray
     """
 
 
-def calculate_all_metrics(mesh: GenericMesh, inplace: bool = False) -> dict:
+def calculate_all_metrics(mesh: Mesh, inplace: bool = False) -> dict:
     """Calculate all available metrics.
 
     Parameters
     ----------
-    mesh : GenericMesh
+    mesh : Mesh
         Input mesh
     inplace : bool, optional
-        Updates the :attr:`GenericMesh.cell_data` attribute on the mesh with
+        Updates the :attr:`Mesh.cell_data` attribute on the mesh with
         the metrics.
 
     Returns
@@ -267,7 +267,7 @@ def calculate_all_metrics(mesh: GenericMesh, inplace: bool = False) -> dict:
 
 
 def histogram(
-    mesh: GenericMesh,
+    mesh: Mesh,
     *,
     metric: str,
     ax: plt.Axes = None,
@@ -277,7 +277,7 @@ def histogram(
 
     Parameters
     ----------
-    mesh : GenericMesh
+    mesh : Mesh
         Input mesh
     metric : str
         Metric to calculate.
@@ -317,7 +317,7 @@ def histogram(
 
 
 def plot2d(
-    mesh: GenericMesh,
+    mesh: Mesh,
     *,
     metric: str,
     ax: plt.Axes = None,
@@ -327,7 +327,7 @@ def plot2d(
 
     Parameters
     ----------
-    mesh : GenericMesh
+    mesh : Mesh
         Input mesh
     metric : str
         Metric to calculate.

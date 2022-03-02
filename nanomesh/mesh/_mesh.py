@@ -31,7 +31,7 @@ class Mesh(object, metaclass=DocFormatterMeta):
         matching the number of cells defined by `i`.
     """
     _registry: Dict[int, Any] = {}
-    cell_type: str = 'base'
+    cell_type: str = 'generic'
 
     def __init_subclass__(cls, cell_dim: int, **kwargs):
         super().__init_subclass__(**kwargs)

@@ -135,7 +135,7 @@ for i, side in zip(range(1, 50), cycle(choices)):
     name = 'ABCDE'[i % 5]
     mesher.pad_contour(side=side, width=i, name=name)
 
-spiral_mesh = mesher.triangulate(opts='pAq30a200e')  
+spiral_mesh = mesher.triangulate(opts='pAq30a200e')
 
-spiral_mesh.plot(legend='floating', hide_labels=(0,), linewidth=0.5)  
+spiral_mesh.plot(legend='floating', hide_labels=(0, ), linewidth=0.5)
 ```

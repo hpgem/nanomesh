@@ -29,8 +29,8 @@ Let's start with a simple line mesh:
 from nanomesh import Mesh
 import numpy as np
 
-points = np.array([[0,0], [10,0], [10,10], [0,10]])
-cells = np.array([[0,1], [1,2], [2,3], [3,0], [1,3]])
+points = np.array([[0, 0], [10, 0], [10, 10], [0, 10]])
+cells = np.array([[0, 1], [1, 2], [2, 3], [3, 0], [1, 3]])
 
 line_mesh = Mesh(points=points, cells=cells)
 line_mesh.plot_mpl()

@@ -51,7 +51,7 @@ local_thresh = plane.threshold('local', block_size=block_size, offset=offset)
 seg_local = plane.image > local_thresh.image
 
 # invert contrast for object detection
-seg = Image(1-seg_local)
+seg = Image(1 - seg_local)
 seg.show()
 ```
 
@@ -85,7 +85,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 fig = px.imshow(plane_orig.image, binary_string=True)
-fig.update_traces(hoverinfo='skip') # hover is only for label info
+fig.update_traces(hoverinfo='skip')  # hover is only for label info
 
 # For each label, add a filled scatter trace for its contour,
 # and display the properties of the label in the hover of this trace.
@@ -96,10 +96,15 @@ for index in range(1, labels.max()):
     hoverinfo = ''
     for prop_name in properties:
         hoverinfo += f'<b>{prop_name}: {getattr(props[index], prop_name):.2f}</b><br>'
-    fig.add_trace(go.Scatter(
-        x=x, y=y, name=label_i,
-        mode='lines', fill='toself', showlegend=False,
-        hovertemplate=hoverinfo, hoveron='points+fills'))
+    fig.add_trace(
+        go.Scatter(x=x,
+                   y=y,
+                   name=label_i,
+                   mode='lines',
+                   fill='toself',
+                   showlegend=False,
+                   hovertemplate=hoverinfo,
+                   hoveron='points+fills'))
 
 plotly.io.show(fig)
 ```

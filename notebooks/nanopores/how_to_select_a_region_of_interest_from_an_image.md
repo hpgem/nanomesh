@@ -71,10 +71,10 @@ from nanomesh.image import minimum_bounding_rectangle
 import numpy as np
 
 roi = np.array([
-    [ 60,  60],
+    [60, 60],
     [110, 110],
-    [ 60, 145],  # <- should be 150
-    [ 10, 110],
+    [60, 145],  # <- should be 150
+    [10, 110],
 ])
 
 bbox = minimum_bounding_rectangle(roi)

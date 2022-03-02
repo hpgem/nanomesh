@@ -46,7 +46,7 @@ vol.show_slice(index=500)
 It's easier to work with a section of the data. Note that a `np.memmap` object can be sliced like a normal `numpy` array, so we can extract a subvolume to work with:
 
 ```python
-cropped = vol.select_subvolume(xs=(450, 550), ys=(150, 725), zs=(410,1470))
+cropped = vol.select_subvolume(xs=(450, 550), ys=(150, 725), zs=(410, 1470))
 cropped.show_slice()
 ```
 

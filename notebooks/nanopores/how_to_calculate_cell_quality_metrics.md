@@ -58,8 +58,8 @@ metrics.area(triangle_mesh)
 ```python
 plot_kwargs = {
     'linewidth': 1,
-    'show_labels': ('Pore',),
-    'colors': ('tab:orange',),
+    'show_labels': ('Pore', ),
+    'colors': ('tab:orange', ),
     'flip_xy': False,
     'legend': 'all',
 }

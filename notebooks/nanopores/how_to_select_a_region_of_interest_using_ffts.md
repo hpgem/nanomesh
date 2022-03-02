@@ -43,8 +43,10 @@ This operation takes the fft of the image, and creates a regular array of the re
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def abs2(x):
     return x.real**2 + x.imag**2
+
 
 fft = np.fft.fft2(plane.image)
 ifft = np.fft.ifft2(abs2(fft))
@@ -63,8 +65,12 @@ Use a Difference of Gaussian to find the peaks in the image.
 ```python
 from skimage import feature
 
-peaks = feature.blob_dog(filtered, min_sigma=10, max_sigma=20, overlap=1, threshold=5)
-peaks = peaks[:,0:2]
+peaks = feature.blob_dog(filtered,
+                         min_sigma=10,
+                         max_sigma=20,
+                         overlap=1,
+                         threshold=5)
+peaks = peaks[:, 0:2]
 x, y = peaks.T
 
 plt.figure()

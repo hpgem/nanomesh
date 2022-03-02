@@ -89,7 +89,8 @@ Available options: http://wias-berlin.de/software/tetgen/1.5/doc/manual/manual00
 
 ```python
 tetras = mesher.tetrahedralize(opts='-pAq -a10')
-tetras.plot_pyvista(jupyter_backend='static', show_edges=True)  # Use .plot_itk() for an interactive view
+tetras.plot_pyvista(jupyter_backend='static',
+                    show_edges=True)  # Use .plot_itk() for an interactive view
 ```
 
 By default, the region attributes are assigned automatically by `tetgen`. Region markers assign attributes to tetrahedra in different regions. After tetrahedralization, the region markers will 'flood' the regions up to the defined boundaries. The elements of the resulting mesh are marked according to the region they belong to (`tetras.cell_data['tetgenRef']`.
@@ -104,7 +105,7 @@ for i, region_marker in enumerate(mesher.contour.region_markers):
         region_marker.constraint = 100
     else:
         region_marker.constraint = 1
-        region_marker.label = i+1
+        region_marker.label = i + 1
         region_marker.name = f'feature{i+1}'
 
 mesh = mesher.tetrahedralize(opts='-pAq -a')

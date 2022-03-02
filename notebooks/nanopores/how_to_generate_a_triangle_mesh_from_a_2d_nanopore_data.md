@@ -122,7 +122,7 @@ Contour finding uses the [marching cubes algorithm](https://en.wikipedia.org/wik
 from nanomesh import Mesher2D
 
 mesher = Mesher2D(plane_gauss)
-mesher.generate_contour(max_contour_dist = 5, level=thresh)
+mesher.generate_contour(max_contour_dist=5, level=thresh)
 
 mesher.plot_contour()
 ```

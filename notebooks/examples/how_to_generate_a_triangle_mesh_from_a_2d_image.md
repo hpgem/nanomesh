@@ -60,7 +60,7 @@ Contour finding uses the [marching cubes algorithm](https://en.wikipedia.org/wik
 from nanomesh import Mesher2D
 
 mesher = Mesher2D(plane)
-mesher.generate_contour(max_contour_dist = 3)
+mesher.generate_contour(max_contour_dist=3)
 
 mesher.plot_contour()
 ```
@@ -91,7 +91,7 @@ To label regions sequentially, set `group_regions=False`:
 
 ```python
 mesher = Mesher2D(plane)
-mesher.generate_contour(max_contour_dist = 3, group_regions=False)
+mesher.generate_contour(max_contour_dist=3, group_regions=False)
 
 mesher.plot_contour()
 ```
@@ -125,7 +125,7 @@ To update the values, you can update `.field_data` directory, or use `.set_field
 
 ```python
 fields = {}
-for k,v in mesh.number_to_field['triangle'].items():
+for k, v in mesh.number_to_field['triangle'].items():
     v = v.replace('background', 'Silicon')
     v = v.replace('feature', 'Pore')
     fields[k] = v

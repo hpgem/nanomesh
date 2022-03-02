@@ -60,11 +60,11 @@ This section explores three different methods for local thresholding.
 
 In a local threshold filter, the local neighbourhoud is used to define a threshold map for the image. The `block_size` defines the size of the neighbourhood, a 101 by 101 pixel window in this case. The offset is used to tune the map. The advantage of this method is that it is fairly simple. The downside is that it requires manually tuning two parameters (`offset`, `blocksize`) to get a useful result.
 
-[1]: https://scikit-image.org/docs/stable/api/skimage.filters.html#skimage.filters.threshold_local  
+[1]: https://scikit-image.org/docs/stable/api/skimage.filters.html#skimage.filters.threshold_local
 [2]: https://scikit-image.org/docs/stable/auto_examples/applications/plot_thresholding.html#local-thresholding
-[3]: https://scikit-image.org/docs/stable/api/skimage.filters.rank.html#skimage.filters.rank.otsu  
+[3]: https://scikit-image.org/docs/stable/api/skimage.filters.rank.html#skimage.filters.rank.otsu
 [4]: https://scikit-image.org/docs/stable/auto_examples/applications/plot_rank_filters.html#image-threshold
-[5]: https://scikit-image.org/docs/stable/api/skimage.exposure.html#equalize-adapthist  
+[5]: https://scikit-image.org/docs/stable/api/skimage.exposure.html#equalize-adapthist
 [6]: https://scikit-image.org/docs/stable/auto_examples/color_exposure/plot_local_equalize.html#local-histogram-equalization
 
 ```python
@@ -201,7 +201,7 @@ seg_local.show()
 from nanomesh import Mesher2D
 
 mesher = Mesher2D(seg_local)
-mesher.generate_contour(max_contour_dist = 4)
+mesher.generate_contour(max_contour_dist=4)
 
 mesh = mesher.triangulate(opts='q30a100')
 ```

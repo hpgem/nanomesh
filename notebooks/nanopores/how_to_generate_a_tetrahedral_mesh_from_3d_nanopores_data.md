@@ -56,8 +56,8 @@ For this example, select a subvolume using `.select_subvolume` and downscale the
 from skimage.transform import rescale
 
 subvol = vol.select_subvolume(
-    ys=(0,100),
-    xs=(0,100),
+    ys=(0, 100),
+    xs=(0, 100),
 ).apply(rescale, scale=0.5)
 subvol.show_slice()
 ```
@@ -152,7 +152,8 @@ It is possible to set your own attributes using the `region_markers` parameter. 
 For example, to relabel the pores sequentially:
 
 ```python
-mesher.contour.region_markers = mesher.contour.region_markers.label_sequentially(2, fmt_name='pore{}')
+mesher.contour.region_markers = mesher.contour.region_markers.label_sequentially(
+    2, fmt_name='pore{}')
 mesher.contour.region_markers
 ```
 

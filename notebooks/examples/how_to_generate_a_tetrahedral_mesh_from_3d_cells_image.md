@@ -112,8 +112,10 @@ subvol_seg.show_slice()
 ```python
 from scipy import ndimage
 
+
 def fill_holes(image):
     return ndimage.binary_fill_holes(image).astype(int)
+
 
 subvol_seg = subvol_seg.apply(fill_holes)
 subvol_seg.show_slice()

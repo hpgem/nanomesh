@@ -29,7 +29,9 @@ and functions listed below. See the :ref:`examples` for how to use them.
 
    nanomesh.Plane
    nanomesh.Volume
+   nanomesh.Image
    nanomesh.MeshContainer
+   nanomesh.Mesh
    nanomesh.LineMesh
    nanomesh.TriangleMesh
    nanomesh.TetraMesh
@@ -39,6 +41,7 @@ and functions listed below. See the :ref:`examples` for how to use them.
 
 .. autosummary::
 
+   nanomesh.Mesher
    nanomesh.Mesher2D
    nanomesh.Mesher3D
 

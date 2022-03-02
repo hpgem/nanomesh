@@ -3,8 +3,8 @@ nanomesh.image2mesh
 
 .. toctree::
 
-   image2mesh.mesher2d
-   image2mesh.mesher3d
+   image2mesh._mesher2d
+   image2mesh._mesher3d
 
 .. automodule:: nanomesh.image2mesh
    :members:

@@ -38,6 +38,10 @@ vol = Image.load(data_name, mmap_mode='r')
 vol
 ```
 
+```python
+Image.load?
+```
+
 The `show_slice` method is still quite responsive to look at sections of the data. `show_volume` also works, but loads the entire volume into memory, which may make everything a bit slow and unresponsive 😅
 
 ```python

@@ -1,10 +1,12 @@
 import operator
 import os
+from pathlib import Path
 from typing import Any, Callable, Dict, Union
 
 import numpy as np
 
 from .._doc import DocFormatterMeta, doc
+from ..io import load_vol
 
 
 def _normalize_values(image: np.ndarray):
@@ -100,6 +102,46 @@ class Image(object, metaclass=DocFormatterMeta):
             other = other.image
         return self.__class__(op(this, other))
 
+    @classmethod
+    def load(cls, filename: os.PathLike, **kwargs) -> 'Image':
+        """Load the data. Supported filetypes: `.npy`, `.vol`.
+
+        For memory mapping, use `mmap_mode='r'`. Memory-mapped
+            files are used for accessing small segments of large files on
+            disk, without reading the entire file into memory. Note that this
+            can still result in some slow / unexpected behaviour with some
+            operations.
+
+            More info: :func:`numpy.memmap`
+
+        Parameters
+        ----------
+        filename : PathLike
+            Name of the file to load.
+        **kwargs
+            These parameters are passed on to data readers.
+
+        Returns
+        -------
+        {classname}
+            Instance of :class:`{classname}`.
+
+        Raises
+        ------
+        IOError
+            Raised if the file extension is unknown.
+        """
+        filename = Path(filename)
+        suffix = filename.suffix.lower()
+
+        if suffix == '.npy':
+            array = np.load(filename, **kwargs)
+        elif suffix == '.vol':
+            array = load_vol(filename, **kwargs)
+        else:
+            raise IOError(f'Unknown file extension: {suffix}')
+        return cls(array)
+
     def to_sitk_image(self):
         """Return instance of :class:`SimpleITK.Image` from
         :meth:`{classname}.image`."""
@@ -122,20 +164,6 @@ class Image(object, metaclass=DocFormatterMeta):
             Name of the file to save to.
         """
         np.save(filename, self.image)
-
-    @classmethod
-    def load(cls, filename: os.PathLike, **kwargs):
-        """Load the data. Supported filetypes: `.npy`.
-
-        Parameters
-        ----------
-        filename : Pathlike
-            Name of the file to load.
-        **kwargs
-            These parameters are passed to :func:`numpy.load`.
-        """
-        image = np.load(filename, **kwargs)
-        return cls(image)
 
     def apply(self, function: Callable, **kwargs):
         """Apply function to :attr:`{classname}.image` array. Return an instance of

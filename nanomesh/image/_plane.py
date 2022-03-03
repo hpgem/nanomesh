@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import TYPE_CHECKING, Union
 
 import matplotlib.pyplot as plt
@@ -19,25 +18,6 @@ if TYPE_CHECKING:
 
 @doc(Image, prefix='Data class for working with 2D image data', shape='(i,j) ')
 class Plane(Image, ndim=2):
-
-    @classmethod
-    def load(cls, filename: os.PathLike, **kwargs) -> Plane:
-        """Load the data. Supported filetypes: `.npy`.
-
-        Parameters
-        ----------
-        filename : Pathlike
-            Name of the file to load.
-        **kwargs
-            These parameters are passed to :func:`numpy.load`.
-
-        Returns
-        -------
-        Plane
-            Instance of this class.
-        """
-        array = np.load(filename, **kwargs)
-        return cls(array)
 
     def show(self,
              *,

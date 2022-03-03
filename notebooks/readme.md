@@ -23,16 +23,19 @@ Each notebook is paired to a markdown file, so any changes to the notebook will 
 
 ### Execute notebooks commands
 
-Convert notebooks using `nbconvert` using the `--execute` flag.
+Convert notebooks using `jupytext` using the `--execute` flag.
 
-    jupytext .\hello_world.ipynb --execute
+This will use the md file as source. The output is stored in the notebook with the same name.
+Any existing ipynb will be overwritten.
 
-    Get-ChildItem "**/*.ipynb" | Foreach-Object { jupytext $_ --execute }
+    jupytext .\hello_world.md --execute --to ipynb
+
+    Get-ChildItem "**/*.md" | Foreach-Object { jupytext $_ --execute --to ipynb }
 
 
 ### Force sync
 
-This synchronizes any changes to the markdown or ipynb file with each other.
+This synchronizes any changes to the markdown or ipynb file with each other (inputs only).
 
     jupytext .\hello_world.ipynb --execute
 
@@ -49,3 +52,14 @@ The figure size is blown up to `10,6`.
 %config InlineBackend.rc = {'figure.figsize': (10,6)}
 %matplotlib inline
 ```
+
+
+### Testing notebooks
+
+Powershell:
+
+    ./test_notebooks.PS1
+
+Bash:
+
+    ./test_notebooks.sh

@@ -84,12 +84,12 @@ ax.margins(0)
 
 colors = np.arange(len(triangles))
 np.random.shuffle(colors)  # mix up the colors
-mask0 = (labels == 0)
-ax.tripcolor(x, y, triangles=triangles, mask=mask0, facecolors=colors)
-ax.triplot(x, y, triangles=triangles, mask=mask0, color='black', lw=0.5)
+mask_o = (labels == 1)
+ax.tripcolor(x, y, triangles=triangles, mask=mask_o, facecolors=colors)
+ax.triplot(x, y, triangles=triangles, mask=mask_o, color='black', lw=0.5)
 
-mask1 = (labels == 1)
-ax.triplot(x, y, triangles=triangles, mask=mask1, lw=0.5, alpha=0.8)
+mask_rest = (labels == 2)
+ax.triplot(x, y, triangles=triangles, mask=mask_rest, lw=0.5, alpha=0.8)
 
 plt.savefig('banner.png', bbox_inches='tight')
 ```

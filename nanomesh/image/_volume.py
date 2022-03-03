@@ -1,12 +1,9 @@
 import logging
-import os
-from pathlib import Path
 from typing import TYPE_CHECKING, Tuple, Union
 
 import numpy as np
 
 from .._doc import doc
-from ..io import load_vol
 from ._image import Image
 from ._plane import Plane
 
@@ -20,46 +17,6 @@ logger = logging.getLogger(__name__)
      prefix='Generic class for working with 3D (volumetric) image data',
      shape='(i,j,k) ')
 class Volume(Image, ndim=3):
-
-    @classmethod
-    def load(cls, filename: os.PathLike, **kwargs) -> 'Volume':
-        """Load the data. Supported filetypes: `.npy`, `.vol`.
-
-        For memory mapping, use `mmap_mode='r'`. Memory-mapped
-            files are used for accessing small segments of large files on
-            disk, without reading the entire file into memory. Note that this
-            can still result in some slow / unexpected behaviour with some
-            operations.
-
-            More info: :func:`numpy.memmap`
-
-        Parameters
-        ----------
-        filename : PathLike
-            Name of the file to load.
-        **kwargs
-            These parameters are passed on to data readers.
-
-        Returns
-        -------
-        Volume
-            Instance of :class:`Volume`.
-
-        Raises
-        ------
-        IOError
-            Raised if the file extension is unknown.
-        """
-        filename = Path(filename)
-        suffix = filename.suffix.lower()
-
-        if suffix == '.npy':
-            array = np.load(filename, **kwargs)
-        elif suffix == '.vol':
-            array = load_vol(filename, **kwargs)
-        else:
-            raise IOError(f'Unknown file extension: {suffix}')
-        return cls(array)
 
     def show_slice(self, **kwargs):
         """Show slice using :class:`nanomesh.image.SliceViewer`.

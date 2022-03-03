@@ -11,10 +11,12 @@ which is a somewhat low-level, generic container for mesh data. It can
 store different types of cells and associated data. It is used
 to read/write data via `meshio <https://github.com/nschloe/meshio>`_.
 
-To deal with mesh data more directly, use :class:`LineMesh`,
+To deal with mesh data more directly, use a :class:`Mesh`. Instantiating
+:class:`Mesh` will create the appropriate subtype, :class:`LineMesh`,
 :class:`TriangleMesh` or :class:`TetraMesh`. These contain
 dedicated methods for working with a specific type of mesh and plotting them.
-Each can be generated from :class:`MeshContainer`.
+
+In addition, each can be extracted from :class:`MeshContainer`.
 
 
 .. rubric:: Classes
@@ -22,6 +24,7 @@ Each can be generated from :class:`MeshContainer`.
 .. autosummary::
 
    nanomesh.MeshContainer
+   nanomesh.Mesh
    nanomesh.LineMesh
    nanomesh.TriangleMesh
    nanomesh.TetraMesh
@@ -31,6 +34,12 @@ Reference
 ---------
 
 .. autoclass:: MeshContainer
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
+.. autoclass:: Mesh
    :members:
    :undoc-members:
    :inherited-members:

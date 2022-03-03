@@ -1,3 +1,5 @@
+"""Module containing sample data."""
+
 from pathlib import Path
 
 import numpy as np

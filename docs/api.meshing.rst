@@ -9,10 +9,14 @@ Making a mesh out of image data
 generating a mesh. For finer control, use the classes :class:`Mesher2D` for
 image data and :class:`Mesher3D` for volume data.
 
+Both classes derive from :class:`Mesher`. Initiating a :class:`Mesher` instance
+will create the appropriate meshing class.
+
 .. rubric:: Classes
 
 .. autosummary::
 
+   nanomesh.Mesher
    nanomesh.Mesher2D
    nanomesh.Mesher3D
 
@@ -28,6 +32,12 @@ Reference
 
 .. autofunction:: plane2mesh
 .. autofunction:: volume2mesh
+
+.. autoclass:: Mesher
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
 
 .. autoclass:: Mesher2D
    :members:

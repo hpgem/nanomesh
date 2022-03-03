@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @doc(Image,
-     prefix='Generic class for working with 3D (volumetric) image data',
+     prefix='Data class for working with 3D (volumetric) image data.',
      shape='(i,j,k) ')
 class Volume(Image, ndim=3):
 

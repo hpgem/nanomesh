@@ -14,7 +14,7 @@ Each notebook is paired to a markdown file, so any changes to the notebook will 
     Get-ChildItem "**/*.ipynb" | Foreach-Object { jupytext $_ --from ipynb --to md }
 
 
-### Formatting with yapf
+### Formatting notebooks with yapf
 
     jupytext .\hello_world.md --sync --pipe yapf
 
@@ -23,6 +23,29 @@ Each notebook is paired to a markdown file, so any changes to the notebook will 
 
 ### Execute notebooks commands
 
+Convert notebooks using `nbconvert` using the `--execute` flag.
+
     jupytext .\hello_world.ipynb --execute
 
     Get-ChildItem "**/*.ipynb" | Foreach-Object { jupytext $_ --execute }
+
+
+### Force sync
+
+This synchronizes any changes to the markdown or ipynb file with each other.
+
+    jupytext .\hello_world.ipynb --execute
+
+    Get-ChildItem "**/*.ipynb" | Foreach-Object { jupytext $_ --sync }
+
+
+### Notebook header
+
+All notebooks must have these magics in the header.
+Plots use the *inline* backend so they can be generated programatically.
+The figure size is blown up to `10,6`.
+
+```
+%config InlineBackend.rc = {'figure.figsize': (10,6)}
+%matplotlib inline
+```

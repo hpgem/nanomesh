@@ -13,6 +13,11 @@ jupyter:
     name: nanomesh
 ---
 
+```python
+%config InlineBackend.rc = {'figure.figsize': (10,6)}
+%matplotlib inline
+```
+
 ## Hello world!
 
 <!-- #raw raw_mimetype="text/restructuredtext" -->

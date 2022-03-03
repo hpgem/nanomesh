@@ -16,7 +16,8 @@ jupyter:
 ```python
 %load_ext autoreload
 %autoreload 2
-%matplotlib notebook
+%config InlineBackend.rc = {'figure.figsize': (10,6)}
+%matplotlib inline
 ```
 
 ## Generate a 2D triangular mesh

@@ -2,6 +2,7 @@
 [![tests](https://github.com/hpgem/nanomesh/actions/workflows/test.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test.yaml)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nanomesh)](https://pypi.org/project/nanomesh/)
 [![PyPI](https://img.shields.io/pypi/v/nanomesh.svg?style=flat)](https://pypi.org/project/nanomesh/)
+[![DOI](https://zenodo.org/badge/311460276.svg)](https://zenodo.org/badge/latestdoi/311460276)
 
 ![Nanomesh banner](./notebooks/other/banner.png)
 

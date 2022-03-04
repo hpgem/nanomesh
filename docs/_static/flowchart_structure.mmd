@@ -1,0 +1,28 @@
+%% Rendered using: https://mermaid.live/
+%% https://mermaid.live/edit/#pako:eNqFkj1PwzAQhv9K5AG1UsPQbhlYaIdKRSCoWOIOR-w0lvwROTZQqv53zs4HRh2awT6_eXT3nn1nUhnGSUFqab6qBqzLdq9UZ_gxcDArKdnq1rt4olTPdHuvGVgLpzklhznVPdz5j6OFtsmEKrcKjvzQ660EzcuXsA7Kp5Hlu5FejQLX7CqL4l3DbfkUt4FTS4Zuemm5Dl6cFaCPXoLjwcyArf6wVY9xZ6HhzIIUPwmZFA7dZXm-XOf5Q-95OmG-f8wqqtjFFKOxMQ-GWZQqo93kJ5UGMRxie48YgNDYZaQkhuoG07ctb3Oh71uQ8e769iM43FJ0VO5wTcTJQrkfovRnrFvuw5bIyXWrsXSYr2fv0gHbfLcGp9CZrBYyvtY8u8OBwJJVFxKQBVHcKhAMx_YcElLiGq44JQWGjNfgpaOE6guivsXEfMOEM5YUNciOLwh4Z95OuiKFs56P0FoA9q8G6vILE4kFyA
+
+flowchart TD
+   data(["Input data\n(np.ndarray)"])
+
+   subgraph im[Image]
+   plane[Plane]
+   vol[Volume]
+   end
+
+   subgraph mesher[Mesher]
+   m2d["Mesher2D\n(triangulate)"]
+   m3d["Mesher3D\n(tetrahedralize)"]
+   end
+
+   mcont[MeshContainer] --> linem
+   mcont[MeshContainer] --> trianglem
+   mcont[MeshContainer] --> tetram
+   mcont[MeshContainer] --> out
+
+   subgraph m[Mesh]
+   linem[LineMesh]
+   trianglem[TriangleMesh]
+   tetram[TetraMesh]
+   end
+
+   m --> out(["Output data\n(Export to file)"]) & metrics

@@ -1,19 +1,20 @@
-.. nanomesh documentation master file, created by
-   sphinx-quickstart on Thu Jun 21 11:07:11 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Nanomesh documentation
+======================
 
-
-|Documentation Status| |tests| |PyPI - Python Version| |PyPI|
-
+|Documentation Status| |tests| |PyPI - Python Version| |PyPI| |DOI|
 
 .. figure:: _static/banner.png
    :alt: Nanomesh banner
 
-
 Welcome to the nanomesh documentation!
 
-Nanomesh is a python workflow tool for generating meshes from 2D and 3D microscopy image data.
+Nanomesh is a Python workflow tool for generating meshes from 2D and 3D image data. It has an easy-to-use API that can help process and segment image data, generate quality meshes (triangle / tetrahedra), and write the data to many mesh formats. Nanomesh also contains tools to inspect the meshes, visualize them, and generate cell quality metrics.
+
+- Easy-to-use Python API
+- Segment and mesh 2D or 3D image data
+- Mesh visualization
+- Calculate and plot cell metrics
+- Export to many mesh formats
 
 
 .. toctree::
@@ -65,3 +66,5 @@ Indices and tables
    :target: https://pypi.org/project/nanomesh/
 .. |PyPI| image:: https://img.shields.io/pypi/v/nanomesh.svg?style=flat
    :target: https://pypi.org/project/nanomesh/
+.. |DOI| image:: https://zenodo.org/badge/311460276.svg
+   :target: https://zenodo.org/badge/latestdoi/311460276

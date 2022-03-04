@@ -2,7 +2,7 @@ Installation
 ============
 
 One of the goals for Nanomesh is that it is easy to install.
-This means that all dependencies are available from `PyPi <https://pypi.org>_.
+This means that all dependencies are available from `PyPi <https://pypi.org>`_.
 
 If you use conda, it is advised to create a new environment:
 

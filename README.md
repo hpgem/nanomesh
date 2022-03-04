@@ -6,7 +6,7 @@
 
 ![Nanomesh banner](./notebooks/other/banner.png)
 
-# nanomesh
+# Nanomesh
 
 Nanomesh is a Python workflow tool for generating meshes from 2D and 3D image data. It has an easy-to-use API that can help process and segment image data, generate quality meshes (triangle / tetrahedra), and write the data to many mesh formats. Nanomesh also contains tools to inspect the meshes, visualize them, and generate cell quality metrics.
 

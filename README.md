@@ -133,6 +133,4 @@ Linting and checks are done using [pre-commit](https://pre-commit.com):
 
 Building the docs:
 
-```
-make html --directory docs
-```
+`make html --directory docs`

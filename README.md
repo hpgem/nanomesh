@@ -25,10 +25,10 @@ This example shows the workflow for generating a mesh from segmented data, and d
 ```pycon
 >>> from skimage.data import binary_blobs
 >>> from nanomesh import Image
->>> 
+>>>
 >>> blobs = binary_blobs(length=100, volume_fraction=0.25, seed=2102)
 >>> plane = Image(blobs)
->>> 
+>>>
 >>> print(plane)
 Plane(shape=(100, 100), range=(False,True), dtype=bool)
 ```

@@ -162,14 +162,14 @@ class Mesher2D(Mesher, ndim=2):
     def generate_contour(
         self,
         level: float = None,
-        contour_precision: int = 1,
-        max_contour_dist: int = 5,
+        precision: int = 1,
+        max_edge_dist: int = 5,
         group_regions: bool = True,
     ):
         """Generate contours using marching cubes algorithm.
 
         Contours are approximated by a polygon, where the maximum distance
-        between points is decided by `max_contour_dist`.
+        between points is decided by `max_edge_dist`.
 
         Parameters
         ----------
@@ -177,10 +177,10 @@ class Mesher2D(Mesher, ndim=2):
             Contour value to search for isosurfaces (i.e. the threshold value).
             By default takes the average of the min and max value. Can be
             ignored if a binary image is passed to :class:`Mesher2D`.
-        contour_precision : int, optional
+        precision : int, optional
             Maximum distance from original points in polygon approximation
             routine.
-        max_contour_dist : int, optional
+        max_edge_dist : int, optional
             Divide long edges so that maximum distance between points does not
             exceed this value.
         group_regions : bool, optional
@@ -191,12 +191,9 @@ class Mesher2D(Mesher, ndim=2):
             Polygon(points)
             for points in measure.find_contours(self.image, level=level)
         ]
+        polygons = [polygon.approximate(precision) for polygon in polygons]
         polygons = [
-            polygon.approximate(contour_precision) for polygon in polygons
-        ]
-        polygons = [
-            polygon.subdivide(max_dist=max_contour_dist)
-            for polygon in polygons
+            polygon.subdivide(max_dist=max_edge_dist) for polygon in polygons
         ]
         polygons = [
             polygon.close_corner(self.image.shape) for polygon in polygons
@@ -299,7 +296,7 @@ class Mesher2D(Mesher, ndim=2):
 def plane2mesh(image: np.ndarray | Plane,
                *,
                level: float = None,
-               max_contour_dist: int = 5,
+               max_edge_dist: int = 5,
                opts: str = 'q30a100',
                plot: bool = False) -> 'MeshContainer':
     """Generate a triangular mesh from a 2D segmented image.
@@ -310,7 +307,7 @@ def plane2mesh(image: np.ndarray | Plane,
         Input image to mesh.
     level : float, optional
         Level to generate contours at from image
-    max_contour_dist : int, optional
+    max_edge_dist : int, optional
         Maximum distance between neighbouring pixels in contours.
     opts : str, optional
         Options passed to :func:`triangulate`. For more info,
@@ -322,5 +319,5 @@ def plane2mesh(image: np.ndarray | Plane,
         Triangulated 2D mesh with domain labels.
     """
     mesher = Mesher2D(image)
-    mesher.generate_contour(max_contour_dist=5, level=level)
+    mesher.generate_contour(max_edge_dist=5, level=level)
     return mesher.triangulate(opts=opts)

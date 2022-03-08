@@ -34,7 +34,7 @@ def test_triangle_mesh_plot(line_tri_mesh):
 def test_contour_plot(segmented_image):
     np.random.seed(1234)  # for region marker coords
     mesher = Mesher2D(segmented_image)
-    mesher.generate_contour(max_contour_dist=5, level=0.5)
+    mesher.generate_contour(max_edge_dist=5, level=0.5)
 
     mesher.plot_contour(legend='fields')
     mesher.plot_contour(legend='floating')

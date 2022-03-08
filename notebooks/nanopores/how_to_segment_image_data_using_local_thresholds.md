@@ -202,7 +202,7 @@ seg_local.show()
 from nanomesh import Mesher2D
 
 mesher = Mesher2D(seg_local)
-mesher.generate_contour(max_contour_dist=4)
+mesher.generate_contour(max_edge_dist=4)
 
 mesh = mesher.triangulate(opts='q30a100')
 ```

@@ -48,7 +48,7 @@ seg.show()
 from nanomesh import Mesher2D
 
 mesher = Mesher2D(seg.image)
-mesher.generate_contour(max_contour_dist=10)
+mesher.generate_contour(max_edge_dist=10)
 mesher.plot_contour()
 ```
 

@@ -23,7 +23,7 @@ def block_image(shape=(10, 10)):
 def test_plane2mesh(segmented_image):
     """Test 2D mesh generation and plot."""
     np.random.seed(1234)  # set seed for reproducible clustering
-    mesh = plane2mesh(segmented_image, max_contour_dist=4, plot=True)
+    mesh = plane2mesh(segmented_image, max_edge_dist=4, plot=True)
 
     fn = Path('segmented_mesh_2d.msh')
     expected_mesh = get_expected_if_it_exists(fn, result=mesh)

@@ -14,6 +14,8 @@ jupyter:
 ---
 
 ```python
+%load_ext autoreload
+%autoreload 2
 %config InlineBackend.rc = {'figure.figsize': (10,6)}
 %matplotlib inline
 ```
@@ -31,7 +33,7 @@ https://sfepy.org/doc-devel/examples/diffusion-laplace_fluid_2d.html
 ```python
 from pathlib import Path
 
-for fn in ('phi_citroen.vtk', 'regions.vtk', 'citroen.msh'):
+for fn in ('phi.vtk', 'regions.vtk', 'citroen.msh'):
     try:
         Path(fn).unlink()
     except:
@@ -40,22 +42,54 @@ for fn in ('phi_citroen.vtk', 'regions.vtk', 'citroen.msh'):
         print(f'{fn} deleted')
 ```
 
-### Generate mesh data
+### Load data
 
 ```python
-from sfepy import data_dir
-import subprocess as sp
+from skimage.data import horse
+from nanomesh import Image
+from scipy import ndimage as ndi
 
-sp.run(f'gmsh -2 -f msh22 {data_dir}\\meshes\\2d\\citroen.geo -o citroen.msh')
+data = horse()
+
+plane = Image(~data)
+plane = plane.apply(ndi.binary_fill_holes).astype(int)
+
+plane.show(title=str(plane))
 ```
 
-### Loading the data with Nanomesh
+```python
+from nanomesh import Mesher
+
+mesher = Mesher(plane)
+mesher.generate_contour(precision=5, max_edge_dist=25)
+mesher.pad_contour(side='left', width=200, name='Left')
+mesher.pad_contour(side='right', width=200, name='Right')
+mesher.pad_contour(side='top', width=75, name='Top')
+mesher.plot_contour()
+
+
+nanomesh_mesh = mesher.triangulate(opts='pAq30a300')
+nanomesh_mesh.plot()
+```
+
+### Purge feature
 
 ```python
-from nanomesh import MeshContainer
+triangles = nanomesh_mesh.get('triangle')
+triangles.plot()
+idx = triangles.cell_data['physical'] != 2
+triangles.cell_data['physical'] = triangles.cell_data['physical'][idx]
+triangles.cells = triangles.cells[idx]
 
-nanomesh_mesh = MeshContainer.read('citroen.msh')
-nanomesh_mesh.plot()
+triangles.plot()
+```
+
+```python
+import numpy as np
+
+triangles.points = np.flip(triangles.points, axis=1)
+triangles.points[:,1] = -triangles.points[:,1]
+triangles.plot()
 ```
 
 ### Set up sfepy config
@@ -65,38 +99,47 @@ Noe that the mesh hook uses the mesh container loaded using Nanomesh.
 ```python
 from sfepy.discrete.fem.meshio import UserMeshIO
 from sfepy.discrete.fem import Mesh
-import numpy as np
+
 
 def mesh_hook(mesh, mode):
     if mode == 'read':
-        coors = nanomesh_mesh.points
-        conn = nanomesh_mesh.get('triangle').cells
-        mat_ids = nanomesh_mesh.get('triangle').cell_data['geometrical']
-        descs = ['2_3']
+        points = triangles.points
 
-        mesh = Mesh.from_data('triangle', coors, None,
-                                      [conn], [mat_ids], descs)
+        cells = triangles.cells
+        cell_data = triangles.cell_data['physical']
+        cell_description = ['2_3']
+
+        mesh = Mesh.from_data('triangle', points, None,
+                                      [cells], [cell_data], cell_description)
         return mesh
-    elif mode == 'write':
-        pass
 
+xmin, ymin = triangles.points.min(axis=0)
+xmax, ymax = triangles.points.max(axis=0)
 
 class mod:
     __file__ = 'nanomesh'  # dummy value
     filename_mesh = UserMeshIO(mesh_hook)
 
-    v0 = np.array([1, 0.25])
+    # 2D vector defining far field velocity
+    v0 = np.array([
+        [-1.0],
+        [0.0],
+    ])
 
     materials = {
-        'm': ({'v0': v0.reshape(-1, 1)},),
+        'm': (
+            {
+                'v0': v0
+            },
+        ),
     }
 
     regions = {
         'Omega': 'all',
-        'Gamma_Left': ('vertices in (x < 0.1)', 'facet'),
-        'Gamma_Right': ('vertices in (x > 1919.9)', 'facet'),
-        'Gamma_Top': ('vertices in (y > 917.9)', 'facet'),
-        'Gamma_Bottom': ('vertices in (y < 0.1)', 'facet'),
+        'Gamma_Left': (f'vertices in (x < {xmin+0.1})', 'facet'),
+        'Gamma_Right': (f'vertices in (x > {xmax-0.1})', 'facet'),
+        'Gamma_Top': (f'vertices in (y > {ymax-0.1})', 'facet'),
+        'Gamma_Bottom': (f'vertices in (y < {ymax+0.1})', 'facet'),
         'Vertex': ('vertex in r.Gamma_Left', 'vertex'),
     }
 
@@ -130,8 +173,8 @@ class mod:
     solvers = {
         'ls': ('ls.scipy_direct', {}),
         'newton': ('nls.newton', {
-            'i_max': 1,
-            'eps_a': 1e-10,
+            'i_max': 5,
+            'eps_a': 1e-16,
         }),
     }
 
@@ -139,6 +182,8 @@ from sfepy.base.conf import ProblemConf
 
 conf = ProblemConf.from_module(mod)
 ```
+
+### Reading mesh into sfepy data
 
 ```python
 from sfepy.discrete.fem import Mesh
@@ -164,14 +209,16 @@ Note that this will open a new window.
 ```python
 from sfepy.postprocess.viewer import Viewer
 
-problem.save_state('phi_citroen.vtk', variables)
+out = 'phi.vtk'
 
-view = Viewer('phi_citroen.vtk')
+problem.save_state(out, variables)
+
+view = Viewer(out)
 view(rel_scaling=2, is_scalar_bar=True,
      is_wireframe=True, colormap='viridis')
 ```
 
-### Re-create plot from examples using pyvista
+### Flow plot using pyvista
 
 ```python
 from resview import pv_plot
@@ -183,7 +230,7 @@ class options:
     fields_map = []
     fields = [
         ('phi', 'p0'),
-        ('phi', 't50:p0'),
+        ('phi', 't100:p0'),
              ]
     opacity = 1.
     show_edges = False
@@ -197,7 +244,16 @@ class options:
 import pyvista as pv
 
 plotter = pv.Plotter()
-plotter = pv_plot(['phi_citroen.vtk'], options=options, plotter=plotter)
+plotter = pv_plot([out], options=options, plotter=plotter, use_cache=False)
 plotter.view_xy()
 plotter.show(jupyter_backend='static')
+```
+
+### Loading the data back into Nanomesh
+
+```python
+from nanomesh import MeshContainer
+
+meshc = MeshContainer.read(out)
+meshc.plot('triangle')
 ```

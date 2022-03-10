@@ -158,6 +158,7 @@ class Mesher2D(Mesher, ndim=2):
     def __init__(self, image: np.ndarray | Plane):
         super().__init__(image)
         self.contour: LineMesh
+        self._bbox = None
 
     def generate_contour(
         self,
@@ -201,12 +202,12 @@ class Mesher2D(Mesher, ndim=2):
         polygons = [polygon.remove_duplicate_points() for polygon in polygons]
 
         regions = _generate_regions(polygons)
-        regions.append(_generate_background_region(polygons, self.image_bbox))
+        regions.append(_generate_background_region(polygons, self.bbox))
 
         if not group_regions:
             regions = regions.label_sequentially(FEATURE, fmt_name='feature{}')
 
-        contour = _polygons_to_line_mesh(polygons, self.image_bbox)
+        contour = _polygons_to_line_mesh(polygons, self.bbox)
         contour.region_markers = regions
 
         self.polygons = polygons
@@ -228,6 +229,51 @@ class Mesher2D(Mesher, ndim=2):
             (x - 1, y - 1),
             (0, y - 1),
         ))
+
+    @property
+    def bbox(self) -> np.ndarray:
+        """Return bbox attribute.
+
+        If not explicity set, returns :attr:`Mesher2D.image_bbox`.
+
+        Sequence:
+            x0, y0
+            x1, y0
+            x1, y1
+            x0, y0
+
+        Returns
+        -------
+        bbox : np.ndarray
+            Bounding box set for output mesh.
+        """
+        if self._bbox is None:
+            return self.image_bbox
+        else:
+            return self._bbox
+
+    @bbox.setter
+    def bbox(self, bbox: np.ndarray):
+        """Set bounding box attribute.
+
+        Parameters
+        ----------
+        bbox : np.ndarray
+            List of coordinates for bounding box corners:
+                x0, y0
+                x1, y0
+                x1, y1
+                x0, y0
+
+        Raises
+        ------
+        ValueError
+            Raised if `bbox` has the wrong shape.
+        """
+        bbox = np.array(bbox)
+        if bbox.shape != (4, 2):
+            raise ValueError('Bounding box must be an array with shape (4,2).')
+        self._bbox = bbox
 
     def triangulate(self, opts='pAq30a100', **kwargs) -> MeshContainer:
         """Triangulate contours.

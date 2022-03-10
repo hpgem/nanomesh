@@ -117,13 +117,13 @@ Meshes are generated using the `Mesher2D` class. Meshing consists of two steps:
 1. Contour finding (using the [`find_contours`](https://scikit-image.org/docs/dev/api/skimage.measure.html#skimage.measure.find_contours) function
 2. Triangulation (using the [`triangle`](https://rufat.be/triangle/) library)
 
-Contour finding uses the [marching cubes algorithm](https://en.wikipedia.org/wiki/Marching_cubes) to wrap all the pores in a polygon. `max_contour_dist=5` splits up long edges in the contour, so that no two points are further than 5 pixels apart. `level` is directly passed to `find_contours` and specifies the level at which the contour is generated. In this case, we set it to the threshold value determined above.
+Contour finding uses the [marching cubes algorithm](https://en.wikipedia.org/wiki/Marching_cubes) to wrap all the pores in a polygon. `max_edge_dist=5` splits up long edges in the contour, so that no two points are further than 5 pixels apart. `level` is directly passed to `find_contours` and specifies the level at which the contour is generated. In this case, we set it to the threshold value determined above.
 
 ```python tags=[]
 from nanomesh import Mesher2D
 
 mesher = Mesher2D(plane_gauss)
-mesher.generate_contour(max_contour_dist=5, level=thresh)
+mesher.generate_contour(max_edge_dist=5, level=thresh)
 
 mesher.plot_contour()
 ```

@@ -25,7 +25,7 @@ def pytest_configure():
 @pytest.fixture
 def line_mesh():
     points = np.arange(10).reshape(5, 2)
-    cells = np.zeros((5, 2), dtype=int)
+    cells = np.tile(np.arange(5, dtype=int).reshape(-1, 1), 2)
     cell_data = {LABEL_KEY: np.arange(5)}
 
     mesh = LineMesh(cells=cells, points=points, **cell_data)
@@ -37,7 +37,7 @@ def line_mesh():
 @pytest.fixture
 def triangle_mesh_2d():
     points = np.arange(10).reshape(5, 2)
-    cells = np.zeros((5, 3), dtype=int)
+    cells = np.tile(np.arange(5, dtype=int).reshape(-1, 1), 3)
     cell_data = {LABEL_KEY: np.arange(5)}
 
     mesh = TriangleMesh(cells=cells, points=points, **cell_data)
@@ -49,7 +49,7 @@ def triangle_mesh_2d():
 @pytest.fixture
 def triangle_mesh_3d():
     points = np.arange(15).reshape(5, 3)
-    cells = np.zeros((5, 3), dtype=int)
+    cells = np.tile(np.arange(5, dtype=int).reshape(-1, 1), 3)
     cell_data = {LABEL_KEY: np.arange(5)}
 
     mesh = TriangleMesh(cells=cells, points=points, **cell_data)
@@ -61,7 +61,7 @@ def triangle_mesh_3d():
 @pytest.fixture
 def tetra_mesh():
     points = np.arange(15).reshape(5, 3)
-    cells = np.zeros((5, 4), dtype=int)
+    cells = np.tile(np.arange(5, dtype=int).reshape(-1, 1), 4)
     cell_data = {LABEL_KEY: np.arange(5)}
 
     mesh = TetraMesh(cells=cells, points=points, **cell_data)
@@ -83,7 +83,7 @@ def line_tri_mesh():
         [1, 2],
         [2, 3],
         [3, 0],
-        [0, 2],
+        [1, 3],
     ])
 
     triangles = np.array([[1, 0, 3], [3, 2, 1]])

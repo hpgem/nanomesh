@@ -88,3 +88,10 @@ def test_reverse_cell_order(line_tri_mesh, cell_type):
     np.testing.assert_allclose(mesh.points, points)
     np.testing.assert_allclose(mesh.cells, cells[::-1])
     np.testing.assert_allclose(mesh.cell_data[key], data[::-1])
+
+
+@pytest.mark.parametrize('key', (None, 'labels'))
+def test_purge(triangle_mesh_2d, key):
+    np.testing.assert_equal(triangle_mesh_2d.labels, np.arange(5))
+    triangle_mesh_2d.purge(label=4, key=key)
+    np.testing.assert_equal(triangle_mesh_2d.labels, np.arange(4))

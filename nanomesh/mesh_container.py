@@ -10,6 +10,14 @@ import numpy as np
 
 from .mesh import Mesh, PruneZ0Mixin
 
+try:
+    # meshio >= 5.3
+    from meshio._helpers import extension_to_filetypes
+except ImportError:
+    # meshio < 5.3
+    from meshio._helpers import extension_to_filetype
+    extension_to_filetypes = {k: [v] for k, v in extension_to_filetype.items()}
+
 
 class _CellType(Enum):
     NULL = 0
@@ -416,7 +424,6 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         from pathlib import Path
 
         from meshio import write
-        from meshio._helpers import extension_to_filetypes
 
         if file_format is None:
             suffix = Path(filename).suffix

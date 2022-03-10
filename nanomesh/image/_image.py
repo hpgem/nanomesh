@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import operator
 import os
 from pathlib import Path
@@ -101,6 +103,10 @@ class Image(object, metaclass=DocFormatterMeta):
         if isinstance(other, self.__class__):
             other = other.image
         return self.__class__(op(this, other))
+
+    def astype(self, dtype: str | np.dtype) -> np.ndarray:
+        """Shortcut for :meth:`np.ndarray.astype`."""
+        return self.__class__(self.image.astype(dtype))
 
     @classmethod
     def load(cls, filename: os.PathLike, **kwargs) -> 'Image':

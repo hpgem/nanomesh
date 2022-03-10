@@ -188,8 +188,11 @@ class Mesh(object, metaclass=DocFormatterMeta):
         -------
         numpy.ndarray
         """
+        if not key:
+            key = self.default_key
+
         try:
-            return self.cell_data[self.default_key]
+            return self.cell_data[key]
         except KeyError:
             return np.ones(len(self.cells), dtype=int) * default_value
 
@@ -227,3 +230,25 @@ class Mesh(object, metaclass=DocFormatterMeta):
         self.cells = self.cells[::-1]
         for key, data in self.cell_data.items():
             self.cell_data[key] = data[::-1]
+
+    def purge(self, *, label: int, key: str = None):
+        """Purge cell data matching given label.
+
+        Parameters
+        ----------
+        label : int
+            All cells with this label will be removed.
+        key : str, optional
+            The key of the cell data to use.
+            Uses :attr:`Mesh.default_key` if None.
+        """
+        if not key:
+            key = self.default_key
+        idx = self.cell_data[key] != label
+
+        for k, v in self.cell_data.items():
+            print(k, v, idx)
+            self.cell_data[k] = v[idx]
+            pass
+
+        self.cells = self.cells[idx]

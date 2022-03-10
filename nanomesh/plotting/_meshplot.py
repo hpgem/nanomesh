@@ -380,7 +380,9 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
                                       triplot_fix=triplot_fix)
 
     # force consistent orientation
-    ax.set_ylim(ax.get_ylim()[::-1])
+    y0, y1 = ax.get_ylim()
+    if y0 < y1:
+        ax.set_ylim(y1, y0)
 
     return ax
 

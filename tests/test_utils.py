@@ -50,7 +50,7 @@ def test_pairwise():
     ('pq30', {
         'A': True,
         'q': 20
-    }, 'pAq30'),
+    }, 'pq30A'),
     ('p', {
         'A': True,
         'q': 20

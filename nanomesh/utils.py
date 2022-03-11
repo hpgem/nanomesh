@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import singledispatch
 from itertools import tee
 from typing import TYPE_CHECKING, Any
 
@@ -10,6 +11,7 @@ if TYPE_CHECKING:
     from .mesh import TriangleMesh
 
 
+@singledispatch
 def _to_opts_string(inp: Any,
                     *,
                     sep: str = '',
@@ -33,13 +35,7 @@ def _to_opts_string(inp: Any,
     opts : str
         Opts string
     """
-    if defaults is None:
-        defaults = {}
-
-    if inp is None:
-        inp = ''
-
-    if isinstance(inp, str):
+    if defaults:
         for k, v in defaults.items():
             if v is False:
                 continue
@@ -47,13 +43,24 @@ def _to_opts_string(inp: Any,
                 v = ''
             if k not in inp:
                 inp = f'{inp}{sep}{prefix}{k}{v}'
-        return inp
 
-    if not isinstance(inp, dict):
-        raise ValueError(f'Cannot convert {type(inp)} to opts string.')
+    return inp
+
+
+@_to_opts_string.register
+def _(inp: None, **kwargs) -> str:
+    return _to_opts_string(inp='', **kwargs)
+
+
+@_to_opts_string.register
+def _(inp: dict,
+      sep: str = '',
+      prefix: str = '',
+      defaults: dict = None) -> str:
+    if defaults:
+        inp = {**defaults, **inp}
 
     opts_list = []
-    inp = {**defaults, **inp}
 
     for k, v in inp.items():
         if v is False:

@@ -1,9 +1,64 @@
 from itertools import tee
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from .mesh import TriangleMesh
+
+
+def _to_opts_string(inp: Any,
+                    *,
+                    sep: str = '',
+                    prefix: str = '',
+                    defaults: dict = None) -> str:
+    """Convert raw opts input to opts string for tetgen or triangle.
+
+    Parameters
+    ----------
+    inp : Any
+        Input object, str, dict, or None
+    sep : str, optional
+        Separator for parameters.
+    prefix : str, optional
+        Prefix for paramaters.
+    defaults : dict
+        Dictionary with default options.
+
+    Returns
+    -------
+    opts : str
+        Opts string
+    """
+    if defaults is None:
+        defaults = {}
+
+    if inp is None:
+        inp = ''
+
+    if isinstance(inp, str):
+        for k, v in defaults.items():
+            if k not in inp:
+                inp = f'{inp}{sep}{prefix}{k}{v}'
+        return inp
+
+    if not isinstance(inp, dict):
+        raise ValueError(f'Cannot convert {type(inp)} to opts string.')
+
+    opts_list = []
+    inp = {**defaults, **inp}
+
+    for k, v in inp.items():
+        if v is False:
+            continue
+        elif v is True:
+            v = ''
+
+        opts_list.append(f'{prefix}{k}{v}')
+
+    opts = sep.join(opts_list)
+
+    return opts
 
 
 # https://docs.python.org/3.8/library/itertools.html#itertools-recipes

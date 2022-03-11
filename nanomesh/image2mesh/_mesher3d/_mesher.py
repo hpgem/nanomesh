@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage import measure, morphology
 
-from nanomesh import Volume, tetrahedralize, triangulate
+from nanomesh import Volume, simple_triangulate, tetrahedralize
 from nanomesh._constants import BACKGROUND, FEATURE
 from nanomesh._doc import doc
 from nanomesh.mesh import TriangleMesh
@@ -167,7 +167,7 @@ def close_side(mesh: TriangleMesh,
 
     coords = all_points[is_edge][:, keep_cols]
 
-    edge_mesh = triangulate(points=coords, opts='')
+    edge_mesh = simple_triangulate(points=coords, opts='')
     cells = edge_mesh.cells_dict['triangle'].copy()
 
     shape = cells.shape

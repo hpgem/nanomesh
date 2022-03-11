@@ -1,17 +1,62 @@
-from typing import Any, Dict, Sequence, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, Sequence, Tuple
 
 import numpy as np
 import triangle as tr
 
+from ._doc import doc
 from .mesh_container import MeshContainer
 
+if TYPE_CHECKING:
+    from nanomesh import LineMesh
 
-def triangulate(points: np.ndarray,
-                *,
-                segments: np.ndarray = None,
-                regions: Sequence[Tuple[float, float, int, float, ]] = None,
-                segment_markers: np.ndarray = None,
-                opts: str = '') -> MeshContainer:
+
+@doc(prefix='Triangulate a contour mesh')
+def triangulate(mesh: LineMesh, opts: str = '') -> MeshContainer:
+    """{prefix}.
+
+    Parameters
+    ----------
+    mesh : LineMesh
+        Input contour mesh
+    opts : str, optional
+        Additional options passed to `triangle.triangulate` documented here:
+        https://rufat.be/triangle/API.html#triangle.triangulate
+
+    Returns
+    -------
+    mesh : MeshContainer
+        Triangulated 2D mesh.
+    """
+    points = mesh.points
+    segments = mesh.cells
+    regions = [(m.point[0], m.point[1], m.label, m.constraint)
+               for m in mesh.region_markers]
+
+    segment_markers = mesh.cell_data.get('segment_markers', None)
+
+    mesh_container = simple_triangulate(
+        points=points,
+        segments=segments,
+        regions=regions,
+        segment_markers=segment_markers,
+        opts=opts,
+    )
+
+    fields = {m.label: m.name for m in mesh.region_markers if m.name}
+    mesh_container.set_field_data('triangle', fields)
+
+    return mesh_container
+
+
+def simple_triangulate(points: np.ndarray,
+                       *,
+                       segments: np.ndarray = None,
+                       regions: Sequence[Tuple[float, float, int,
+                                               float, ]] = None,
+                       segment_markers: np.ndarray = None,
+                       opts: str = '') -> MeshContainer:
     """Simple triangulation using :mod:`triangle`.
 
     Parameters

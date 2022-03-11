@@ -49,6 +49,7 @@ and functions listed below. See the :ref:`examples` for how to use them.
 
 .. autosummary::
 
+   nanomesh.simple_triangulate
    nanomesh.triangulate
    nanomesh.tetrahedralize
    nanomesh.volume2mesh

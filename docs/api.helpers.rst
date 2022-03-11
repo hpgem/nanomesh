@@ -20,6 +20,7 @@ stores metadata about a region in a mesh. :func:`tetrahedralize` and
 .. autosummary::
 
    nanomesh.tetrahedralize
+   nanomesh.simple_triangulate
    nanomesh.triangulate
 
 Reference

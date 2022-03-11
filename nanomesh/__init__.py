@@ -2,7 +2,7 @@ import logging
 import sys
 
 from ._tetgen_wrapper import tetrahedralize
-from ._triangle_wrapper import triangulate
+from ._triangle_wrapper import simple_triangulate, triangulate
 from .image import Image, Plane, Volume
 from .image2mesh import Mesher, Mesher2D, Mesher3D, plane2mesh, volume2mesh
 from .mesh import LineMesh, Mesh, TetraMesh, TriangleMesh
@@ -32,6 +32,7 @@ __all__ = [
     'plane2mesh',
     'RegionMarker',
     'RegionMarkerList',
+    'simple_triangulate',
     'tetrahedralize',
     'TetraMesh',
     'TriangleMesh',

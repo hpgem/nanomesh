@@ -296,12 +296,10 @@ class Mesher2D(Mesher, ndim=2):
         mesh : MeshContainer
             Triangulated 2D mesh with domain labels
         """
-        for var in 'pAe':
-            if var not in opts:
-                opts = f'{opts}{var}'
-        kwargs['opts'] = opts
-
-        mesh = self.contour.triangulate(**kwargs)
+        default_opts = {'p': True, 'A': True, 'e': True}
+        mesh = self.contour.triangulate(opts=opts,
+                                        default_opts=default_opts,
+                                        **kwargs)
 
         return mesh
 

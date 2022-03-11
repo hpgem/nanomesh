@@ -1,9 +1,78 @@
+from __future__ import annotations
+
+from functools import singledispatch
 from itertools import tee
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .mesh import TriangleMesh
+if TYPE_CHECKING:
+    from .mesh import TriangleMesh
+
+
+@singledispatch
+def _to_opts_string(inp: Any,
+                    *,
+                    sep: str = '',
+                    prefix: str = '',
+                    defaults: dict = None) -> str:
+    """Convert raw opts input to opts string for tetgen or triangle.
+
+    Parameters
+    ----------
+    inp : Any
+        Input object, str, dict, or None
+    sep : str, optional
+        Separator for parameters.
+    prefix : str, optional
+        Prefix for paramaters.
+    defaults : dict
+        Dictionary with default options.
+
+    Returns
+    -------
+    opts : str
+        Opts string
+    """
+    if defaults:
+        for k, v in defaults.items():
+            if v is False:
+                continue
+            elif v is True:
+                v = ''
+            if k not in inp:
+                inp = f'{inp}{sep}{prefix}{k}{v}'
+
+    return inp
+
+
+@_to_opts_string.register
+def _(inp: None, **kwargs) -> str:
+    return _to_opts_string(inp='', **kwargs)
+
+
+@_to_opts_string.register
+def _(inp: dict,
+      sep: str = '',
+      prefix: str = '',
+      defaults: dict = None) -> str:
+    if defaults:
+        inp = {**defaults, **inp}
+
+    opts_list = []
+
+    for k, v in inp.items():
+        if v is False:
+            continue
+        elif v is True:
+            v = ''
+
+        opts_list.append(f'{prefix}{k}{v}')
+
+    opts = sep.join(opts_list)
+
+    return opts
 
 
 # https://docs.python.org/3.8/library/itertools.html#itertools-recipes

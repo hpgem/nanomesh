@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 from nanomesh.image import SliceViewer
+from nanomesh.utils import _to_opts_string
 
 
 def test_SliceViewer_fails():
@@ -43,3 +44,39 @@ def test_pairwise():
     inp = range(3)
     out = pairwise(inp)
     assert list(out) == [(0, 1), (1, 2)]
+
+
+@pytest.mark.parametrize('opts,defaults,expected', (
+    ('pq30', {
+        'A': True,
+        'q': 20
+    }, 'pq30A'),
+    ('p', {
+        'A': True,
+        'q': 20
+    }, 'pAq20'),
+    ('p', {
+        'A': False,
+        'q': 20
+    }, 'pq20'),
+))
+def test_to_opts_string_defaults(opts, defaults, expected):
+    ret = _to_opts_string(opts, defaults=defaults)
+    assert ret == expected
+
+
+@pytest.mark.parametrize('opts,prefix,sep,expected', (
+    ({
+        'p': True,
+        'A': True,
+        'q': 30
+    }, '-', ' ', '-p -A -q30'),
+    ({
+        'p': True,
+        'A': True,
+        'q': 30
+    }, '', '', 'pAq30'),
+))
+def test_to_opts_string_formatting(opts, prefix, sep, expected):
+    ret = _to_opts_string(opts, prefix=prefix, sep=sep)
+    assert ret == expected

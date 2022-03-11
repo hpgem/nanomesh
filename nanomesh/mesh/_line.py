@@ -90,34 +90,7 @@ class LineMesh(Mesh, cell_dim=2):
 
             self.cell_data[key][side_idx] = int_label
 
-    def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
-        """Triangulate mesh using :func:`triangulate`.
-
-        Parameters
-        ----------
-        opts : str, optional
-            Options passed to :func:`triangulate`. For more info,
-            see: https://rufat.be/triangle/API.html#triangle.triangulate
-
-        Returns
-        -------
-        mesh : MeshContainer
-            2D mesh with domain labels.
-        """
+    @doc(prefix='Triangulate mesh using :func:`triangulate`')
+    def triangulate(self, opts: str = 'pq30Aa100', **kwargs) -> MeshContainer:
         from .._triangle_wrapper import triangulate
-        points = self.points
-        segments = self.cells
-        regions = [(m.point[0], m.point[1], m.label, m.constraint)
-                   for m in self.region_markers]
-
-        segment_markers = self.cell_data.get('segment_markers', None)
-
-        mesh = triangulate(points=points,
-                           segments=segments,
-                           regions=regions,
-                           segment_markers=segment_markers,
-                           opts=opts)
-
-        fields = {m.label: m.name for m in self.region_markers if m.name}
-        mesh.set_field_data('triangle', fields)
-        return mesh
+        return triangulate(self, opts=opts, **kwargs)

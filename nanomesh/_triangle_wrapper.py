@@ -1,17 +1,72 @@
-from typing import Any, Dict, Sequence, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple
 
 import numpy as np
 import triangle as tr
 
+from ._doc import doc
 from .mesh_container import MeshContainer
+from .utils import _to_opts_string
+
+if TYPE_CHECKING:
+    from nanomesh import LineMesh
 
 
-def triangulate(points: np.ndarray,
-                *,
-                segments: np.ndarray = None,
-                regions: Sequence[Tuple[float, float, int, float, ]] = None,
-                segment_markers: np.ndarray = None,
-                opts: str = '') -> MeshContainer:
+@doc(prefix='Triangulate a contour mesh')
+def triangulate(mesh: LineMesh,
+                opts: Optional[str | dict] = None,
+                default_opts: dict = None) -> MeshContainer:
+    """{prefix}.
+
+    Parameters
+    ----------
+    mesh : LineMesh
+        Input contour mesh
+    opts : str | dict, optional
+        Triangulation options passed to `triangle.triangulate` documented here:
+        https://rufat.be/triangle/API.html#triangle.triangulate
+
+        Can be passed as a raw string, `opts='pAq30', or dict,
+        `opts=dict('p'= True, 'A'= True, 'q'=30)`.
+    default_opts : dict, optional
+        Dictionary with default options. These will be merged with `opts`.
+
+    Returns
+    -------
+    mesh : MeshContainer
+        Triangulated 2D mesh.
+    """
+    opts = _to_opts_string(opts, defaults=default_opts)
+
+    points = mesh.points
+    segments = mesh.cells
+    regions = [(m.point[0], m.point[1], m.label, m.constraint)
+               for m in mesh.region_markers]
+
+    segment_markers = mesh.cell_data.get('segment_markers', None)
+
+    mesh_container = simple_triangulate(
+        points=points,
+        segments=segments,
+        regions=regions,
+        segment_markers=segment_markers,
+        opts=opts,
+    )
+
+    fields = {m.label: m.name for m in mesh.region_markers if m.name}
+    mesh_container.set_field_data('triangle', fields)
+
+    return mesh_container
+
+
+def simple_triangulate(points: np.ndarray,
+                       *,
+                       segments: np.ndarray = None,
+                       regions: Sequence[Tuple[float, float, int,
+                                               float, ]] = None,
+                       segment_markers: np.ndarray = None,
+                       opts: str = None) -> MeshContainer:
     """Simple triangulation using :mod:`triangle`.
 
     Parameters
@@ -32,9 +87,12 @@ def triangulate(points: np.ndarray,
         number the maximum area constraint for the region.
     segment_markers : (j,1) numpy.ndarray, optional
         Array with labels for segments.
-    opts : str, optional
+    opts : str | dict, optional
         Additional options passed to `triangle.triangulate` documented here:
         https://rufat.be/triangle/API.html#triangle.triangulate
+
+        Can be passed as a raw string, `opts='pAq30', or dict,
+        `opts=dict('p'= True, 'A'= True, 'q'=30)`.
 
     Returns
     -------
@@ -42,6 +100,8 @@ def triangulate(points: np.ndarray,
         Triangulated 2D mesh
     """
     from nanomesh import MeshContainer
+
+    opts = _to_opts_string(opts)
 
     triangle_dict_in: Dict['str', Any] = {'vertices': points}
 

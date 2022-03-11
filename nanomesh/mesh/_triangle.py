@@ -134,7 +134,8 @@ class TriangleMesh(Mesh, PruneZ0Mixin, cell_dim=3):
         )
         return TriangleMesh(points=points, cells=cells)
 
-    @doc(tetrahedralize, prefix='Tetrahedralize a 3D triangle mesh')
+    @doc(tetrahedralize,
+         prefix='Tetrahedralize mesh using :func:`tetrahedralize`')
     def tetrahedralize(self, **kwargs) -> 'MeshContainer':
         mesh = tetrahedralize(self, **kwargs)
         return mesh

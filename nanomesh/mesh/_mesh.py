@@ -247,7 +247,6 @@ class Mesh(object, metaclass=DocFormatterMeta):
         idx = self.cell_data[key] != label
 
         for k, v in self.cell_data.items():
-            print(k, v, idx)
             self.cell_data[k] = v[idx]
             pass
 

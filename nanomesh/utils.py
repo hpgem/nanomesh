@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from itertools import tee
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .mesh import TriangleMesh
+if TYPE_CHECKING:
+    from .mesh import TriangleMesh
 
 
 def _to_opts_string(inp: Any,
@@ -38,6 +41,10 @@ def _to_opts_string(inp: Any,
 
     if isinstance(inp, str):
         for k, v in defaults.items():
+            if v is False:
+                continue
+            elif v is True:
+                v = ''
             if k not in inp:
                 inp = f'{inp}{sep}{prefix}{k}{v}'
         return inp

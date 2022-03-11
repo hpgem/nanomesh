@@ -91,6 +91,6 @@ class LineMesh(Mesh, cell_dim=2):
             self.cell_data[key][side_idx] = int_label
 
     @doc(prefix='Triangulate mesh using :func:`triangulate`')
-    def triangulate(self, opts: str = 'pq30Aa100') -> MeshContainer:
+    def triangulate(self, opts: str = 'pq30Aa100', **kwargs) -> MeshContainer:
         from .._triangle_wrapper import triangulate
-        return triangulate(self, opts=opts)
+        return triangulate(self, opts=opts, **kwargs)

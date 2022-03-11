@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Tuple
 
 from ._doc import doc
 from .region_markers import RegionMarkerList
+from .utils import _to_opts_string
 
 if TYPE_CHECKING:
     from .mesh import TriangleMesh
@@ -108,7 +109,9 @@ def call_tetgen(fname: os.PathLike, opts: str = '-pAq'):
 
 
 @doc(prefix='Tetrahedralize a surface mesh')
-def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq') -> MeshContainer:
+def tetrahedralize(mesh: TriangleMesh,
+                   opts: str | dict = '-pAq',
+                   default_opts: dict = None) -> MeshContainer:
     """{prefix}.
 
     Parameters
@@ -128,12 +131,19 @@ def tetrahedralize(mesh: TriangleMesh, opts: str = '-pAq') -> MeshContainer:
         - `-q`: Refines mesh (to improve mesh quality).
         - `-a`: Applies a maximum tetrahedron volume constraint.
 
+        Can be passed as a raw string, `opts='-pAq1.2', or dict,
+        `opts=dict('p'= True, 'A'= True, 'q'=1.2)`.
+    default_opts : dict, optional
+        Dictionary with default options. These will be merged with `opts`.
+
     Returns
     -------
     MeshContainer
         Tetrahedralized mesh.
     """
     from .mesh_container import MeshContainer
+
+    opts = _to_opts_string(opts, defaults=default_opts, prefix='-', sep=' ')
 
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp, 'nanomesh.smesh')

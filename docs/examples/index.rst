@@ -26,6 +26,17 @@ Nanopores
 
    nanopores*
 
+
+Finite elements
+===============
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   finite_elements*
+
+
 Other
 =====
 

@@ -92,6 +92,17 @@ def test_reverse_cell_order(line_tri_mesh, cell_type):
 
 @pytest.mark.parametrize('key', (None, 'labels'))
 def test_purge(triangle_mesh_2d, key):
+    npoints = len(triangle_mesh_2d.points)
     np.testing.assert_equal(triangle_mesh_2d.labels, np.arange(5))
     triangle_mesh_2d.purge(label=4, key=key)
     np.testing.assert_equal(triangle_mesh_2d.labels, np.arange(4))
+    # ensure that orphaned points are be removed
+    assert len(triangle_mesh_2d.points) == npoints - 1
+
+
+def test_remove_orphaned_points(triangle_mesh_2d):
+    i = 1
+    unorphaned = triangle_mesh_2d.points[i:]
+    triangle_mesh_2d.cells = triangle_mesh_2d.cells[i:]
+    triangle_mesh_2d.remove_orphaned_points()
+    np.testing.assert_equal(triangle_mesh_2d.points, unorphaned)

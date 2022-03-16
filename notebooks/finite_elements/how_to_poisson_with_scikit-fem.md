@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 
 H, L = 200, 200
 Hmid = int(H/2)
-Lmid = int(H/2)
+Lmid = int(L/2)
 r = 60
 
 data = np.zeros((H, L))

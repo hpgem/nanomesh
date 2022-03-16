@@ -231,8 +231,8 @@ class Mesh(object, metaclass=DocFormatterMeta):
         for key, data in self.cell_data.items():
             self.cell_data[key] = data[::-1]
 
-    def purge(self, *, label: int, key: str = None):
-        """Purge cell data matching given label.
+    def remove_cells(self, *, label: int, key: str = None):
+        """Remove cells with cell data matching given label.
 
         Parameters
         ----------
@@ -251,3 +251,20 @@ class Mesh(object, metaclass=DocFormatterMeta):
             pass
 
         self.cells = self.cells[idx]
+        self.remove_loose_points()
+
+    def remove_loose_points(self):
+        """Remove points that do not belong to any cells."""
+        unique = np.unique(self.cells)
+        self.points = np.take(self.points, unique, axis=0)
+
+        mapping = np.vstack([unique, np.arange(len(unique))])
+
+        shape = self.cells.shape
+        new_cells = self.cells.ravel()
+
+        mask = np.in1d(new_cells, mapping[0, :])
+        new_cells[mask] = mapping[1,
+                                  np.searchsorted(mapping[
+                                      0, :], new_cells[mask])]
+        self.cells = new_cells.reshape(shape)

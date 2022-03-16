@@ -74,14 +74,14 @@ nanomesh_mesh.plot()
 
 In the next cell we extract the triangle mesh and prepare the mesh for SfePy.
 
-1. Remove triangles representing the horse using the `Mesh.purge()` method.
+1. Remove triangles representing the horse using the `Mesh.remove_cells()` method.
 2. Flip and rotate the coordinates. This ensures the mesh has the correct orientation.
 
 ```python
 import numpy as np
 
 triangles = nanomesh_mesh.get('triangle')
-triangles.purge(label=2, key='physical')
+triangles.remove_cells(label=2, key='physical')
 
 triangles.points = np.flip(triangles.points, axis=1)
 triangles.points[:,1] = -triangles.points[:,1]

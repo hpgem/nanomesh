@@ -73,7 +73,7 @@ p = triangles.points.T
 t = triangles.cells.T
 
 mesh = gf.Mesh('pt2D', p, t)
-print(mesh)
+mesh
 ```
 
 ### Poisson's equation

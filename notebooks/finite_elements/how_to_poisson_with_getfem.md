@@ -129,5 +129,5 @@ p = pv.Plotter()
 p.add_mesh(m, show_edges=False)
 p.add_mesh(contours, color="black", line_width=1)
 p.add_mesh(m.contour(8).extract_largest(), opacity=0.1)
-p.show(cpos="xy")
+p.show(cpos="xy", jupyter_backend='static')
 ```

@@ -41,7 +41,7 @@ plt.figure()
 plt.imshow(data)
 ```
 
-Generate a triangle mesh using `Nanomesh.Mesher`. The triangles that don't belong to the circle are purged.
+Generate a triangle mesh using `Nanomesh.Mesher`. The triangles that don't belong to the circle are removed.
 
 ```python
 from nanomesh import Mesher

@@ -60,12 +60,18 @@ def _polygons_to_line_mesh(polygons: List[Polygon],
     segments = np.vstack([segments, additional_segments])
 
     segment_markers = generate_segment_markers(polygons)
+
+    fields = {}
+    for i in np.unique(segment_markers):
+        fields[f'L{i}'] = i
+
     segment_markers = append_to_segment_markers(segment_markers,
                                                 additional_segments)
 
     mesh = LineMesh(points=all_points,
                     cells=segments,
-                    segment_markers=segment_markers)
+                    segment_markers=segment_markers,
+                    fields=fields)
 
     return mesh
 
@@ -205,7 +211,7 @@ class Mesher2D(Mesher, ndim=2):
         regions.append(_generate_background_region(polygons, self.bbox))
 
         if not group_regions:
-            regions = regions.label_sequentially(FEATURE, fmt_name='feature{}')
+            regions = regions.label_sequentially(FEATURE, fmt_name='X{}')
 
         contour = _polygons_to_line_mesh(polygons, self.bbox)
         contour.region_markers = regions

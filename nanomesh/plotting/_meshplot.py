@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from itertools import cycle
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Sequence, Tuple
+from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List,
+                    Optional, Sequence, Tuple)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -254,8 +255,8 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
               ax: plt.Axes = None,
               key: str = None,
               legend: str = 'fields',
-              show_labels: Sequence[int | str] = None,
-              hide_labels: Sequence[int | str] = None,
+              show_labels: Optional[Iterable | str | int] = None,
+              hide_labels: Optional[Iterable | str | int] = None,
               show_region_markers: bool = True,
               colors: Sequence[str] = None,
               color_map: Dict[str | int, str] = None,
@@ -278,10 +279,12 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
         - all : Create legend with all labels
         - fields : Create legend with field names only
         - floating : Add floating labels to plot
-    show_labels : Sequence[int | str]
-        List of labels or field names of cell data to show
-    hide_labels : Sequence[int | str]
-        List of labels or field names of cell data to hide
+    show_labels : Iterable | str | int
+        List of labels or field names of cell data to show. A single label to
+        show can also be specified directly by its name or number.
+    hide_labels : Iterable | str | int
+        List of labels or field names of cell data to hide. A single label to
+        hide can also be specified directly by its name or number.
     show_region_markers : bool, default True
         If True, show region markers on the plot
     colors : Sequence[str]
@@ -304,16 +307,24 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
     }
     plotting_func = dispatch[mesh.cell_type]
 
+    if isinstance(hide_labels, (str, int)):
+        hide_label_set = {hide_labels}
+    else:
+        hide_label_set = set(hide_labels) if hide_labels else set()
+
+    if isinstance(show_labels, (str, int)):
+        show_label_set = {show_labels}
+    else:
+        show_label_set = set(show_labels) if show_labels else set()
+
+    key = key if key else mesh.default_key
+
     if not ax:
         fig, ax = plt.subplots()
 
-    if not key:
-        key = mesh.default_key
-
     color_cycle = _get_color_cycle(colors)
 
-    if not color_map:
-        color_map = {}
+    color_map = color_map if color_map else {}
 
     vert_x, vert_y = mesh.points.T
 
@@ -326,10 +337,13 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
     for cell_data_val in np.unique(cell_data):
         name = mesh.number_to_field.get(cell_data_val, cell_data_val)
 
-        if show_labels and (name not in show_labels):
+        show_this_label = {name, cell_data_val} & show_label_set
+        hide_this_label = {name, cell_data_val} & hide_label_set
+
+        if hide_this_label:
             continue
 
-        if hide_labels and (name in hide_labels):
+        if show_labels and not show_this_label:
             continue
 
         color = color_map.get(name, next(color_cycle))

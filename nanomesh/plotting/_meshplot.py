@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+from collections import abc
 from itertools import cycle
 from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List,
                     Optional, Sequence, Tuple)
@@ -307,17 +309,47 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
     }
     plotting_func = dispatch[mesh.cell_type]
 
-    if isinstance(hide_labels, (str, int)):
-        hide_label_set = {hide_labels}
-    else:
-        hide_label_set = set(hide_labels) if hide_labels else set()
-
-    if isinstance(show_labels, (str, int)):
-        show_label_set = {show_labels}
-    else:
-        show_label_set = set(show_labels) if show_labels else set()
-
     key = key if key else mesh.default_key
+
+    # https://github.com/python/mypy/issues/9430
+    cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
+    cell_data_vals = np.unique(cell_data).astype(int)
+
+    if show_labels:
+        if isinstance(show_labels, int):
+            labels_to_show = {show_labels}
+        elif isinstance(show_labels, str):
+            pattern = show_labels
+            fields_to_show = {
+                field
+                for field in mesh.fields if re.match(pattern, field)
+            }
+            labels_to_show = {mesh.fields[field] for field in fields_to_show}
+        elif isinstance(show_labels, abc.Iterable):
+            labels_to_show = {
+                mesh.fields.get(label, label)  # type: ignore
+                for label in show_labels
+            }
+    else:
+        labels_to_show = {*cell_data_vals}
+
+    if hide_labels:
+        if isinstance(hide_labels, int):
+            labels_to_show -= {hide_labels}
+        elif isinstance(hide_labels, str):
+            pattern = hide_labels
+            fields_to_hide = {
+                field
+                for field in mesh.fields if re.match(pattern, field)
+            }
+            labels_to_show -= {mesh.fields[field] for field in fields_to_hide}
+        elif isinstance(hide_labels, abc.Iterable):
+            labels_to_show -= {
+                mesh.fields.get(label, label)  # type: ignore
+                for label in hide_labels
+            }
+
+    print(labels_to_show)
 
     if not ax:
         fig, ax = plt.subplots()
@@ -331,19 +363,10 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
     if flip_xy:
         vert_x, vert_y = vert_y, vert_x
 
-    # https://github.com/python/mypy/issues/9430
-    cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
-
     for cell_data_val in np.unique(cell_data):
         name = mesh.number_to_field.get(cell_data_val, cell_data_val)
 
-        show_this_label = {name, cell_data_val} & show_label_set
-        hide_this_label = {name, cell_data_val} & hide_label_set
-
-        if hide_this_label:
-            continue
-
-        if show_labels and not show_this_label:
+        if cell_data_val not in labels_to_show:
             continue
 
         color = color_map.get(name, next(color_cycle))

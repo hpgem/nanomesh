@@ -7,29 +7,22 @@ from nanomesh.io import load_vol
 
 def test_load_data():
     """Test loading of vol files."""
-    fn = (Path(__file__).parents[1] / 'notebooks' / 'nanopores' /
-          'sample_data.vol')
-
-    expected_fn = Path(__file__).parent / 'sample_data.npy'
+    fn = Path(__file__).parent / 'sample_data.vol'
 
     data = load_vol(fn, dtype=np.uint8)
 
-    if expected_fn.exists():
-        expected_data = np.load(expected_fn)
-    else:
-        np.save(expected_fn, data)
-        raise RuntimeError(f'Wrote expected data to {expected_fn.absolute()}')
+    shape = (2, 3, 4)
+    expected_data = np.arange(np.product(shape), dtype=np.uint8).reshape(shape)
 
-    assert data.shape == (200, 200, 200)
+    assert data.shape == shape
     np.testing.assert_equal(data, expected_data)
 
 
 def test_load_data_shape():
     """Test loading of vol files."""
-    fn = (Path(__file__).parents[1] / 'notebooks' / 'nanopores' /
-          'sample_data.vol')
+    fn = Path(__file__).parent / 'sample_data.vol'
 
-    shape = (800, 200, 50)
+    shape = (6, 2)
 
     data = load_vol(fn, dtype=np.uint8, mmap_mode='r', shape=shape)
 

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import re
+from collections import abc
 from itertools import cycle
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Sequence, Tuple
+from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List,
+                    Optional, Sequence, Tuple)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -254,8 +257,8 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
               ax: plt.Axes = None,
               key: str = None,
               legend: str = 'fields',
-              show_labels: Sequence[int | str] = None,
-              hide_labels: Sequence[int | str] = None,
+              show_labels: Optional[Iterable | str | int] = None,
+              hide_labels: Optional[Iterable | str | int] = None,
               show_region_markers: bool = True,
               colors: Sequence[str] = None,
               color_map: Dict[str | int, str] = None,
@@ -278,10 +281,12 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
         - all : Create legend with all labels
         - fields : Create legend with field names only
         - floating : Add floating labels to plot
-    show_labels : Sequence[int | str]
-        List of labels or field names of cell data to show
-    hide_labels : Sequence[int | str]
-        List of labels or field names of cell data to hide
+    show_labels : Iterable | str | int
+        List of labels or field names of cell data to show. A single label to
+        show can also be specified directly by its name or number.
+    hide_labels : Iterable | str | int
+        List of labels or field names of cell data to hide. A single label to
+        hide can also be specified directly by its name or number.
     show_region_markers : bool, default True
         If True, show region markers on the plot
     colors : Sequence[str]
@@ -304,32 +309,64 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
     }
     plotting_func = dispatch[mesh.cell_type]
 
+    key = key if key else mesh.default_key
+
+    # https://github.com/python/mypy/issues/9430
+    cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
+    cell_data_vals = np.unique(cell_data).astype(int)
+
+    if show_labels:
+        if isinstance(show_labels, int):
+            labels_to_show = {show_labels}
+        elif isinstance(show_labels, str):
+            pattern = show_labels
+            fields_to_show = {
+                field
+                for field in mesh.fields if re.match(pattern, field)
+            }
+            labels_to_show = {mesh.fields[field] for field in fields_to_show}
+        elif isinstance(show_labels, abc.Iterable):
+            labels_to_show = {
+                mesh.fields.get(label, label)  # type: ignore
+                for label in show_labels
+            }
+    else:
+        labels_to_show = {*cell_data_vals}
+
+    if hide_labels:
+        if isinstance(hide_labels, int):
+            labels_to_show -= {hide_labels}
+        elif isinstance(hide_labels, str):
+            pattern = hide_labels
+            fields_to_hide = {
+                field
+                for field in mesh.fields if re.match(pattern, field)
+            }
+            labels_to_show -= {mesh.fields[field] for field in fields_to_hide}
+        elif isinstance(hide_labels, abc.Iterable):
+            labels_to_show -= {
+                mesh.fields.get(label, label)  # type: ignore
+                for label in hide_labels
+            }
+
+    print(labels_to_show)
+
     if not ax:
         fig, ax = plt.subplots()
 
-    if not key:
-        key = mesh.default_key
-
     color_cycle = _get_color_cycle(colors)
 
-    if not color_map:
-        color_map = {}
+    color_map = color_map if color_map else {}
 
     vert_x, vert_y = mesh.points.T
 
     if flip_xy:
         vert_x, vert_y = vert_y, vert_x
 
-    # https://github.com/python/mypy/issues/9430
-    cell_data = mesh.cell_data.get(key, mesh.zero_labels)  # type: ignore
-
     for cell_data_val in np.unique(cell_data):
         name = mesh.number_to_field.get(cell_data_val, cell_data_val)
 
-        if show_labels and (name not in show_labels):
-            continue
-
-        if hide_labels and (name in hide_labels):
+        if cell_data_val not in labels_to_show:
             continue
 
         color = color_map.get(name, next(color_cycle))

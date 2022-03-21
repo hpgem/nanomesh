@@ -85,7 +85,7 @@ def get_region_markers(vol: Union[Volume, np.ndarray]) -> RegionMarkerList:
             name = 'background'
             label = BACKGROUND
         else:
-            name = 'feature'
+            name = 'X'
             label = FEATURE
 
         region_markers.append(RegionMarker(label=label, point=point,
@@ -279,7 +279,7 @@ class Mesher3D(Mesher, ndim=3):
         regions = get_region_markers(segmented)
 
         if not group_regions:
-            regions = regions.label_sequentially(FEATURE, fmt_name='feature{}')
+            regions = regions.label_sequentially(FEATURE, fmt_name='X{}')
 
         contour.region_markers = regions
 
@@ -318,7 +318,7 @@ class Mesher3D(Mesher, ndim=3):
         contour = self.contour
         mesh = contour.tetrahedralize(**kwargs)
 
-        mesh.set_field_data('tetra', {0: 'background', 1: 'feature'})
+        mesh.set_field_data('tetra', {0: 'background', 1: 'X'})
         fields = {
             m.label: m.name
             for m in self.contour.region_markers if m.name

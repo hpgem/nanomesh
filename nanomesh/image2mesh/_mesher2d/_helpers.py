@@ -130,6 +130,7 @@ def pad(
         cells=cells,
         region_markers=region_markers,
         segment_markers=segment_markers,
+        fields=mesh.fields,
     )
 
     return new_mesh

@@ -25,6 +25,18 @@ def test_triangle_mesh_plot(line_tri_mesh):
     lines.plot_mpl()
 
 
+@image_comparison2(baseline_images=['triangle_mesh_hide_A'])
+def test_mesh_plot_hide_label(line_tri_mesh):
+    lines = line_tri_mesh.get('triangle')
+    lines.plot_mpl(hide_labels=['Triangle A'])
+
+
+@image_comparison2(baseline_images=['triangle_mesh_show_A'])
+def test_triangle_mesh_plot_show_label(line_tri_mesh):
+    lines = line_tri_mesh.get('triangle')
+    lines.plot_mpl(show_labels=['Triangle A'])
+
+
 @pytest.mark.xfail(pytest.OS_DOES_NOT_MATCH_DATA_GEN,
                    raises=AssertionError,
                    reason=('https://github.com/hpgem/nanomesh/issues/144'))

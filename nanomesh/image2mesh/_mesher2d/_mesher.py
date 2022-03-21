@@ -123,8 +123,7 @@ def _generate_regions(polygons: List[Polygon]) -> RegionMarkerList:
     for i, polygon in enumerate(polygons):
         point = polygon.find_point()
 
-        regions.append(RegionMarker(label=FEATURE, point=point,
-                                    name='feature'))
+        regions.append(RegionMarker(label=FEATURE, point=point, name='X'))
 
     return regions
 

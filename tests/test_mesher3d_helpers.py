@@ -111,7 +111,7 @@ def test_mesh3d_pad_invalid_side(mesh_box):
         1: 885,
         2: 1794,
     }),
-    ('bottom', None, 'feature', {
+    ('bottom', None, 'X', {
         1: 608,
         2: 2071,
     }),
@@ -139,7 +139,7 @@ def test_pad_label(image_cube, side, label, name, expected_labels):
         assert expected_labels == labels
 
     keys = tuple(tetra_mesh.field_to_number.keys())
-    default_keys = ('background', 'feature')
+    default_keys = ('background', 'X')
 
     if not name:
         assert keys == default_keys

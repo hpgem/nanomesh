@@ -102,7 +102,7 @@ def test_pad_width(image_square, width):
         1: 109,
         2: 34,
     }),
-    ('bottom', None, 'feature', {
+    ('bottom', None, 'X', {
         1: 94,
         2: 49,
     }),
@@ -127,7 +127,7 @@ def test_pad_label(image_square, side, label, name, expected_labels):
     assert expected_labels == labels
 
     keys = set(tri_mesh.field_to_number.keys())
-    default_keys = {'background', 'feature'}
+    default_keys = {'background', 'X'}
 
     if not name:
         assert keys == default_keys

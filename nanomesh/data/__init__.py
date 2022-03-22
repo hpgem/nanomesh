@@ -1,5 +1,7 @@
 """Module containing sample data."""
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -79,7 +81,7 @@ def nanopores3d() -> np.ndarray:
 
 
 @doc(dim='2d', kind='triangle', func='triangulate')
-def blob_mesh2d(opts: str = '', **kwargs) -> MeshContainer:
+def blob_mesh2d(opts: str = 'q30a10', **kwargs) -> MeshContainer:
     """Return a {dim} {kind} mesh generated from binary blobs.
 
     Parameters
@@ -100,7 +102,7 @@ def blob_mesh2d(opts: str = '', **kwargs) -> MeshContainer:
 
 
 @doc(blob_mesh2d, dim='3d', kind='tetrahedral', func='tetrahedralize')
-def blob_mesh3d(opts: str = '', **kwargs) -> MeshContainer:
+def blob_mesh3d(opts: str = '-pAq', **kwargs) -> MeshContainer:
     from nanomesh import volume2mesh
     data = binary_blobs3d(**kwargs)
     return volume2mesh(data, opts=opts)

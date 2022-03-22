@@ -25,3 +25,13 @@ def test_binaryblobsxd(func, ndim):
 def test_nanopores_data(func, shape):
     arr = func()
     assert arr.shape == shape
+
+
+def test_blob_mesh_2d():
+    mesh = data.blob_mesh2d()
+    assert {'triangle', 'line'} == set(mesh.cells_dict)
+
+
+def test_blob_mesh_3d():
+    mesh = data.blob_mesh3d()
+    assert {'tetra'} == set(mesh.cells_dict)

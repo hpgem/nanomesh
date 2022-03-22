@@ -1,6 +1,7 @@
 """Module containing sample data."""
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 from skimage.data import binary_blobs
@@ -9,13 +10,14 @@ from nanomesh._doc import doc
 
 data_dir = Path(__file__).parent
 
+if TYPE_CHECKING:
+    from nanomesh import MeshContainer
+
 
 @doc(dim='2d')
-def binary_blobs2d(**kwargs):
+def binary_blobs2d(**kwargs) -> np.ndarray:
     """Generate {dim} binary blobs.
 
-    Parameters
-    ----------
     Parameters
     ----------
     **kwargs
@@ -23,7 +25,7 @@ def binary_blobs2d(**kwargs):
 
     Returns
     -------
-    numpy.array
+    numpy.ndarray
         {dim} array with binary blobs
     """
     kwargs.setdefault('length', 50)
@@ -34,7 +36,7 @@ def binary_blobs2d(**kwargs):
 
 
 @doc(dim='3d')
-def binary_blobs3d(**kwargs):
+def binary_blobs3d(**kwargs) -> np.ndarray:
     kwargs.setdefault('length', 50)
     kwargs.setdefault('n_dim', 3)
     kwargs.setdefault('volume_fraction', 0.2)
@@ -47,7 +49,7 @@ def nanopores() -> np.ndarray:
 
     Returns
     -------
-    nanopores : np.ndarray
+    nanopores : numpy.ndarray
         2D image of nanopores
     """
     i = 30
@@ -59,7 +61,7 @@ def nanopores_gradient() -> np.ndarray:
 
     Returns
     -------
-    nanopores : (i,j) np.ndarray
+    nanopores : (i,j) numpy.ndarray
         2D image of nanopores with gradient
     """
     return np.rot90(np.load(data_dir / 'nanopores_gradient.npy'))
@@ -70,26 +72,44 @@ def nanopores3d() -> np.ndarray:
 
     Returns
     -------
-    nanopores : (i,j,k) np.ndarray
+    nanopores : (i,j,k) numpy.ndarray
         3D image of nanopores
     """
     return np.load(data_dir / 'nanopores3d.npy')
 
 
-def mesh():
-    """Return a 2d mesh."""
-    raise NotImplementedError
+@doc(dim='2d', kind='triangle', func='triangulate')
+def blob_mesh2d(opts: str = '', **kwargs) -> MeshContainer:
+    """Return a {dim} {kind} mesh generated from binary blobs.
+
+    Parameters
+    ----------
+    opts : str, optional
+        Options passed to :func:`{func}`.
+    **kwargs
+        These parameters are passed to :func:`binary_blobs{dim}`.
+
+    Returns
+    -------
+    mesh : MeshContainer
+        {dim} {kind} mesh generated from binary blobs.
+    """
+    from nanomesh import plane2mesh
+    data = binary_blobs2d(**kwargs)
+    return plane2mesh(data, opts=opts)
 
 
-def mesh3d():
-    """Return a 3d mesh."""
-    raise NotImplementedError
+@doc(blob_mesh2d, dim='3d', kind='tetrahedral', func='tetrahedralize')
+def blob_mesh3d(opts: str = '', **kwargs) -> MeshContainer:
+    from nanomesh import volume2mesh
+    data = binary_blobs3d(**kwargs)
+    return volume2mesh(data, opts=opts)
 
 
 __all__ = [
     'nanopores',
     'nanopores3d',
     'binary_blobs3d',
-    'triangle_mesh',
-    'triangle_mesh3d',
+    'blob_mesh2d',
+    'blob_mesh3d',
 ]

@@ -255,10 +255,22 @@ class Mesh(object, metaclass=DocFormatterMeta):
 
     def remove_loose_points(self):
         """Remove points that do not belong to any cells."""
-        unique = np.unique(self.cells)
-        self.points = np.take(self.points, unique, axis=0)
+        cell_indices = np.unique(self.cells)
+        self.points = np.take(self.points, cell_indices, axis=0)
+        self._regenerate_cell_indices(cell_indices)
 
-        mapping = np.vstack([unique, np.arange(len(unique))])
+    def _regenerate_cell_indices(self, indices: np.ndarray = None):
+        """Re-generate cell indices to remove gaps, i.e., 1,3,5 -> 1,2,3.
+
+        Parameters
+        ----------
+        indices : np.ndarray
+            Current list of cell indices.
+        """
+        if not indices:
+            indices = np.unique(self.cells)
+
+        mapping = np.vstack([indices.ravel(), np.arange(len(indices))])
 
         shape = self.cells.shape
         new_cells = self.cells.ravel()
@@ -268,3 +280,65 @@ class Mesh(object, metaclass=DocFormatterMeta):
                                   np.searchsorted(mapping[
                                       0, :], new_cells[mask])]
         self.cells = new_cells.reshape(shape)
+
+    def crop(
+        self,
+        xmin: float = -np.inf,
+        xmax: float = np.inf,
+        ymin: float = -np.inf,
+        ymax: float = np.inf,
+        zmin: float = -np.inf,
+        zmax: float = np.inf,
+    ):
+        """Crop mesh to given constraints.
+
+        This acts on :attr:`{classname}.points`, so cells will not extend
+        beyond the given range.
+
+        Parameters
+        ----------
+        xmin : float, optional
+            Minimum x value.
+        xmax : float, optional
+            Maximum x value.
+        ymin : float, optional
+            Minimum y value.
+        ymax : float, optional
+            Maximum y value.
+        zmin : float, optional
+            Minimum z value (3D point data only).
+        zmax : float, optional
+            Maximum z value (3D point data only).
+        """
+        points = self.points
+        cells = self.cells
+        cell_data = self.cell_data
+
+        dim = len(self.points.shape)
+
+        idx = (xmin <= points[:, 0]) & (points[:, 0] <= xmax)
+
+        if dim >= 2:
+            y_idx = (ymin <= points[:, 1]) & (points[:, 1] <= ymax)
+            idx = idx & y_idx
+        if dim >= 3:
+            z_idx = (zmin <= points[:, 2]) & (points[:, 2] <= zmax)
+            idx = idx & z_idx
+
+        self.points = points[idx]
+
+        # point_data = self.point_data
+        # new_point_data = point_data[idx]
+
+        cell_indices = np.argwhere(idx)
+        cells_to_keep = np.all(np.isin(cells, cell_indices), axis=1)
+        self.cells = cells[cells_to_keep]
+
+        new_cell_data = {}
+
+        for name, data in cell_data.items():
+            new_cell_data[name] = data[cells_to_keep]
+
+        self.cell_data = new_cell_data
+
+        self._regenerate_cell_indices()

@@ -280,7 +280,7 @@ class Mesher2D(Mesher, ndim=2):
             raise ValueError('Bounding box must be an array with shape (4,2).')
         self._bbox = bbox
 
-    def triangulate(self, opts='pAq30a100', **kwargs) -> MeshContainer:
+    def triangulate(self, opts='pAq30a10', **kwargs) -> MeshContainer:
         """Triangulate contours.
 
         Mandatory switches for `opts`:
@@ -346,7 +346,7 @@ def plane2mesh(image: np.ndarray | Plane,
                *,
                level: float = None,
                max_edge_dist: int = 5,
-               opts: str = 'q30a100',
+               opts: str = 'q30a10',
                plot: bool = False) -> 'MeshContainer':
     """Generate a triangular mesh from a 2D segmented image.
 

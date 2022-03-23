@@ -259,7 +259,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         return mesh.plot_mpl(**kwargs)
 
     def plot_itk(self, cell_type: str = None, **kwargs):
-        """Plot data using `itk`.
+        """Plot data using :mod:`itk`.
 
         Parameters
         ----------
@@ -272,7 +272,7 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         return mesh.plot_itk(**kwargs)
 
     def plot_pyvista(self, cell_type: str = None, **kwargs):
-        """Plot data using pyvista.
+        """Plot data using :mod:`pyvista`.
 
         Parameters
         ----------

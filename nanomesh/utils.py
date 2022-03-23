@@ -49,7 +49,7 @@ def _to_opts_string(inp: Any,
 
 @_to_opts_string.register
 def _(inp: None, **kwargs) -> str:
-    return _to_opts_string(inp='', **kwargs)
+    return _to_opts_string('', **kwargs)
 
 
 @_to_opts_string.register

@@ -255,10 +255,23 @@ class Mesh(object, metaclass=DocFormatterMeta):
 
     def remove_loose_points(self):
         """Remove points that do not belong to any cells."""
-        unique = np.unique(self.cells)
-        self.points = np.take(self.points, unique, axis=0)
+        cell_indices = np.unique(self.cells)
+        self.points = np.take(self.points, cell_indices, axis=0)
+        self._regenerate_cell_indices(cell_indices)
 
-        mapping = np.vstack([unique, np.arange(len(unique))])
+    def _regenerate_cell_indices(self, indices: np.ndarray = None):
+        """Re-generate cell indices to remove gaps, i.e., 1,3,5 -> 1,2,3.
+
+        Parameters
+        ----------
+        indices : np.ndarray
+            Current list of cell indices.
+        """
+        if indices is None:
+            indices = np.unique(self.cells)
+        indices = indices.ravel()
+
+        mapping = np.vstack([indices, np.arange(len(indices))])
 
         shape = self.cells.shape
         new_cells = self.cells.ravel()
@@ -268,3 +281,76 @@ class Mesh(object, metaclass=DocFormatterMeta):
                                   np.searchsorted(mapping[
                                       0, :], new_cells[mask])]
         self.cells = new_cells.reshape(shape)
+
+    def crop(
+        self,
+        xmin: float = -np.inf,
+        xmax: float = np.inf,
+        ymin: float = -np.inf,
+        ymax: float = np.inf,
+        zmin: float = -np.inf,
+        zmax: float = np.inf,
+        include_partial: bool = False,
+    ):
+        """Crop mesh to given region.
+
+        Parameters
+        ----------
+        xmin : float, optional
+            Minimum x value.
+        xmax : float, optional
+            Maximum x value.
+        ymin : float, optional
+            Minimum y value.
+        ymax : float, optional
+            Maximum y value.
+        zmin : float, optional
+            Minimum z value (3D point data only).
+        zmax : float, optional
+            Maximum z value (3D point data only).
+        include_partial : bool, optional
+            If True, include cells that are partially inside the
+            given crop region, i.e. one of its points is inside.
+
+        Returns
+        -------
+        cropped_mesh : :class:`{classname}`
+            Cropped mesh
+        """
+        points = self.points
+        cells = self.cells
+        cell_data = self.cell_data
+
+        cell_coords = points[cells]
+        dim = points.shape[1]
+
+        if dim not in (2, 3):
+            raise NotImplementedError('Cropping not supported on '
+                                      f'{dim}d data ({self.points.shape=})')
+
+        if dim >= 2:
+            x_idx = (xmin <= cell_coords[:, :, 0]) & (cell_coords[:, :, 0] <=
+                                                      xmax)
+            y_idx = (ymin <= cell_coords[:, :, 1]) & (cell_coords[:, :, 1] <=
+                                                      ymax)
+            idx = x_idx & y_idx
+
+        if dim == 3:
+            z_idx = (zmin <= cell_coords[:, :, 2]) & (cell_coords[:, :, 2] <=
+                                                      zmax)
+            idx = idx & z_idx
+
+        f = np.any if include_partial else np.all
+        cells_to_keep = f(idx, axis=1)
+
+        new_cells = cells[cells_to_keep]
+        new_cell_data = {}
+
+        for name, data in cell_data.items():
+            new_cell_data[name] = data[cells_to_keep]
+
+        new_mesh = self.__class__(points=points,
+                                  cells=new_cells,
+                                  **new_cell_data)
+        new_mesh.remove_loose_points()
+        return new_mesh

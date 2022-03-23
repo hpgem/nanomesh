@@ -15,7 +15,7 @@ class TetraMesh(Mesh, cell_dim=4):
     cell_type = 'tetra'
 
     def to_open3d(self):
-        """Return instance of `open3d.geometry.TetraMesh`."""
+        """Return instance of :class:`open3d.geometry.TetraMesh`."""
         import open3d
         return open3d.geometry.TetraMesh(
             vertices=open3d.utility.Vector3dVector(self.points),
@@ -23,30 +23,32 @@ class TetraMesh(Mesh, cell_dim=4):
 
     @classmethod
     def from_open3d(cls, mesh) -> TetraMesh:
-        """Return instance of `TetraMesh` from open3d."""
+        """Return instance of :class:`TetraMesh` from :mod:`open3d`."""
         points = np.asarray(mesh.vertices)
         cells = np.asarray(mesh.tetras)
         return cls(points=points, cells=cells)
 
     @classmethod
     def from_pyvista_unstructured_grid(cls, grid: 'pv.UnstructuredGrid'):
-        """Return infance of `TetraMesh` from `pyvista.UnstructuredGrid`."""
+        """Return infance of :class:`TetraMesh` from
+        :class:`pyvista.UnstructuredGrid`."""
         assert grid.cells[0] == 4
         cells = grid.cells.reshape(grid.n_cells, 5)[:, 1:]
         points = np.array(grid.points)
         return cls(points=points, cells=cells)
 
     def plot(self, **kwargs):
-        """Shortcut for `.plot_pyvista`."""
+        """Shortcut for :meth:`TetraMesh.plot_pyvista`."""
         return self.plot_pyvista(**kwargs)
 
     def plot_pyvista(self, **kwargs):
-        """Show grid using `pyvista`.
+        """Show grid using :mod:`pyvista`.
 
         Parameters
         ----------
         **kwargs
-            Keyword arguments passed to `pyvista.Plotter().add_mesh`.
+            These parameters are first passed to :func:`pyvista.plot`
+            and then to :func:`pyvista.Plotter().add_mesh`.
         """
         return self.to_pyvista_unstructured_grid().plot(**kwargs)
 
@@ -59,7 +61,7 @@ class TetraMesh(Mesh, cell_dim=4):
         backend: str = None,
         **kwargs,
     ):
-        """Show submesh using `pyvista`.
+        """Show submesh using :mod:`pyvista`.
 
         Parameters
         ----------
@@ -75,9 +77,9 @@ class TetraMesh(Mesh, cell_dim=4):
         show : bool, optional
             If true, show the plot
         **kwargs:
-            Keyword arguments passed to `pyvista.Plotter().add_mesh`.
+            Keyword arguments passed to :meth:`pyvista.Plotter.add_mesh`.
 
-        plotter : `pyvista.Plotter`
+        plotter : :class:`pyvista.Plotter`
             Return plotter instance.
         """
         grid = self.to_pyvista_unstructured_grid()

@@ -315,35 +315,36 @@ class Mesh(object, metaclass=DocFormatterMeta):
         cells = self.cells
         cell_data = self.cell_data
 
-        dim = self.points.shape[1]
+        cell_coords = points[cells]
+        dim = points.shape[1]
 
-        idx = (xmin <= points[:, 0]) & (points[:, 0] <= xmax)
+        print(dim)
+        if dim not in (2, 3):
+            raise NotImplementedError('Cropping not supported on '
+                                      f'{dim}d data ({self.points.shape=})')
+
         if dim >= 2:
-            y_idx = (ymin <= points[:, 1]) & (points[:, 1] <= ymax)
-            idx = idx & y_idx
+            x_idx = (xmin <= cell_coords[:, :, 0]) & (cell_coords[:, :, 0] <=
+                                                      xmax)
+            y_idx = (ymin <= cell_coords[:, :, 1]) & (cell_coords[:, :, 1] <=
+                                                      ymax)
+            idx = x_idx & y_idx
 
-        # if dim >= 3:
-        #     z_idx = (zmin <= points[:, 2]) & (points[:, 2] <= zmax)
-        #     idx = idx & z_idx
+        if dim == 3:
+            z_idx = (zmin <= cell_coords[:, :, 2]) & (cell_coords[:, :, 2] <=
+                                                      zmax)
+            idx = idx & z_idx
 
-        new_points = points[idx]
+        cells_to_keep = np.all(idx, axis=1)
 
-        # point_data = self.point_data
-        # new_point_data = point_data[idx]
-
-        cell_indices = np.argwhere(idx)
-        cells_to_keep = np.all(np.isin(cells, cell_indices), axis=1)
         new_cells = cells[cells_to_keep]
-
         new_cell_data = {}
 
         for name, data in cell_data.items():
             new_cell_data[name] = data[cells_to_keep]
 
-        new_cell_data = new_cell_data
-
-        new_mesh = self.__class__(points=new_points,
+        new_mesh = self.__class__(points=points,
                                   cells=new_cells,
                                   **new_cell_data)
-        new_mesh._regenerate_cell_indices()
+        new_mesh.remove_loose_points()
         return new_mesh

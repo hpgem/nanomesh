@@ -267,10 +267,11 @@ class Mesh(object, metaclass=DocFormatterMeta):
         indices : np.ndarray
             Current list of cell indices.
         """
-        if not indices:
+        if indices is None:
             indices = np.unique(self.cells)
+        indices = indices.ravel()
 
-        mapping = np.vstack([indices.ravel(), np.arange(len(indices))])
+        mapping = np.vstack([indices, np.arange(len(indices))])
 
         shape = self.cells.shape
         new_cells = self.cells.ravel()
@@ -314,31 +315,35 @@ class Mesh(object, metaclass=DocFormatterMeta):
         cells = self.cells
         cell_data = self.cell_data
 
-        dim = len(self.points.shape)
+        dim = self.points.shape[1]
 
         idx = (xmin <= points[:, 0]) & (points[:, 0] <= xmax)
-
         if dim >= 2:
             y_idx = (ymin <= points[:, 1]) & (points[:, 1] <= ymax)
             idx = idx & y_idx
-        if dim >= 3:
-            z_idx = (zmin <= points[:, 2]) & (points[:, 2] <= zmax)
-            idx = idx & z_idx
 
-        self.points = points[idx]
+        # if dim >= 3:
+        #     z_idx = (zmin <= points[:, 2]) & (points[:, 2] <= zmax)
+        #     idx = idx & z_idx
+
+        new_points = points[idx]
 
         # point_data = self.point_data
         # new_point_data = point_data[idx]
 
         cell_indices = np.argwhere(idx)
         cells_to_keep = np.all(np.isin(cells, cell_indices), axis=1)
-        self.cells = cells[cells_to_keep]
+        new_cells = cells[cells_to_keep]
 
         new_cell_data = {}
 
         for name, data in cell_data.items():
             new_cell_data[name] = data[cells_to_keep]
 
-        self.cell_data = new_cell_data
+        new_cell_data = new_cell_data
 
-        self._regenerate_cell_indices()
+        new_mesh = self.__class__(points=new_points,
+                                  cells=new_cells,
+                                  **new_cell_data)
+        new_mesh._regenerate_cell_indices()
+        return new_mesh

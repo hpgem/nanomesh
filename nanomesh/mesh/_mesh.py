@@ -290,11 +290,9 @@ class Mesh(object, metaclass=DocFormatterMeta):
         ymax: float = np.inf,
         zmin: float = -np.inf,
         zmax: float = np.inf,
+        include_partial: bool = False,
     ):
-        """Crop mesh to given constraints.
-
-        This acts on :attr:`{classname}.points`, so cells will not extend
-        beyond the given range.
+        """Crop mesh to given region.
 
         Parameters
         ----------
@@ -310,6 +308,14 @@ class Mesh(object, metaclass=DocFormatterMeta):
             Minimum z value (3D point data only).
         zmax : float, optional
             Maximum z value (3D point data only).
+        include_partial : bool, optional
+            If True, include cells that are partially inside the
+            given crop region, i.e. one of its points is inside.
+
+        Returns
+        -------
+        cropped_mesh : :class:`{classname}`
+            Cropped mesh
         """
         points = self.points
         cells = self.cells
@@ -318,7 +324,6 @@ class Mesh(object, metaclass=DocFormatterMeta):
         cell_coords = points[cells]
         dim = points.shape[1]
 
-        print(dim)
         if dim not in (2, 3):
             raise NotImplementedError('Cropping not supported on '
                                       f'{dim}d data ({self.points.shape=})')
@@ -335,7 +340,8 @@ class Mesh(object, metaclass=DocFormatterMeta):
                                                       zmax)
             idx = idx & z_idx
 
-        cells_to_keep = np.all(idx, axis=1)
+        f = np.any if include_partial else np.all
+        cells_to_keep = f(idx, axis=1)
 
         new_cells = cells[cells_to_keep]
         new_cell_data = {}

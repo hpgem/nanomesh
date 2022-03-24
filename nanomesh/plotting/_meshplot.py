@@ -349,8 +349,6 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
                 for label in hide_labels
             }
 
-    print(labels_to_show)
-
     if not ax:
         fig, ax = plt.subplots()
 

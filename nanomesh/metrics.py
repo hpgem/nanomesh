@@ -347,13 +347,14 @@ def plot2d(
     -------
     ax : matplotlib.axes.Axes
     """
+    if not ax:
+        fig, ax = plt.subplots()
+
     descriptor = _metric_dispatch[metric]
     quality = descriptor.func(mesh)  # type: ignore
 
     kwargs.setdefault('vmin', np.percentile(quality, 1))
     kwargs.setdefault('vmax', np.percentile(quality, 99))
-
-    fig, ax = plt.subplots()
 
     x = mesh.points[:, 0]
     y = mesh.points[:, 1]

@@ -294,13 +294,15 @@ def histogram(
     -------
     ax : matplotlib.axes.Axes
     """
+    if not ax:
+        fig, ax = plt.subplots()
+
     kwargs.setdefault('bins', 50)
     kwargs.setdefault('rwidth', 0.8)
 
     descriptor = _metric_dispatch[metric]
     quality = descriptor.func(mesh)  # type: ignore
 
-    fig, ax = plt.subplots()
     n, bins, patches = ax.hist(quality, **kwargs)
     ax.set_title(f'Histogram of {descriptor.name.lower()}')
 

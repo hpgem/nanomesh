@@ -7,10 +7,10 @@ from nanomesh.data import binary_blobs2d
 
 st.title('Nanomesh - 2D Meshing')
 
-# - [x] uploaded
-# - [ ] select from submodule
-# - [ ] image from web
-# - [ ] png
+# TODO
+# - More image input methods
+# - Apply image processing on plane
+# - Find more dynamic way of plotting histograms/2d data (plotly, altair?)
 
 with st.sidebar:
     st.header('Load data')

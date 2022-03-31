@@ -6,9 +6,24 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Union
 
 import numpy as np
+from skimage import filters
 
 from .._doc import DocFormatterMeta, doc
 from ..io import load_vol
+
+_threshold_dispatch = {
+    'isodata': filters.threshold_isodata,
+    'li': filters.threshold_li,
+    'local': filters.threshold_local,
+    'mean': filters.threshold_mean,
+    'minimum': filters.threshold_minimum,
+    'multiotsu': filters.threshold_multiotsu,
+    'niblack': filters.threshold_niblack,
+    'otsu': filters.threshold_otsu,
+    'sauvola': filters.threshold_sauvola,
+    'triangle': filters.threshold_triangle,
+    'yen': filters.threshold_yen,
+}
 
 
 def _normalize_values(image: np.ndarray):
@@ -291,24 +306,11 @@ class Image(object, metaclass=DocFormatterMeta):
         threshold : float
             Threshold value.
         """
-        from skimage import filters
-        dispatch_table = {
-            'isodata': filters.threshold_isodata,
-            'li': filters.threshold_li,
-            'local': filters.threshold_local,
-            'mean': filters.threshold_mean,
-            'minimum': filters.threshold_minimum,
-            'multiotsu': filters.threshold_multiotsu,
-            'niblack': filters.threshold_niblack,
-            'otsu': filters.threshold_otsu,
-            'sauvola': filters.threshold_sauvola,
-            'triangle': filters.threshold_triangle,
-            'yen': filters.threshold_yen,
-        }
         try:
-            func = dispatch_table[method]
+            func = _threshold_dispatch[method]
         except KeyError:
-            raise KeyError(f'`method` must be one of {dispatch_table.keys()}')
+            raise KeyError(
+                f'`method` must be one of {_threshold_dispatch.keys()}')
 
         return self.apply(func, **kwargs)
 

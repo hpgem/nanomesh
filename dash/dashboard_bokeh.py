@@ -1,78 +1,40 @@
 import numpy as np
 import streamlit as st
-from bokeh.models import LinearColorMapper
-from bokeh.palettes import Category10_10 as catpalette
-from bokeh.palettes import Viridis256 as palette
-from bokeh.plotting import figure
-from bokeh.transform import factor_cmap
+from bokeh_plots import (contour_mesh, get_meshplot, get_metric_2dplot,
+                         get_metric_hist, image_plot)
+from skimage import io
+from skimage.color import rgb2gray
 
 from nanomesh import Plane, metrics
-from nanomesh.data import binary_blobs2d
+from nanomesh.data import binary_blobs2d, nanopores
+from nanomesh.image._image import _threshold_dispatch
+
+st.set_page_config(page_title='Nanomesh dashboard',
+                   page_icon='🔺',
+                   initial_sidebar_state='expanded')
 
 st.title('Nanomesh - 2D Meshing')
+st.write('Upload your own data or use the example data to generate a mesh!')
 
-# TODO
-# - More image input methods
-# - Apply image processing on plane
-# - Find more dynamic way of plotting histograms/2d data (plotly, altair?)
 
-with st.sidebar:
-    st.header('Load data')
+@st.experimental_memo
+def load_data(data_file):
+    return np.load(data_file)
 
-    data_choice = st.radio('Data',
-                           index=0,
-                           options=('Synthetic data', 'Custom data'))
 
-    data_choice
+@st.experimental_memo
+def load_binary_data(**kwargs):
+    return binary_blobs2d(**kwargs)
 
-    if data_choice == 'Synthetic data':
-        seed = st.number_input('Seed', value=1234)
-        length = st.number_input('Length', value=50)
-        blob_size_fraction = st.slider('Blob size fraction',
-                                       value=0.3,
-                                       step=0.05)
-        volume_fraction = st.slider('Volume fraction', value=0.2, step=0.05)
 
-        data = binary_blobs2d(seed=seed,
-                              length=length,
-                              blob_size_fraction=blob_size_fraction,
-                              volume_fraction=volume_fraction)
+@st.cache
+def load_data_from_url(url):
+    return rgb2gray(io.imread(url))
 
-    else:
-        uploaded_file = st.file_uploader('Upload data file in numpy format')
 
-        if not uploaded_file:
-            st.stop()
-
-        @st.cache
-        def load_data(data_file):
-            return np.load(data_file)
-
-        data = load_data(uploaded_file)
-
-    plane = Plane(data)
-
-    d = plane.image
-
-    p = figure(tooltips=[('x', '$x'), ('y', '$y'), ('value', '@image')],
-               match_aspect=True,
-               border_fill_alpha=0.0)
-    p.x_range.range_padding = p.y_range.range_padding = 0
-
-    dw, dh = d.shape
-    # must give a vector of image data for image parameter
-    p.image(image=[d],
-            x=0,
-            y=0,
-            dw=dw,
-            dh=dh,
-            palette='Viridis11',
-            level='image')
-    p.grid.grid_line_width = 0.5
-
-    st.bokeh_chart(p, use_container_width=True)
-
-st.header('Generate mesh')
+@st.cache
+def data_are_binary(plane):
+    return set(np.unique(plane.image)) == {0, 1}
 
 
 @st.cache
@@ -89,13 +51,116 @@ def triangulate(mesher, opts=None):
     return mesh_container
 
 
-col1, col2 = st.columns(2)
-with col1:
+with st.sidebar:
+    st.header('Input data')
+
+    CHOICE_1 = 'Use synthetic data (blobs)'
+    CHOICE_2 = 'Use example data (nanopores)'
+    CHOICE_3 = 'Use your own image'
+    CHOICE_4 = 'Use URL'
+
+    data_choice = st.radio('Choose data source',
+                           index=0,
+                           options=(CHOICE_1, CHOICE_2, CHOICE_3))
+
+    if data_choice == CHOICE_1:
+        seed = st.number_input('Seed', value=1234)
+        length = st.number_input('Length', value=50, step=10)
+        blob_size_fraction = st.slider('Blob size fraction',
+                                       value=0.3,
+                                       step=0.05)
+        volume_fraction = st.slider('Volume fraction', value=0.2, step=0.05)
+
+        data = load_binary_data(seed=seed,
+                                length=length,
+                                blob_size_fraction=blob_size_fraction,
+                                volume_fraction=volume_fraction)
+
+    if data_choice == CHOICE_2:
+        data = nanopores()
+
+    elif data_choice == CHOICE_3:
+        uploaded_file = st.file_uploader('Upload data file in numpy format')
+
+        if not uploaded_file:
+            st.stop()
+
+        data = load_data(uploaded_file)
+
+    elif data_choice == CHOICE_4:
+        url = st.text_input('Link to image (url)')
+
+        if not url:
+            st.stop()
+
+        data = load_data_from_url(url)
+
+    plane = Plane(data)
+
+    fig = image_plot(plane)
+    st.bokeh_chart(fig, use_container_width=True)
+
+
+@st.cache
+def do_gaussian(plane, **kwargs):
+    return plane.gaussian(**kwargs)
+
+
+@st.cache
+def do_digitize(plane, **kwargs):
+    return plane.digitize(**kwargs)
+
+
+if not data_are_binary(plane):
+    st.header('Image processing')
+
+    with st.container():
+        c1, c2 = st.columns((0.3, 0.7))
+
+        with c1:
+            gaussian_blur = st.checkbox('Apply gaussian blur', value=False)
+            sigma = st.number_input('Sigma', value=5)
+
+        if gaussian_blur:
+            plane = do_gaussian(plane, sigma=sigma)
+
+        with c1:
+            threshold_method = st.selectbox('Select thresholding method',
+                                            index=1,
+                                            options=list(_threshold_dispatch))
+            threshold_value = plane.threshold(threshold_method)
+            st.metric('Threshold value',
+                      f'{threshold_value:.3f}',
+                      delta=None,
+                      delta_color='normal')
+
+        with c1:
+            segment = st.checkbox('Segment', value=False)
+            invert = st.checkbox('Invert contrast', value=False)
+
+        if segment:
+            plane = do_digitize(plane, bins=[threshold_value])
+
+        if invert:
+            plane = plane.invert_contrast()
+
+        with c2:
+            fig = image_plot(plane)
+            st.bokeh_chart(fig, use_container_width=True)
+
+if not data_are_binary(plane):
+    st.error('Data are not binary. Segment first.')
+    st.stop()
+
+st.header('Contour finding')
+
+c1, c2 = st.columns((0.3, 0.7))
+with c1:
     precision = st.number_input('precision',
                                 min_value=0.0,
                                 step=0.1,
                                 value=1.0)
-with col2:
+
     max_edge_dist = st.number_input('Max edge distance',
                                     min_value=0.0,
                                     step=0.5,
@@ -103,181 +168,38 @@ with col2:
 
 mesher = generate_contour(precision=precision, max_edge_dist=max_edge_dist)
 
+with c2:
+    fig = contour_mesh(mesher)
+    st.bokeh_chart(fig, use_container_width=True)
 
-def contour_mesh(mesher):
-    p = figure(title='Line Mesh',
-               tooltips=[('x', '$x'), ('y', '$y'), ('value', '@image')],
-               match_aspect=True,
-               border_fill_alpha=0.0)
+st.header('Triangulation')
 
-    c = mesher.contour
+opts = st.text_input(
+    'Triangulation options',
+    value='q30a5',
+    help=
+    'For more information, check out the [triangle documentation](https://rufat.be/triangle/API.html#triangle.triangulate).'
+)
 
-    vert_x, vert_y = c.points.T
+with st.spinner('Triangulating...'):
+    mesh_container = triangulate(mesher, opts=opts)
+    triangle_mesh = mesh_container.get('triangle')
 
-    import itertools
-    colors = itertools.cycle(catpalette)
-
-    for i in np.unique(c.cell_data['segment_markers']):
-        color = next(colors)
-        mask = c.cell_data['segment_markers'] != i
-
-        if mask is not None:
-            cells = c.cells[~mask.squeeze()]
-
-        lines_x = (vert_x[cells] + 0.5).tolist()
-        lines_y = (vert_y[cells] + 0.5).tolist()
-
-        p.multi_line(lines_y,
-                     lines_x,
-                     legend_label=f'{i}',
-                     line_width=5,
-                     color=color)
-
-    p.hover.point_policy = 'follow_mouse'
-
-    # image
-    d = mesher.image
-
-    p.x_range.range_padding = p.y_range.range_padding = 0
-
-    dw, dh = d.shape
-    # must give a vector of image data for image parameter
-    p.image(image=[d],
-            x=0,
-            y=0,
-            dw=dw,
-            dh=dh,
-            palette='Viridis11',
-            level='image')
-    p.grid.grid_line_width = 0.0
-    return p
-
-
-p = contour_mesh(mesher)
-st.bokeh_chart(p, use_container_width=True)
-
-opts = st.text_input('Triangulation options', value='q30a5')
-
-mesh_container = triangulate(mesher, opts=opts)
-triangle_mesh = mesh_container.get('triangle')
-
-
-def get_meshplot(mesh):
-    p = figure(title='Meshplot',
-               tooltips=[('Physical', '@physical'), ('(x, y)', '($x, $y)'),
-                         ('index', '$index')],
-               x_axis_label='x',
-               y_axis_label='y',
-               match_aspect=True)
-
-    xs = mesh.points[mesh.cells][:, :, 0]
-    ys = mesh.points[mesh.cells][:, :, 1]
-    cs = mesh.cell_data['physical']
-
-    data = {
-        'x': xs.tolist(),
-        'y': ys.tolist(),
-        'physical':
-        tuple(mesh.number_to_field.get(val, str(val)) for val in cs)
-    }
-
-    factors = tuple(reversed(mesh.fields))
-
-    p.patches('x',
-              'y',
-              source=data,
-              fill_color=None,
-              line_color=factor_cmap('physical',
-                                     palette=catpalette,
-                                     factors=factors),
-              line_width=2)
-    p.hover.point_policy = 'follow_mouse'
-
-    return p
-
-
-p = get_meshplot(triangle_mesh)
-st.bokeh_chart(p)
+fig = get_meshplot(triangle_mesh)
+st.bokeh_chart(fig)
 
 st.header('Mesh metrics')
 
-metrics_list = st.multiselect('Metrics to plot',
+metrics_list = st.multiselect('Select which metrics to plot',
                               default='area',
                               options=list(metrics._metric_dispatch))
 
-
-def get_metric_hist(mesh, metric):
-    metric_vals = getattr(metrics, metric)(mesh)
-
-    hist, edges = np.histogram(metric_vals, bins=50)
-
-    p = figure(
-        title=f'Histogram of triangle {metric}',
-        x_axis_label=f'Triangle {metric}',
-        y_axis_label='Frequency',
-        tooltips=[
-            ('value', '@top'),
-        ],
-    )
-    p.quad(top=hist,
-           bottom=0,
-           left=edges[:-1],
-           right=edges[1:],
-           fill_color='navy',
-           line_color='white',
-           alpha=0.5)
-    p.hover.point_policy = 'follow_mouse'
-
-    return p
-
-
-def get_metric_2dplot(mesh, metric):
-    metric_vals = getattr(metrics, metric)(mesh)
-
-    color_mapper = LinearColorMapper(palette=palette)
-
-    p = figure(title=f'Triplot of triangle {metric}',
-               tooltips=[('Physical', '@physical'),
-                         (metric.capitalize(), f'@{metric}'),
-                         ('(x, y)', '($x, $y)')],
-               x_axis_label='x',
-               y_axis_label='y',
-               match_aspect=True)
-
-    xs = mesh.points[mesh.cells][:, :, 0]
-    ys = mesh.points[mesh.cells][:, :, 1]
-
-    cs = mesh.cell_data['physical']
-
-    data = {
-        'x': xs.tolist(),
-        'y': ys.tolist(),
-        'label': cs.tolist(),
-        metric: metric_vals.tolist(),
-    }
-
-    p.patches('x',
-              'y',
-              source=data,
-              fill_color={
-                  'field': metric,
-                  'transform': color_mapper
-              },
-              line_width=1)
-    p.hover.point_policy = 'follow_mouse'
-
-    return p
-
-
 for metric in metrics_list:
-    p = get_metric_hist(triangle_mesh, metric)
-    st.bokeh_chart(p, use_container_width=True)
+    fig = get_metric_hist(triangle_mesh, metric)
+    st.bokeh_chart(fig, use_container_width=True)
 
-    p = get_metric_2dplot(triangle_mesh, metric)
-    st.bokeh_chart(p, use_container_width=True)
-
-# Embedding pyvista / vtk
-# https://discuss.streamlit.io/t/is-it-possible-plot-3d-mesh-file-or-to-add-the-vtk-pyvista-window-inline-streamlit/4164/7
+    fig = get_metric_2dplot(triangle_mesh, metric)
+    st.bokeh_chart(fig, use_container_width=True)
 
 st.sidebar.header('Export mesh')
 
@@ -303,7 +225,7 @@ for ext, fmts in meshio._helpers.extension_to_filetypes.items():
         filetypes[f'{fmt} ({ext})'] = (fmt, ext)
 
 file_stem = 'mesh'
-file_format = st.sidebar.selectbox('Export to',
+file_format = st.sidebar.selectbox('Choose format to export data to',
                                    index=0,
                                    options=[None] + list(filetypes))
 

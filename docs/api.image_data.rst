@@ -2,8 +2,8 @@
 
 .. currentmodule:: nanomesh
 
-Working with image data
-=======================
+Image data
+==========
 
 Nanomesh has two classes for representing image data, :class:`Plane` for working
 with 2D pixel data and :class:`Volume` for working with 3D voxel data.

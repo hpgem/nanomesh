@@ -5,4 +5,4 @@ nanomesh.image
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: Plane, Volume
+   :exclude-members: Plane, Volume, Image

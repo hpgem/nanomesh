@@ -2,8 +2,8 @@
 
 .. module:: nanomesh.metrics
 
-Metrics
-=======
+Mesh Metrics
+============
 
 The :mod:`nanomesh.metrics` module helps with calculating different types of cell metrics.
 

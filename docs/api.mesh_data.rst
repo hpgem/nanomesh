@@ -2,8 +2,8 @@
 
 .. currentmodule:: nanomesh
 
-Working with mesh data
-======================
+Mesh data
+=========
 
 A large part of Nanomesh deals with with generating and manipulating
 2D and 3D meshes. To store the data, Nanomesh uses :class:`MeshContainer`,

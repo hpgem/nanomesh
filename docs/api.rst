@@ -18,6 +18,7 @@ The side bar contains a listing of classes and functions by topic.
    api.meshing
    api.metrics
    api.helpers
+   api.plotting
    api.data
 
 Most of Nanomesh' functionality can be accessed through the classes

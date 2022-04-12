@@ -9,7 +9,7 @@ from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List,
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .._doc import doc
+from .._doc import copy_func, doc
 
 if TYPE_CHECKING:
     from nanomesh import LineMesh, MeshContainer, TriangleMesh
@@ -253,17 +253,17 @@ def lineplot(ax: plt.Axes,
     return ax.plot(lines_x.ravel(), lines_y.ravel(), label=label, **kwargs)
 
 
-def _meshplot(mesh: LineMesh | TriangleMesh,
-              ax: plt.Axes = None,
-              key: str = None,
-              legend: str = 'fields',
-              show_labels: Optional[Iterable | str | int] = None,
-              hide_labels: Optional[Iterable | str | int] = None,
-              show_region_markers: bool = True,
-              colors: Sequence[str] = None,
-              color_map: Dict[str | int, str] = None,
-              flip_xy: bool = True,
-              **kwargs) -> plt.Axes:
+def meshplot(mesh: LineMesh | TriangleMesh,
+             ax: plt.Axes = None,
+             key: str = None,
+             legend: str = 'fields',
+             show_labels: Optional[Iterable | str | int] = None,
+             hide_labels: Optional[Iterable | str | int] = None,
+             show_region_markers: bool = True,
+             colors: Sequence[str] = None,
+             color_map: Dict[str | int, str] = None,
+             flip_xy: bool = True,
+             **kwargs) -> plt.Axes:
     """Plot a :class:`nanomesh.TriangleMesh` or :class:`nanomesh.LineMesh`
     using :mod:`matplotlib`.
 
@@ -422,8 +422,11 @@ def _meshplot(mesh: LineMesh | TriangleMesh,
     return ax
 
 
-trianglemeshplot = _meshplot
-linemeshplot = _meshplot
+trianglemeshplot = copy_func(meshplot)
+trianglemeshplot.__doc__ = """Alias for :func:`meshplot`."""
+
+linemeshplot = copy_func(meshplot)
+linemeshplot.__doc__ = """Alias for :func:`meshplot`."""
 
 
 def linetrianglemeshplot(mesh: MeshContainer,

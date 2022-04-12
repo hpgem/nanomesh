@@ -5,4 +5,4 @@ nanomesh.mesh
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: LineMesh, TriangleMesh, TetraMesh
+   :exclude-members: LineMesh, TriangleMesh, TetraMesh, Mesh

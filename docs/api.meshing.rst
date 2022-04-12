@@ -2,8 +2,8 @@
 
 .. currentmodule:: nanomesh
 
-Making a mesh out of image data
-===============================
+Meshing routines
+================
 
 :func:`plane2mesh` and :func:`volume2mesh` are high-level functions for
 generating a mesh. For finer control, use the classes :class:`Mesher2D` for

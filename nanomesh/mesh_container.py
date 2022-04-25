@@ -9,6 +9,7 @@ import meshio
 import numpy as np
 
 from .mesh import Mesh, PruneZ0Mixin
+from .plotting import pointsplot
 
 try:
     # meshio >= 5.3
@@ -283,6 +284,16 @@ class MeshContainer(meshio.Mesh, PruneZ0Mixin):
         """
         mesh = self.get(cell_type)
         return mesh.plot_pyvista(**kwargs)
+
+    def plot_points(self, **kwargs):
+        """Plot points data using :mod:`matplotlib.
+
+        Parameters
+        ----------
+        **kwargs
+            These parameters are passed to the plotting method.
+        """
+        return pointsplot(self, **kwargs)
 
     @classmethod
     def from_mesh(cls, mesh: Mesh):

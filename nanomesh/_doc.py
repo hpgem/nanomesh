@@ -8,7 +8,7 @@ from types import FunctionType, MethodType
 from typing import Any, Callable, TypeVar
 
 
-def copy_func(f: FunctionType) -> FunctionType:
+def copy_func(f: Callable) -> FunctionType:
     """Make a copy of function `f`."""
     g = FunctionType(f.__code__,
                      f.__globals__,

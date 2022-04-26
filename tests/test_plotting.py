@@ -79,3 +79,8 @@ def test_compare_with_mesh():
     mesh = TriangleMesh(points=points, cells=cells, labels=labels)
 
     compare_mesh_with_image(image, mesh, legend='all')
+
+
+@image_comparison2(baseline_images=['pointsplot'])
+def test_pointsplot(line_tri_mesh):
+    line_tri_mesh.plot_points(key='physical')

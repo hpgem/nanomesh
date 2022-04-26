@@ -18,6 +18,8 @@ These plotting functions are currently available:
     trianglemeshplot
     linetrianglemeshplot
     lineplot
+    pointsplot
+
 
 Reference
 ---------
@@ -26,3 +28,4 @@ Reference
 .. autofunction:: linemeshplot
 .. autofunction:: lineplot
 .. autofunction:: trianglemeshplot
+.. autofunction:: pointsplot

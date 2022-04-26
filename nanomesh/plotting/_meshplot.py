@@ -438,7 +438,7 @@ def linetrianglemeshplot(mesh: MeshContainer,
     mesh : MeshContainer
         Input mesh containing line and triangle cells.
     **kwargs
-        Exstra keyword arguments passed to
+        Extra keyword arguments passed to
         - :func:`linemeshplot`
         - :func:`trianglemeshplot`
 
@@ -456,3 +456,42 @@ def linetrianglemeshplot(mesh: MeshContainer,
     trianglemeshplot(triangle_mesh, ax=ax2, **kwargs)
 
     return ax1, ax2
+
+
+def pointsplot(mesh: MeshContainer,
+               key: str = None,
+               ax: plt.Axes = None,
+               **kwargs) -> plt.Axes:
+    """Plot mesh points.
+
+    Parameters
+    ----------
+    mesh : MeshContainer
+        Input mesh
+    key : str, optional
+        Key of the point data to use for coloring
+    ax : matplotlib.axes.Axes, optional
+        Axes to use for plotting.
+    **kwargs :
+        These parameters are passed to :func:`matplotlib.pyplot.scatter`
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+    """
+    if key:
+        colors = mesh.point_data[key]
+    else:
+        colors = None
+
+    if not ax:
+        fig, ax = plt.subplots()
+
+    points = mesh.points
+
+    x, y = points.T
+    ax.scatter(y, x, c=colors, **kwargs)
+    ax.set_title('Points plot')
+    ax.axis('equal')
+
+    return ax

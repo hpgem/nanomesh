@@ -105,13 +105,20 @@ def line_tri_mesh():
         ]
     }
 
-    return MeshContainer(points=points,
-                         cells={
-                             'line': lines,
-                             'triangle': triangles
-                         },
-                         field_data=field_data,
-                         cell_data=cell_data)
+    point_data = {
+        'physical': [1, 2, 3, 4],
+    }
+
+    return MeshContainer(
+        points=points,
+        cells={
+            'line': lines,
+            'triangle': triangles
+        },
+        field_data=field_data,
+        cell_data=cell_data,
+        point_data=point_data,
+    )
 
 
 @pytest.fixture

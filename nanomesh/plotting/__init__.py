@@ -1,7 +1,7 @@
 """Module containing mesh plots."""
 
 from ._meshplot import (linemeshplot, lineplot, linetrianglemeshplot, meshplot,
-                        trianglemeshplot)
+                        pointsplot, trianglemeshplot)
 from ._widgets import PolygonSelectorWithSnapping
 
 __all__ = [
@@ -9,6 +9,7 @@ __all__ = [
     'lineplot',
     'linetrianglemeshplot',
     'meshplot',
+    'pointsplot',
     'PolygonSelectorWithSnapping',
     'trianglemeshplot',
 ]

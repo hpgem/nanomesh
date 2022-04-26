@@ -2,13 +2,14 @@ import os
 import tempfile
 from pathlib import Path
 
+import altair as alt
 import pandas as pd
 import streamlit as st
-from bokeh_plots import get_meshplot, get_metric_2dplot, get_metric_hist
+from bokeh_plots import get_meshplot
 
 from nanomesh import MeshContainer, data, metrics
 
-st.title('Nanomesh - mæshboard')
+st.title('Nanomesh - meshboard')
 st.write('Upload your own mesh or use the example data to generate metrics!')
 
 
@@ -23,7 +24,9 @@ def load_mesh(data_file):
     return mesh
 
 
+@st.cache
 def load_example_mesh(opts):
+    print('loading', opts)
     return data.blob_mesh2d(opts=opts).get('triangle')
 
 
@@ -38,21 +41,20 @@ opts_choices = (
 
 with st.sidebar:
 
-    if st.checkbox(f'Use example data'):
+    if st.checkbox('Use example data'):
         meshes = [load_example_mesh(opts=opts) for opts in opts_choices]
     else:
+        st.text('Upload up to 4 meshes')
         meshes = []
 
         for n in range(4):
-            uploaded_file = st.file_uploader(f'Upload your mesh',
+            st.header(f'Mesh #{n+1}')
+            uploaded_file = st.file_uploader('Upload your mesh',
                                              key=f'upload_{n}')
             if uploaded_file:
                 mesh = load_mesh(uploaded_file)
                 meshes.append(mesh)
             else:
-                st.stop()
-
-            if not st.checkbox('Upload another?', key=f'cb_upload_{n}'):
                 break
 
     if not meshes:
@@ -68,7 +70,9 @@ dfs = []
 
 with st.expander('Meshes'):
 
-    for mesh in meshes:
+    for i, mesh in enumerate(meshes):
+        st.header(f'Mesh #{i+1}')
+
         c1, c2 = st.columns(2)
         with c1:
             fig = get_meshplot(mesh)
@@ -79,41 +83,19 @@ with st.expander('Meshes'):
         df = pd.DataFrame(metrics.calculate_all_metrics(mesh))
         dfs.append(df)
 
-import altair as alt
-
-LEVEL = 'mesh_num'
+LEVEL = 'Mesh index'
 df = pd.concat({i: df for i, df in enumerate(dfs)}, names=(LEVEL, ))
 df = df.reset_index(level=LEVEL)
 
-c = alt.Chart(df).mark_bar(opacity=0.3, binSpacing=1).encode(
-    x=alt.X('area:Q', bin=alt.Bin(maxbins=50)),
-    y=alt.Y('count()', stack=None),  # zero, center, normalize
-    color=f'{LEVEL}:N',
-    column=f'{LEVEL}:N',
-    tooltip=['count(area)'])
+for metric in metrics_list:
+    st.header(metric)
+    c = alt.Chart(df).mark_bar(opacity=0.3, binSpacing=1).encode(
+        x=alt.X(f'{metric}:Q', bin=alt.Bin(maxbins=50)),
+        y=alt.Y('count()', stack=None),  # zero, center, normalize
+        color=f'{LEVEL}:N',
+        column=f'{LEVEL}:N',
+        tooltip=[f'count({metric})'])
 
-c.properties(title='area', )
+    c.properties(title=f'{metric}', )
 
-st.altair_chart(c)
-
-st.stop()
-
-# df = metrics.calculate_all_metrics(meshes[0])
-
-# for metric in metrics_list:
-#     fig = get_metric_hist(mesh, metric)
-#     st.bokeh_chart(fig, use_container_width=True)
-
-#     fig = get_metric_2dplot(mesh, metric)
-#     st.bokeh_chart(fig, use_container_width=True)
-
-# from IPython import embed
-# embed()
-
-# for metric in metrics:
-# plot metric 2D
-# bar chart with metric values
-
-# for multiple meshes
-# 2d plots side by side
-# bar charts overlap
+    st.altair_chart(c)

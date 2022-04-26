@@ -1,3 +1,8 @@
+import atexit
+import tempfile
+from pathlib import Path
+
+import meshio
 import numpy as np
 import streamlit as st
 from bokeh_plots import (contour_mesh, get_meshplot, get_metric_2dplot,
@@ -5,7 +10,7 @@ from bokeh_plots import (contour_mesh, get_meshplot, get_metric_2dplot,
 from skimage import io
 from skimage.color import rgb2gray
 
-from nanomesh import Plane, metrics
+from nanomesh import Mesher, Plane, metrics
 from nanomesh.data import binary_blobs2d, nanopores
 from nanomesh.image._image import _threshold_dispatch
 
@@ -39,7 +44,6 @@ def data_are_binary(plane):
 
 @st.cache
 def generate_contour(precision=None, max_edge_dist=None):
-    from nanomesh import Mesher
     mesher = Mesher(plane)
     mesher.generate_contour(precision=precision, max_edge_dist=max_edge_dist)
     return mesher
@@ -177,9 +181,8 @@ st.header('Triangulation')
 opts = st.text_input(
     'Triangulation options',
     value='q30a5',
-    help=
-    'For more information, check out the [triangle documentation](https://rufat.be/triangle/API.html#triangle.triangulate).'
-)
+    help=('For more information, check out the [triangle documentation]'
+          '(https://rufat.be/triangle/API.html#triangle.triangulate).'))
 
 with st.spinner('Triangulating...'):
     mesh_container = triangulate(mesher, opts=opts)
@@ -203,12 +206,6 @@ for metric in metrics_list:
 
 st.sidebar.header('Export mesh')
 
-import atexit
-import tempfile
-from pathlib import Path
-
-import meshio
-
 
 @st.cache
 def convert_mesh(mesh, filename, file_format):
@@ -227,7 +224,7 @@ for ext, fmts in meshio._helpers.extension_to_filetypes.items():
 file_stem = 'mesh'
 file_format = st.sidebar.selectbox('Choose format to export data to',
                                    index=0,
-                                   options=[None] + list(filetypes))
+                                   options=[None, *filetypes])
 
 if not file_format:
     st.stop()

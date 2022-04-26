@@ -206,6 +206,10 @@ class Mesher2D(Mesher, ndim=2):
         ]
         polygons = [polygon.remove_duplicate_points() for polygon in polygons]
 
+        # remove polygons with no area,
+        # fixes https://github.com/hpgem/nanomesh/issues/86
+        polygons = [polygon for polygon in polygons if len(polygon) > 2]
+
         regions = _generate_regions(polygons)
         regions.append(_generate_background_region(polygons, self.bbox))
 

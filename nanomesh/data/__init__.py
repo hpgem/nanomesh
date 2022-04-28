@@ -54,8 +54,8 @@ def nanopores() -> np.ndarray:
     nanopores : numpy.ndarray
         2D image of nanopores
     """
-    i = 30
-    return nanopores3d()[i]
+    i = 161
+    return nanopores3d()[:, :, i]
 
 
 def nanopores_gradient() -> np.ndarray:

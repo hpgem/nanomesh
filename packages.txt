@@ -1,3 +1,2 @@
-# packages needed for Streamlit dashboard (see ./dash)
 libgl1
 libxrender1

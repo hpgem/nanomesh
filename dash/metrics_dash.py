@@ -9,7 +9,7 @@ from bokeh_plots import get_meshplot
 
 from nanomesh import MeshContainer, data, metrics
 
-st.title('Nanomesh - meshboard')
+st.title('Compare mesh metrics')
 st.write('Upload your own mesh or use the example data to generate metrics!')
 
 
@@ -41,10 +41,18 @@ opts_choices = (
 
 with st.sidebar:
 
+    st.markdown("""
+This dashboard uses *nanomesh* to generate mesh metrics. For
+more info, click
+[here](https://nanomesh.readthedocs.io/en/latest/).
+""")
+
+    st.header('Data')
+
     if st.checkbox('Use example data'):
         meshes = [load_example_mesh(opts=opts) for opts in opts_choices]
     else:
-        st.text('Upload up to 4 meshes')
+        st.markdown('Upload up to 4 meshes')
         meshes = []
 
         for n in range(4):
@@ -62,17 +70,19 @@ with st.sidebar:
 
     st.header('Metrics')
 
+    def format_func(raw_string):
+        return metrics._metric_dispatch[raw_string].name
+
     metrics_list = st.multiselect('Select which metrics to plot',
-                                  default='area',
-                                  options=list(metrics._metric_dispatch))
+                                  default=('min_angle', 'max_angle'),
+                                  options=list(metrics._metric_dispatch),
+                                  format_func=format_func)
 
 dfs = []
 
-with st.expander('Meshes'):
+for i, mesh in enumerate(meshes):
 
-    for i, mesh in enumerate(meshes):
-        st.header(f'Mesh #{i+1}')
-
+    with st.expander(f'Click to expand - Mesh #{i+1}'):
         c1, c2 = st.columns(2)
         with c1:
             fig = get_meshplot(mesh)
@@ -80,22 +90,27 @@ with st.expander('Meshes'):
         with c2:
             st.text(mesh)
 
-        df = pd.DataFrame(metrics.calculate_all_metrics(mesh))
-        dfs.append(df)
+    df = pd.DataFrame(metrics.calculate_all_metrics(mesh))
+    dfs.append(df)
 
 LEVEL = 'Mesh index'
-df = pd.concat({i: df for i, df in enumerate(dfs)}, names=(LEVEL, ))
+df = pd.concat({i + 1: df for i, df in enumerate(dfs)}, names=(LEVEL, ))
 df = df.reset_index(level=LEVEL)
 
 for metric in metrics_list:
-    st.header(metric)
+    m = metrics._metric_dispatch[metric]
+
+    xlabel = f'{m.name} ({m.units})' if m.units else m.name
+
+    st.header(m.name)
+    st.markdown(m.description)
     c = alt.Chart(df).mark_bar(opacity=0.3, binSpacing=1).encode(
-        x=alt.X(f'{metric}:Q', bin=alt.Bin(maxbins=50)),
+        x=alt.X(f'{metric}:Q', bin=alt.Bin(maxbins=50), title=xlabel),
         y=alt.Y('count()', stack=None),  # zero, center, normalize
         color=f'{LEVEL}:N',
         column=f'{LEVEL}:N',
         tooltip=[f'count({metric})'])
 
-    c.properties(title=f'{metric}', )
+    # c.properties(title=desc.name, )
 
     st.altair_chart(c)

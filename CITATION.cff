@@ -19,7 +19,7 @@ authors:
     family-names: "Corbijn van Willenswaard"
     given-names: "Lars J."
     orcid: "0000-0001-6554-1527"
-version: "0.8.0"
+version: "0.8.1"
 repository-code: "https://github.com/hpgem/nanomesh"
 identifiers:
 keywords:

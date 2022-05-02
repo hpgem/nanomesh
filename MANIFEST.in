@@ -1,2 +1,7 @@
 include LICENSE
-include README.rst
+include nanomesh/data/*.npy
+global-include *.md
+global-include requirements.txt
+recursive-include tests *.msh *.vol* *.png
+recursive-include notebooks *.md *.PS1 *.sh *.png
+recursive-include dash *.py

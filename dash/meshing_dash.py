@@ -18,7 +18,7 @@ st.set_page_config(page_title='Nanomesh dashboard',
                    page_icon='🔺',
                    initial_sidebar_state='expanded')
 
-st.title('Nanomesh - 2D Meshing')
+st.title('Generate 2D mesh')
 st.write('Upload your own data or use the example data to generate a mesh!')
 
 
@@ -56,7 +56,13 @@ def triangulate(mesher, opts=None):
 
 
 with st.sidebar:
-    st.header('Input data')
+    st.markdown("""
+This dashboard uses *nanomesh* to generate mesh metrics. For
+more info, click
+[here](https://nanomesh.readthedocs.io/en/latest/).
+""")
+
+    st.header('Data')
 
     CHOICE_1 = 'Use synthetic data (blobs)'
     CHOICE_2 = 'Use example data (nanopores)'
@@ -111,8 +117,8 @@ def do_gaussian(plane, **kwargs):
 
 
 @st.cache
-def do_digitize(plane, **kwargs):
-    return plane.digitize(**kwargs)
+def do_digitize(plane, thresh):
+    return (plane > thresh).astype(int)
 
 
 if not data_are_binary(plane):
@@ -133,17 +139,20 @@ if not data_are_binary(plane):
                                             index=1,
                                             options=list(_threshold_dispatch))
             threshold_value = plane.threshold(threshold_method)
-            st.metric('Threshold value',
-                      f'{threshold_value:.3f}',
-                      delta=None,
-                      delta_color='normal')
+
+            try:
+                val = f'{threshold_value:.3f}'
+            except TypeError:
+                val = '-'
+
+            st.metric('Threshold value', val, delta=None, delta_color='normal')
 
         with c1:
             segment = st.checkbox('Segment', value=False)
             invert = st.checkbox('Invert contrast', value=False)
 
         if segment:
-            plane = do_digitize(plane, bins=[threshold_value])
+            plane = do_digitize(plane, thresh=threshold_value)
 
         if invert:
             plane = plane.invert_contrast()

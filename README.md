@@ -20,9 +20,9 @@ Documentation: https://nanomesh.readthedocs.io/en/latest/
 
 ## Try nanomesh in your browser!
 
-| <img src="docs/_static/meshing_dash.png" alt="drawing" width="85%"/> | <img src="docs/_static/metrics_dash.png" alt="drawing" width="85%"/> |
+| <a href="https://share.streamlit.io/hpgem/nanomesh-dashboard/master/meshing_dash.py"><img src="docs/_static/meshing_dash.png" alt="Generate a 2D mesh" width="85%"/></a> | <a href="https://share.streamlit.io/hpgem/nanomesh-dashboard/master/metrics_dash.py"><img src="docs/_static/metrics_dash.png" alt="Calculate mesh metrics" width="85%"/></a> |
 | - | - |
-| [Generate a 2D mesh](https://share.streamlit.io/hpgem/nanomesh-dashboard/master/meshing_dash.py) | [Calculate mesh metrics](https://share.streamlit.io/hpgem/nanomesh-dashboard/master/meshing_dash.py) |
+| [Generate a 2D mesh](https://share.streamlit.io/hpgem/nanomesh-dashboard/master/meshing_dash.py) | [Calculate mesh metrics](https://share.streamlit.io/hpgem/nanomesh-dashboard/master/metrics_dash.py) |
 
 ## Show me an example!
 

@@ -23,19 +23,19 @@ Try nanomesh in your browser!
 
    * - .. figure:: _static/meshing_dash.png
           :alt: Image of meshing dashboard
-          :target: https://share.streamlit.io/hpgem/nanomesh/update_dash/dash/meshing_dash.py
+          :target: https://share.streamlit.io/hpgem/nanomesh-dashboard/master/meshing_dash.py
           :align: center
           :width: 85%
 
-          `Generate a 2D mesh <https://share.streamlit.io/hpgem/nanomesh/update_dash/dash/meshing_dash.py>`_
+          `Generate a 2D mesh <https://share.streamlit.io/hpgem/nanomesh-dashboard/master/meshing_dash.py>`_
 
      - .. figure:: _static/metrics_dash.png
           :alt: Image of metrics dashboard
-          :target: https://share.streamlit.io/hpgem/nanomesh/update_dash/dash/metrics_dash.py
+          :target: https://share.streamlit.io/hpgem/nanomesh-dashboard/master/metrics_dash.py
           :align: center
           :width: 85%
 
-          `Calculate mesh metrics <https://share.streamlit.io/hpgem/nanomesh/update_dash/dash/metrics_dash.py>`_
+          `Calculate mesh metrics <https://share.streamlit.io/hpgem/nanomesh-dashboard/master/metrics_dash.py>`_
 
 
 .. toctree::

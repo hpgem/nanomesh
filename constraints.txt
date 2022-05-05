@@ -3,8 +3,8 @@ aiosignal==1.2.0
 alabaster==0.7.12
 appdirs==1.4.4
 argcomplete==2.0.0
-argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
+argon2-cffi==21.3.0
 asttokens==2.0.5
 async-timeout==4.0.2
 atomicwrites==1.4.0
@@ -41,12 +41,13 @@ idna==3.3
 imageio==2.19.0
 imagesize==1.3.0
 importlib-metadata==4.11.3
+importlib-resources==5.7.1
 iniconfig==1.1.1
 ipydatawidgets==4.2.0
 ipykernel==6.13.0
 ipympl==0.9.1
-ipython==8.3.0
 ipython-genutils==0.2.0
+ipython==8.3.0
 ipywidgets==7.7.0
 isort==5.10.1
 itk-core==5.2.1.post1
@@ -66,8 +67,8 @@ jupytext==1.13.8
 kiwisolver==1.4.2
 markdown-it-py==2.1.0
 MarkupSafe==2.1.1
-matplotlib==3.5.2
 matplotlib-inline==0.1.3
+matplotlib==3.5.2
 mdit-py-plugins==0.3.0
 mdurl==0.1.1
 meshio==5.3.4
@@ -77,8 +78,8 @@ nbclient==0.5.13
 nbconvert==6.5.0
 nbformat==5.4.0
 nbmake==1.3.0
-nbsphinx==0.8.8
 nbsphinx-link==1.3.0
+nbsphinx==0.8.8
 nest-asyncio==1.5.5
 networkx==2.8
 nodeenv==1.6.0
@@ -88,6 +89,7 @@ packaging==21.3
 pandocfilters==1.5.0
 param==1.12.1
 parso==0.8.3
+pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==9.1.0
 pipx==1.0.0
@@ -97,6 +99,7 @@ pre-commit==2.18.1
 prometheus-client==0.14.1
 prompt-toolkit==3.0.29
 psutil==5.9.0
+ptyprocess==0.7.0
 pure-eval==0.2.2
 py==1.11.0
 pycodestyle==2.8.0
@@ -106,8 +109,8 @@ pydantic==1.9.0
 Pygments==2.12.0
 pyparsing==3.0.8
 pyrsistent==0.18.1
-pytest==7.1.2
 pytest-cov==3.0.0
+pytest==7.1.2
 python-dateutil==2.8.2
 pytz==2022.1
 pyvista==0.34.1
@@ -127,8 +130,8 @@ Send2Trash==1.8.0
 six==1.16.0
 snowballstemmer==2.2.0
 soupsieve==2.3.2.post1
-Sphinx==4.5.0
 sphinx-rtd-theme==1.0.0
+Sphinx==4.5.0
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.0

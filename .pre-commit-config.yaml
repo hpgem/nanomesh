@@ -20,7 +20,8 @@ repos:
       - id: debug-statements
       - id: double-quote-string-fixer
   - repo: https://github.com/stefsmeets/nbcheckorder/
-    rev: v0.1.3
+    rev: v0.1.4
+
     hooks:
       - id: nbcheckorder
   - repo: https://github.com/PyCQA/isort

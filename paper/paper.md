@@ -26,23 +26,19 @@ bibliography: paper.bib
 
 # Summary
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Nanomesh is a Python library that allows users to quicly and easily create 2D and 3D meshes directly from images of the object they wish to mesh. The automated workflow can apply filtering to smooth the original image, segment the picture to extract different regions and create conforming meshes of the objects. Analysis tools allow to evaluate the quality of the resuting mesh and detect problematic regions. The resulting meshes can be exproted in a variety of popular formats so that they can easily be used for example in finite element simulations. nanomesh can be used as python library for example in Jupyter notebooks, or though dedicated online dashboards.
 
 # Statement of need
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Finite element simulations very often require the creation of a non-regular mesh that represent the topology and physical properties of the object under examination.  Many meshing libraries exists and allows to create such meshes [ref]. Most of these solutions are however proprietary with sometimes a substantial fee due to the level of certification they require for example for medical or engineering applications [ref].  Some open source libraries do exist but often create meshes from a CAD design or well defined primitive [ref]. While these meshing libraries are invaluable for the study of idealized systems they do not allow the mesh to account for potential defects in the underlying topology of the object. 
 
-# Mathematics
+For example the calcuations of the optical properties of nanocrystals is usually performed with an ideal nano structure as substrate for the propagation of the Maxwell equations [ref]. Such simulations provide very valuable insight but ignore the effect that manufacturing imprecision of the nanometer size pores can have on the overall properties of the crystal. To resolve such structure-property relationship, a meshes conforming to experimental images of real nanocrystlals are needed. The subsequent simulation of wave propagation through  these meshes using any FEM solver will enable to better understand the impact that imperfections may have on the overall properties. Similar use cases in different fields of material science and beyond are expected. The direct FEM simulations on real device topology might bring very valuable insights. Through its user friendliness, code qualitiy, nanomesh will enable scientist running advanced simulations on mesh that represent accurately the  devices that are created in experimental labs.
+
+# Illustration 
+
+To illustrate the use of nanomesh we present here the use of nanomesh to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial. [Or maybe the cell example] 
+
+<!-- # Mathematics
 
 Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
 
@@ -57,7 +53,7 @@ You can also use plain \LaTeX for equations
 \begin{equation}\label{eq:fourier}
 \hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
 \end{equation}
-and refer to \autoref{eq:fourier} from text.
+and refer to \autoref{eq:fourier} from text. -->
 
 # Citations
 

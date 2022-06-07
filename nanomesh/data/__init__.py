@@ -37,7 +37,7 @@ def binary_blobs2d(**kwargs) -> np.ndarray:
     return binary_blobs(**kwargs).astype(int)
 
 
-@doc(dim='3d')
+@doc(binary_blobs2d, dim='3d')
 def binary_blobs3d(**kwargs) -> np.ndarray:
     kwargs.setdefault('length', 50)
     kwargs.setdefault('n_dim', 3)

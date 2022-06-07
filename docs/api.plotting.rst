@@ -24,8 +24,9 @@ These plotting functions are currently available:
 Reference
 ---------
 
-.. autofunction:: linetrianglemeshplot
+.. autofunction:: meshplot
 .. autofunction:: linemeshplot
-.. autofunction:: lineplot
 .. autofunction:: trianglemeshplot
+.. autofunction:: linetrianglemeshplot
+.. autofunction:: lineplot
 .. autofunction:: pointsplot

@@ -29,29 +29,29 @@ bibliography: paper.bib
 
 # Summary
 
-Nanomesh is a Python library that allows users to quickly and easily create 2D and 3D meshes directly from images of the object they wish to mesh. The automated workflow can apply filtering to smooth the original image, segment the picture to extract different regions and create conforming meshes of the objects. Analysis tools allow to evaluate the quality of the resuting mesh and detect problematic regions. The resulting meshes can be exported to a variety of popular formats so that they can be used in finite element simulations. Nanomesh can be used as python library for example in Jupyter notebooks, or though dedicated online dashboards.
+`Nanomesh` is a Python library that allows users to quickly and easily create 2D and 3D meshes directly from images of the object they wish to mesh. The automated workflow can preprocess and segment the picture to extract different regions and create conforming meshes of the objects. Analysis tools allow evaluating the quality of the resuting mesh and the detection of problematic regions. The resulting meshes can be exported to a variety of popular formats so that they can be used in finite element simulations. `Nanomesh` can be used as python library for example in Jupyter notebooks, or through dedicated online dashboards.
 
 # Statement of need
 
-Finite element methods (FEM) often require the creation of non-regular meshes that represents the topology and physical properties of the object under examination. Many meshing libraries exist and allows to create such meshes. Most of these solutions are however proprietary with sometimes a substantial fee because of the level of certification they require for example for medical or engineering applications (e.g. Centaur, ScanIP). Some open source libraries do exist but often create meshes from a CAD design or well defined primitive (e.g. GMSH, CGAL). While these meshing libraries are invaluable for the study of idealized systems they do not allow the mesh to account for potential defects in the underlying topology of the object.
+Simulations based on finite element methods (FEM) often require the creation of a non-regular mesh that represents the topology and physical properties of the object under examination. Many meshing libraries exist and allow the creation of such meshes. However most of these tools are proprietary with sometimes a substantial fee due to the level of certification required by their application domains [@centaur; @scanip]. Some open source libraries do exist but often create meshes from a CAD design or well defined primitive [@gmsh, @cgal]. While these meshing libraries are invaluably useful for the study of idealized systems they do not allow the mesh to account for potential defects in the underlying topology of the object.
 
-For example, the calculation of the optical properties of nanocrystals is usually performed with an ideal nano-structure as substrate for the propagation of the Maxwell equations [@Koenderink2005; @Hughes2005]. Such simulations provide very valuable insight but ignore the effect that manufacturing imprecision of the nanometer-sized pores can have on the overall properties of the crystal. To resolve such structure-property relationship, meshes conforming to experimental images of real nanocrystlals are needed. The subsequent simulation of wave propagation through these meshes using any FEM solver leads to a better understanding of the the impact that imperfections may have on the overall properties. Similar use cases in different fields of material science and beyond are expected. The direct FEM simulations on real device topology might bring very valuable insights. Through its user friendliness, code qualitiy, nanomesh will enable scientist running advanced simulations on mesh that accurately represents the devices that are created in experimental labs.
+For example, the calculation of the optical properties of nanocrystals is usually performed with an ideal nano-structure as substrate for the propagation of the Maxwell equations [@Koenderink2005; @Hughes2005]. Such simulations provide very valuable insight but ignore the effect that manufacturing imprecision of the nanometer-sized pores can have on the overall properties of the crystal. To resolve such structure-property relationship, meshes conforming to experimental images of real nanocrystlals are needed. The subsequent simulation of wave propagation through these meshes using any FEM solver leads to a better understanding of the the impact that imperfections may have on the overall properties. Similar use cases in different fields of material science and beyond are expected. The direct FEM simulations on real device topology might bring very valuable insights. Through its user friendliness, code qualitiy, `nanomesh` will enable scientist running advanced simulations on meshes that accurately represent the devices that are manufactured experimentally.
 
 # Workflow and class hierarchy
 
 A large part of the work of generating a mesh is to pre-process, filter, and segment the image data to generate a contour that accurately describes the objects of interest.
 
-\autoref{fig:flowchart} shows the Nanomesh workflow from left to right. Data is read in from a 2D or 3D `numpy` array [@numpy] into an `Image` object. Nanomesh has dedicated classes (`Mesher`s) to generate contours and triangulate or tetrahedralize the image data.
+\autoref{fig:flowchart} shows the `Nanomesh` workflow from left to right. The input data is read from a 2D or 3D `numpy` array [@numpy] into an `Image` object. `Nanomesh` has dedicated classes (`Mesher`s) to generate contours and triangulate or tetrahedralize the image data.
 
-Meshes are stored in MeshContainers, this is an overarching data class that contains a single set of coordinates with multiple cell types. This is useful for storing the output from triangulation as well as the contour used to generate it or object boundaries. Dedicated Mesh types contain methods to work with the underlying data structure directly.
+Meshes are stored in `MeshContainer`s, this is an overarching data class that contains a single set of coordinates with multiple cell types. This is useful for storing the output from triangulation as well as the contour obtained after segmentation and the object boundaries. Dedicated `Mesh` types contain methods to work with the underlying data structure directly.
 
 ![Flowchart and class hierarchy for Nanomesh.\label{fig:flowchart}](flowchart.png)
 
 # Example
 
-To illustrate how Nananomesh was designed with this workflow in mind, we present an example to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial.
+To illustrate how tp use `Nananomesh`, we present an example to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial.
 
-Nanomesh works with `numpy` arrays. The following snippet uses some sample data included with Nanomesh and loads it into an `Image` object. \autoref{fig:flowchart} shows the input image as output by the snippet below.
+`Nanomesh` works with `numpy` arrays. The following snippet uses some sample data included with `Nanomesh` and loads it into an `Image` object. \autoref{fig:flowchart} shows the input image as output by the snippet below.
 
 ```python
 from nanomesh import Image, data
@@ -65,7 +65,7 @@ plane.show()
 
 Image segmentation is a way to label the pixels of different regions of interest in an image. In this example, we are interested in separating the silicon bulk material (bright) from the nanopores (dark).
 
-Common filters and image operations like Gaussian filter are available as a method on the `Image` object directly. Nanomesh uses `scikit-image` [@skimage] for image operations. Other image operations can be applied using the `.apply()` method, which guarantees an object of the same time will be returned. For example, the code below is essentially short-hand for `plane_gauss = plane.apply(skimage.filters.gaussian, sigma=5)`.
+Common filters and image operations like Gaussian filter are available as a method on the `Image` object directly. `Nanomesh` uses `scikit-image` [@skimage] for image operations. Other image operations can be applied using the `.apply()` method, which guarantees an object of the same time will be returned. For example, the code below is essentially short-hand for `plane_gauss = plane.apply(skimage.filters.gaussian, sigma=5)`.
 
 ```python
 plane_gauss = plane.gaussian(sigma=5)
@@ -113,7 +113,7 @@ plane.compare_with_mesh(mesh)
 
 ## Metrics
 
-Nanomesh contains a metrics module, which can calculate several common mesh quality indicators, such as the minimum/maximum angle distributions, ratio of radii, shape paramaters, area, et cetera. The snipped below illustrates how such plots can be generated (\autoref{fig:mesh_metrics}).
+`Nanomesh` contains a metrics module, which can calculate several common mesh quality indicators, such as the minimum/maximum angle distributions, ratio of radii, shape paramaters, area, et cetera. The snipped below illustrates how such plots can be generated (\autoref{fig:mesh_metrics}).
 
 ```python
 from nanomesh import metrics
@@ -135,7 +135,7 @@ mesh.write('out.msh', file_format='gmsh22', binary=False)
 
 # 3D volumes
 
-The workflow for 3D data volumes is similar, although the underlying implementation is different. Instead of a line mesh, a 3D (triangle) surface mesh wraps the segmented volume. Tetrahedralization is performed using `tetgen` [@tetgen] as the underlying library. \autoref{fig:mesh3d} shows an example of 3D cell data, which were meshed using Nanomesh and vizualized using `PyVista` [@pyvista].
+The workflow for 3D data volumes is similar, although the underlying implementation is different. Instead of a line mesh, a 3D (triangle) surface mesh wraps the segmented volume. Tetrahedralization is performed using `tetgen` [@tetgen] as the underlying library. \autoref{fig:mesh3d} shows an example of 3D cell data, which were meshed using `Nanomesh` and vizualized using `PyVista` [@pyvista].
 
 ![(left) Slice of the input data, and (right) cut through the 3D mesh generated where yellow correspond to the cells and purple to the background volume.\label{fig:mesh3d}](mesh3d.png){ width=70% }
 

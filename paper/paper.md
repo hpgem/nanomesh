@@ -25,17 +25,15 @@ date: 9 May 2022
 bibliography: paper.bib
 ---
 
- <!-- 250-1000 words, current 1071 -->
-
 # Summary
 
 `Nanomesh` is a Python library that allows users to quickly and easily create 2D and 3D meshes directly from images of the object they wish to mesh. The automated workflow can preprocess and segment the picture to extract different regions and create conforming meshes of the objects. Analysis tools allow evaluating the quality of the resuting mesh and the detection of problematic regions. The resulting meshes can be exported to a variety of popular formats so that they can be used in finite element simulations. `Nanomesh` can be used as python library for example in Jupyter notebooks, or through dedicated online dashboards.
 
 # Statement of need
 
-Simulations based on finite element methods (FEM) often require the creation of a non-regular mesh that represents the topology and physical properties of the object under examination. Many meshing libraries exist and allow the creation of such meshes. However most of these tools are proprietary with sometimes a substantial fee due to the level of certification required by their application domains [@centaur; @scanip]. Some open source libraries do exist but often create meshes from a CAD design or well defined primitive [@gmsh, @cgal]. While these meshing libraries are invaluably useful for the study of idealized systems they do not allow the mesh to account for potential defects in the underlying topology of the object.
+Simulations based on finite element methods (FEM) often require the creation of a unstructured mesh that represents the topology and physical properties of the object under examination. Many meshing libraries exist and allow the creation of such meshes. However most of these tools are proprietary with sometimes a substantial fee due to the level of certification required by their application domains [@centaur; @scanip]. Some open source libraries do exist but often create meshes from a CAD design or well defined primitive [@gmsh, @cgal]. While these meshing libraries are invaluably useful for the study of idealized systems they do not allow the mesh to account for potential defects in the underlying topology of the object.
 
-For example, the calculation of the optical properties of nanocrystals is usually performed with an ideal nano-structure as substrate for the propagation of the Maxwell equations [@Koenderink2005; @Hughes2005]. Such simulations provide very valuable insight but ignore the effect that manufacturing imprecision of the nanometer-sized pores can have on the overall properties of the crystal. To resolve such structure-property relationship, meshes conforming to experimental images of real nanocrystlals are needed. The subsequent simulation of wave propagation through these meshes using any FEM solver leads to a better understanding of the the impact that imperfections may have on the overall properties. Similar use cases in different fields of material science and beyond are expected. The direct FEM simulations on real device topology might bring very valuable insights. Through its user friendliness, code qualitiy, `nanomesh` will enable scientist running advanced simulations on meshes that accurately represent the devices that are manufactured experimentally.
+For example, the calculation of the optical properties of nanocrystals is usually performed with an ideal nano-structure as substrate for the propagation of the Maxwell equations [@Koenderink2005; @Hughes2005]. Such simulations provide very valuable insight but ignore the effect that manufacturing imprecision of the nanometer-sized pores can have on the overall properties of the crystal. To resolve such structure-property relationship, meshes conforming to experimental images of real nanocrystals are needed. The subsequent simulation of wave propagation through these meshes using any FEM solver leads to a better understanding of the the impact that imperfections may have on the overall properties. Similar use cases in different fields of material science and beyond are expected. The direct FEM simulations on real device topology might bring very valuable insights. Through its user friendliness, code qualitiy, `nanomesh` will enable scientist running advanced simulations on meshes that accurately represent the devices that are manufactured experimentally.
 
 # Workflow and class hierarchy
 
@@ -51,7 +49,7 @@ Meshes are stored in `MeshContainer`s, this is an overarching data class that co
 
 To illustrate how to use `Nananomesh`, we present an example to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial.
 
-`Nanomesh` works with `numpy` arrays. The following snippet uses some sample data included with `Nanomesh` and loads it into an `Image` object. \autoref{fig:flowchart} shows the input image as output by the snippet below.
+`Nanomesh` works with `numpy` arrays. The following snippet uses some sample data included with `Nanomesh` and loads it into an `Image` object. \autoref{fig:mesh_plots} shows the input image as output by the snippet below.
 
 ```python
 from nanomesh import Image, data
@@ -142,6 +140,6 @@ The workflow for 3D data volumes is similar, although the underlying implementat
 
 # Acknowledgements
 
-We acknowledge contributions from Jaap van der Vegt, Matthias Schlottbom and Willem Vos for scientific input and helpful discussions guiding the deveopment of Nanomesh.
+We acknowledge contributions from Jaap van der Vegt, Matthias Schlottbom and Willem Vos for scientific input and helpful discussions guiding the development of Nanomesh.
 
 # References

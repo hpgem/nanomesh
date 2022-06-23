@@ -41,7 +41,7 @@ For example, the calculation of the optical properties of nanocrystals is usuall
 
 A large part of the work of generating a mesh is to pre-process, filter, and segment the image data to generate a contour that accurately describes the objects of interest.
 
-\autoref{fig:flowchart} shows the `Nanomesh` workflow from left to right. The input data is read from a 2D or 3D `numpy` array [@numpy] into an `Image` object. `Nanomesh` has dedicated classes (`Mesher`s) to generate contours and triangulate or tetrahedralize the image data.
+\autoref{fig:flowchart} shows the `Nanomesh` workflow from left to right. The input data are read from a 2D or 3D `numpy` array [@numpy] into an `Image` object. `Nanomesh` has dedicated classes (`Mesher`s) to generate contours and triangulate or tetrahedralize the image data.
 
 Meshes are stored in `MeshContainer`s, this is an overarching data class that contains a single set of coordinates with multiple cell types. This is useful for storing the output from triangulation as well as the contour obtained after segmentation and the object boundaries. Dedicated `Mesh` types contain methods to work with the underlying data structure directly.
 
@@ -49,7 +49,7 @@ Meshes are stored in `MeshContainer`s, this is an overarching data class that co
 
 # Example
 
-To illustrate how tp use `Nananomesh`, we present an example to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial.
+To illustrate how to use `Nananomesh`, we present an example to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial.
 
 `Nanomesh` works with `numpy` arrays. The following snippet uses some sample data included with `Nanomesh` and loads it into an `Image` object. \autoref{fig:flowchart} shows the input image as output by the snippet below.
 

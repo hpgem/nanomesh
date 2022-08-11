@@ -6,3 +6,4 @@ channels:
 dependencies:
   - python==3.9
   - nodejs>=12  # for itkwidgets
+  - tetgen

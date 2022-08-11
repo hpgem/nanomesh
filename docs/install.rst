@@ -35,7 +35,16 @@ Tetgen
 ------
 
 For tetrahedral meshing, Nanomesh requires `tetgen <https://wias-berlin.de/software/tetgen/>`__ to be
-installed. Binaries are available `here <https://github.com/hpgem/tetgen/releases>`__, and compilation instructions `here <https://github.com/hpgem/tetgen/releases>`_.
+installed.
+
+If you are a conda user, you can do:
+
+::
+
+    conda install -c conda-forge tetgen
+
+
+Binaries are available `here <https://github.com/hpgem/tetgen/releases>`__, and compilation instructions `here <https://github.com/hpgem/tetgen/releases>`_.
 
 Make sure `tetgen` is available on a directory on your system path. To verify tetgen is available, make sure that the following commands return a path:
 

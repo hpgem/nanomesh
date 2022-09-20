@@ -47,7 +47,7 @@ Meshes are stored in `MeshContainer`s, this is an overarching data class that co
 
 # Example
 
-To illustrate how to use `Nananomesh`, we present an example to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial.
+To illustrate how to use `Nanomesh`, we present an example to create 2D and 3D meshes of nanopores etched in a silicon matrix. These nanopores are very often used in the creation of optical crystals and the study of their properties is therefore crucial.
 
 `Nanomesh` works with `numpy` arrays. The following snippet uses some sample data included with `Nanomesh` and loads it into an `Image` object. \autoref{fig:mesh_plots} shows the input image as output by the snippet below.
 
@@ -63,13 +63,13 @@ plane.show()
 
 Image segmentation is a way to label the pixels of different regions of interest in an image. In this example, we are interested in separating the silicon bulk material (bright) from the nanopores (dark).
 
-Common filters and image operations like Gaussian filter are available as a method on the `Image` object directly. `Nanomesh` uses `scikit-image` [@skimage] for image operations. Other image operations can be applied using the `.apply()` method, which guarantees an object of the same time will be returned. For example, the code below is essentially short-hand for `plane_gauss = plane.apply(skimage.filters.gaussian, sigma=5)`.
+Common filters and image operations like Gaussian filter are available as a method on the `Image` object directly. `Nanomesh` uses `scikit-image` [@skimage] for image operations. Other image operations can be applied using the `.apply()` method, which guarantees an object of the same type will be returned. For example, the code below is essentially short-hand for `plane_gauss = plane.apply(skimage.filters.gaussian, sigma=5)`.
 
 ```python
 plane_gauss = plane.gaussian(sigma=5)
 ```
 
-The next step is to segment the image using a threshold method. In this case, we use the `li` method, because it appears to give good separation.
+The next step is to segment the image using a threshold method. In this case, we use the `li` algorithm [@Li1993], because it appears to give good separation.
 
 ```python
 thresh = plane_gauss.threshold('li')
@@ -85,9 +85,9 @@ Meshes are generated using the `Mesher` class. Meshing consists of two steps:
 1. Contour finding
 2. Triangulation
 
-Contour finding uses the marching cubes algorithm implemented in `scikit-image` [@skimage] to wrap all the pores in a polygon. `max_edge_dist=5` splits up long edges in the contour, so that no two points are further than 5 pixels apart. `level` specifies the level at which the contour is generated. Here, we set it to the threshold value determined above.
+Contour finding uses the marching cubes algorithm implemented in `scikit-image` [@skimage] to wrap all the pores in a polygon. `max_edge_dist=5` redefines straight edges to have points no more than 5 pixels apart. Sometimes an edge is defined by (too) many points, which can result in unnessecarily fine meshes, because the meshing algorithm will not remove these points. `level` specifies the level at which the contour is generated. Here, we set it to the threshold value determined above.
 
-\autoref{fig:mesh_plots} shows the output of `mesh.plot_contour()`, a comparison of the guassian filtered image with the contours.
+\autoref{fig:mesh_plots} shows the output of `mesh.plot_contour()`, a comparison of the gaussian filtered image with the contours.
 
 ```python
 from nanomesh import Mesher
@@ -111,7 +111,7 @@ plane.compare_with_mesh(mesh)
 
 ## Metrics
 
-`Nanomesh` contains a metrics module, which can calculate several common mesh quality indicators, such as the minimum/maximum angle distributions, ratio of radii, shape paramaters, area, et cetera. The snipped below illustrates how such plots can be generated (\autoref{fig:mesh_metrics}).
+`Nanomesh` contains a metrics module, which can calculate several common mesh quality indicators, such as the minimum/maximum angle distributions, ratio of radii, shape paramaters, area, et cetera. The snippet below illustrates how such plots can be generated (\autoref{fig:mesh_metrics}).
 
 ```python
 from nanomesh import metrics

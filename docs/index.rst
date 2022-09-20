@@ -43,6 +43,7 @@ Try nanomesh in your browser!
    :caption: Getting Started
 
    install
+   contributing
    development
    examples/other_hello_world!
    structure

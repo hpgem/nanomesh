@@ -114,29 +114,6 @@ pip install nanomesh
 
 For the full installation instructions, see the [installation guidelines](https://nanomesh.readthedocs.io/en/latest/install.html).
 
-### Development
+## Development
 
-Nanomesh does not have any hard version constraints. For development, it is
-still useful to have a consistent environment.
-Therefore, Nanomesh uses
-a constraints file (`constraints.txt`) which pins the version requirements.
-
-The constraints are automatically [updated and tested every month](https://github.com/hpgem/nanomesh/actions/workflows/update_dependencies.yaml).
-Note that in case you run into issues, you may also try to install
-Nanomesh with constraints file.
-
-Install `nanomesh` using the development dependencies:
-
-`pip install -e .[develop] -c constraints.txt`
-
-Running the tests using [pytest](https://docs.pytest.org/):
-
-`pytest`
-
-Linting and checks are done using [pre-commit](https://pre-commit.com):
-
-`pre-commit`
-
-Building the docs:
-
-`make html --directory docs`
+Check out our [Contributing Guidelines](CONTRIBUTING.md#Getting-started-with-develoment) to get started with development.

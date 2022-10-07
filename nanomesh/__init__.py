@@ -15,7 +15,7 @@ logging.basicConfig(format='%(message)s',
 
 __author__ = 'Stef Smeets'
 __email__ = 's.smeets@esciencecenter.nl'
-__version__ = '0.9.0'
+__version__ = '0.9.1'
 
 __all__ = [
     '__author__',

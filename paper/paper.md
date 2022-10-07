@@ -31,9 +31,9 @@ bibliography: paper.bib
 
 # Statement of need
 
-Simulations based on finite element methods (FEM) often require the creation of a unstructured mesh that represents the topology and physical properties of the object under examination. Many meshing libraries exist and allow the creation of such meshes. However most of these tools are proprietary with sometimes a substantial fee due to the level of certification required by their application domains [@centaur; @scanip]. Some open source libraries do exist but often create meshes from a CAD design or well defined primitive [@gmsh, @cgal]. While these meshing libraries are invaluably useful for the study of idealized systems they do not allow the mesh to account for potential defects in the underlying topology of the object.
+Simulations based on finite element methods (FEM) often require the creation of a unstructured mesh that represents the topology and physical properties of the object under examination. Many meshing libraries exist and allow the creation of such meshes. Several of these are proprietary with sometimes a substantial fee due to the level of certification required by their application domains [@centaur; @scanip]. Some open source libraries do exist but often create meshes from a CAD design or well defined primitive [@gmsh; @cgal]. While these meshing libraries are invaluably useful for the study of idealized systems they do not allow the mesh to account for potential defects in the underlying topology of the object.
 
-For example, the calculation of the optical properties of nanocrystals is usually performed with an ideal nano-structure as substrate for the propagation of the Maxwell equations [@Koenderink2005; @Hughes2005]. Such simulations provide very valuable insight but ignore the effect that manufacturing imprecision of the nanometer-sized pores can have on the overall properties of the crystal. To resolve such structure-property relationship, meshes conforming to experimental images of real nanocrystals are needed. The subsequent simulation of wave propagation through these meshes using any FEM solver leads to a better understanding of the the impact that imperfections may have on the overall properties. Similar use cases in different fields of material science and beyond are expected. The direct FEM simulations on real device topology might bring very valuable insights. Through its user friendliness, code qualitiy, `nanomesh` will enable scientist running advanced simulations on meshes that accurately represent the devices that are manufactured experimentally.
+For example, the calculation of the optical properties of nanocrystals is usually performed with an ideal nano-structure as substrate for the propagation of the Maxwell equations [@Koenderink2005; @Hughes2005]. Such simulations provide very valuable insight but ignore the effect that manufacturing imprecision of the nanometer-sized pores can have on the overall properties of the crystal. To resolve such structure-property relationship, meshes conforming to experimental images of real nanocrystals are needed. The subsequent simulation of wave propagation through these meshes using any FEM solver leads to a better understanding of the impact that imperfections may have on the overall properties. Similar use cases in different fields of material science and beyond are expected. The direct FEM simulations on real device topology might bring very valuable insights. Through its user friendliness, code qualitiy, `nanomesh` will enable scientist running advanced simulations on meshes that accurately represent the devices that are manufactured experimentally.
 
 # Workflow and class hierarchy
 
@@ -41,7 +41,7 @@ A large part of the work of generating a mesh is to pre-process, filter, and seg
 
 \autoref{fig:flowchart} shows the `Nanomesh` workflow from left to right. The input data are read from a 2D or 3D `numpy` array [@numpy] into an `Image` object. `Nanomesh` has dedicated classes (`Mesher`s) to generate contours and triangulate or tetrahedralize the image data.
 
-Meshes are stored in `MeshContainer`s, this is an overarching data class that contains a single set of coordinates with multiple cell types. This is useful for storing the output from triangulation as well as the contour obtained after segmentation and the object boundaries. Dedicated `Mesh` types contain methods to work with the underlying data structure directly.
+Meshes are stored in `MeshContainer`s; this is an overarching data class that contains a single set of coordinates with multiple cell types. This is useful for storing the output from triangulation as well as the contour obtained after segmentation and the object boundaries. Dedicated `Mesh` types contain methods to work with the underlying data structure directly.
 
 ![Flowchart and class hierarchy for Nanomesh.\label{fig:flowchart}](flowchart.png)
 
@@ -80,14 +80,7 @@ segmented = plane_gauss.digitize(bins=[thresh])
 
 ## Generate mesh
 
-Meshes are generated using the `Mesher` class. Meshing consists of two steps:
-
-1. Contour finding
-2. Triangulation
-
-Contour finding uses the marching cubes algorithm implemented in `scikit-image` [@skimage] to wrap all the pores in a polygon. `max_edge_dist=5` redefines straight edges to have points no more than 5 pixels apart. Sometimes an edge is defined by (too) many points, which can result in unnessecarily fine meshes, because the meshing algorithm will not remove these points. `level` specifies the level at which the contour is generated. Here, we set it to the threshold value determined above.
-
-\autoref{fig:mesh_plots} shows the output of `mesh.plot_contour()`, a comparison of the gaussian filtered image with the contours.
+Meshes are generated using the `Mesher` class. Meshing consists of two steps: contour finding and triangulation. Contour finding uses the marching cubes algorithm implemented in `scikit-image` [@skimage] to wrap all the pores in a polygon. `max_edge_dist=5` redefines straight edges to have points no more than 5 pixels apart. Sometimes an edge is defined by (too) many points, which can result in unnessecarily fine meshes, because the meshing algorithm will not remove these points. `level` specifies the level at which the contour is generated. Here, we set it to the threshold value determined above. The code below creates the contour around the features in the gaussian filtered image.
 
 ```python
 from nanomesh import Mesher
@@ -96,6 +89,8 @@ mesher = Mesher(plane_gauss)
 mesher.generate_contour(max_edge_dist=5, level=thresh)
 mesher.plot_contour()
 ```
+
+\autoref{fig:mesh_plots} shows the output of `mesh.plot_contour()`, a comparison of the gaussian filtered image with the contours.
 
 The contours are used as a starting point for triangulation. The triangulation itself is performed by the `triangle` library [@triangle]. Options can be specified through the `opts` keyword argument. This example uses `q30` to generate a quality mesh with angles > 30°, and `a100` to set a maximum triangle size of 100 pixels.
 

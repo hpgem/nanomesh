@@ -3,6 +3,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nanomesh)](https://pypi.org/project/nanomesh/)
 [![PyPI](https://img.shields.io/pypi/v/nanomesh.svg?style=flat)](https://pypi.org/project/nanomesh/)
 [![DOI](https://zenodo.org/badge/311460276.svg)](https://zenodo.org/badge/latestdoi/311460276)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.04654/status.svg)](https://doi.org/10.21105/joss.04654)
 
 ![Nanomesh banner](./notebooks/other/banner.png)
 
@@ -17,6 +18,8 @@ Nanomesh is a Python workflow tool for generating meshes from 2D and 3D image da
 - Export to many mesh formats
 
 Documentation: https://nanomesh.readthedocs.io/en/latest/
+
+Check out the paper on Nanomesh in JOSS: https://doi.org/10.21105/joss.04654
 
 ## Try nanomesh in your browser!
 

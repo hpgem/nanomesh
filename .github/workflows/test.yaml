@@ -59,7 +59,7 @@ jobs:
           gcm tetgen.exe
 
       - name: Test with pytest
-        run: python -p -m pytest --disable-warnings
+        run: coverage -p -m pytest --disable-warnings
 
   coverage:
     name: coverage

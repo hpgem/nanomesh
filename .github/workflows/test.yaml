@@ -61,6 +61,12 @@ jobs:
       - name: Test with pytest
         run: coverage -p -m pytest --disable-warnings
 
+      - name: "Upload coverage data"
+        uses: actions/upload-artifact@v3
+        with:
+          name: covdata
+          path: .coverage.*
+
   coverage:
     name: coverage
     needs: test

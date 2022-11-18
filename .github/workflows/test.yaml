@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - master
-      - covbadge3
   pull_request:
     branches:
       - master
-      - covbadge3
 
 jobs:
   test:

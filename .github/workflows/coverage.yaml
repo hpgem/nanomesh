@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - covbadge
+      - covbadge3
 
 jobs:
   coverage:

@@ -19,14 +19,14 @@ jobs:
         python-version: ['3.8']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('constraints.txt') }}
@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Check out the repo"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
 
       - name: "Set up Python"
         uses: "actions/setup-python@v4"
@@ -101,7 +101,7 @@ jobs:
           echo $'```\n' >> $GITHUB_STEP_SUMMARY
 
       - name: "Make badge"
-        uses: schneegans/dynamic-badges-action@v1.4.0
+        uses: schneegans/dynamic-badges-action@v1.6.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: d4d36197fa031afa4ee56b0848dfed76

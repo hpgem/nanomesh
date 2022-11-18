@@ -2,18 +2,15 @@ name: Coverage
 
 on:
   workflow_run:
-    workflows:
-      - Tests
+    workflows: Tests
     branches:
       - master
       - covbadge3
-    types:
-      - completed
+    types: completed
 
 jobs:
   coverage:
     name: coverage
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: "Check out the repo"

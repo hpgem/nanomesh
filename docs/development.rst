@@ -33,6 +33,14 @@ Running the tests using `pytest <https://docs.pytest.org/>`__:
 
     pytest
 
+To check coverage:
+
+::
+
+    coverage -m run pytest
+    coverage report  # terminal
+    coverage html    # html report
+
 Linting and checks are done using `pre-commit <https://pre-commit.com>`__:
 
 ::

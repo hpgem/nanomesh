@@ -1,9 +1,10 @@
 [![Documentation Status](https://readthedocs.org/projects/nanomesh/badge/?version=latest)](https://nanomesh.readthedocs.io/en/latest/?badge=latest)
 [![tests](https://github.com/hpgem/nanomesh/actions/workflows/test.yaml/badge.svg)](https://github.com/hpgem/nanomesh/actions/workflows/test.yaml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stefsmeets/d4d36197fa031afa4ee56b0848dfed76/raw/covbadge.json)](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stefsmeets/d4d36197fa031afa4ee56b0848dfed76/raw/covbadge.json)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nanomesh)](https://pypi.org/project/nanomesh/)
 [![PyPI](https://img.shields.io/pypi/v/nanomesh.svg?style=flat)](https://pypi.org/project/nanomesh/)
 [![DOI](https://zenodo.org/badge/311460276.svg)](https://zenodo.org/badge/latestdoi/311460276)
-[![DOI](https://joss.theoj.org/papers/10.21105/joss.04654/status.svg)](https://doi.org/10.21105/joss.04654)
+[![JOSS](https://joss.theoj.org/papers/10.21105/joss.04654/status.svg)](https://doi.org/10.21105/joss.04654)
 
 ![Nanomesh banner](./notebooks/other/banner.png)
 

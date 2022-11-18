@@ -59,7 +59,7 @@ jobs:
           gcm tetgen.exe
 
       - name: Test with pytest
-        run: coverage -p -m pytest --disable-warnings
+        run: coverage run -p -m pytest --disable-warnings
 
       - name: "Upload coverage data"
         uses: actions/upload-artifact@v3

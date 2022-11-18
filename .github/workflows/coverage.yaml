@@ -1,10 +1,14 @@
 name: Coverage
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - Tests
     branches:
       - master
       - covbadge3
+    types:
+      - completed
 
 jobs:
   coverage:

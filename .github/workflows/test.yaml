@@ -92,11 +92,11 @@ jobs:
       - name: "Combine"
         run: |
           coverage combine
-          coverage json
+          coverage json -i
           export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%\n" >> $GITHUB_STEP_SUMMARY
-          coverage report >> $GITHUB_STEP_SUMMARY
+          coverage report -i >> $GITHUB_STEP_SUMMARY
 
       - name: "Make badge"
         uses: schneegans/dynamic-badges-action@v1.4.0
